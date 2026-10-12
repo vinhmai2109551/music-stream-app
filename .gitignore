@@ -43,7 +43,10 @@ coverage/
 Thumbs.db
 
 # Editors
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
 .idea/
+
+# Editor & AI tool configs (local only)
+.vscode/
+.claude/
+CLAUDE.md
+AGENTS.md
