@@ -17,16 +17,22 @@ Final project for the **Mobile Programming** course — Industrial University of
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Screens & Features](#screens--features)
-- [Screenshots](#screenshots)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Available Scripts](#available-scripts)
-- [Branching Workflow](#branching-workflow)
-- [Project Management](#project-management)
-- [Author](#author)
+- [🎵 Music Stream](#-music-stream)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Screens \& Features](#screens--features)
+  - [Screenshots](#screenshots)
+  - [Tech Stack](#tech-stack)
+  - [Project Structure](#project-structure)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Run on a device](#run-on-a-device)
+  - [Available Scripts](#available-scripts)
+  - [Branching Workflow](#branching-workflow)
+  - [Project Management](#project-management)
+  - [Author](#author)
+  - [License](#license)
 
 ## Overview
 
