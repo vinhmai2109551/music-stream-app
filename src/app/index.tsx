@@ -1,11 +1,11 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native"
 
 export default function Index() {
   return (
     <View style={styles.container}>
       <Text>Edit src/app/index.tsx to edit this screen.</Text>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -14,4 +14,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-});
+})
