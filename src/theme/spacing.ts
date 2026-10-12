@@ -1,0 +1,34 @@
+/** 4-pt grid. */
+export const spacing = {
+  none: 0,
+  xxs: 2,
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+  huge: 40,
+  giant: 48,
+  screen: 20,
+} as const
+
+export const sizes = {
+  minTouch: 44,
+  chipHeight: 36,
+  buttonHeight: 48,
+  searchBarHeight: 48,
+  iconSm: 16,
+  iconMd: 20,
+  icon: 24,
+  coverSm: 40,
+  cover: 48,
+  coverMd: 64,
+  tabBarHeight: 76,
+  miniPlayerHeight: 64,
+  avatar: 112,
+  cardWidth: 144,
+  sheetHandleWidth: 40,
+  sheetHandleHeight: 4,
+} as const
