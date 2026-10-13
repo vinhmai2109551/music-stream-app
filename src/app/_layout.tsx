@@ -6,12 +6,14 @@ import { StyleSheet } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { useAppFonts } from "@/hooks/useAppFonts"
+import { useAppStore } from "@/store/appStore"
 import { colors } from "@/theme"
 
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
   const fontsReady = useAppFonts()
+  const hasStarted = useAppStore((state) => state.hasStarted)
 
   useEffect(() => {
     if (fontsReady) SplashScreen.hideAsync()
@@ -22,13 +24,21 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
+        <StatusBar style={hasStarted ? "dark" : "light"} />
         <Stack
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: colors.background },
           }}
-        />
+        >
+          <Stack.Protected guard={!hasStarted}>
+            <Stack.Screen name="launch" />
+          </Stack.Protected>
+          <Stack.Protected guard={hasStarted}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="player" options={{ presentation: "modal" }} />
+          </Stack.Protected>
+        </Stack>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   )

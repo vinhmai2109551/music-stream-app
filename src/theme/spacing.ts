@@ -31,4 +31,10 @@ export const sizes = {
   cardWidth: 144,
   sheetHandleWidth: 40,
   sheetHandleHeight: 4,
+  tabBarContent: 60,
+  tabIcon: 22,
+  logo: 80,
+  logoIcon: 42,
+  progressBar: 2,
+  compactButton: 32,
 } as const
