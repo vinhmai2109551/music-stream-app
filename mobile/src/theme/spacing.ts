@@ -50,4 +50,8 @@ export const sizes = {
   trackNumberWidth: 20,
   topBarHeight: 56,
   giantSkeleton: 48,
+  playButtonLg: 64,
+  waveformHeight: 48,
+  waveformGap: 2,
+  playerArtworkMax: 360,
 } as const

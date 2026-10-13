@@ -189,7 +189,12 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   center: { textAlign: "center" },
-  controls: { flexDirection: "row", alignItems: "center", marginTop: spacing.xl },
+  controls: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginTop: spacing.xl,
+  },
   spacer: { flex: 1 },
   section: { marginTop: spacing.xxl },
   skeleton: { alignItems: "center", gap: spacing.lg, paddingHorizontal: spacing.screen },

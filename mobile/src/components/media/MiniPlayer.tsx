@@ -16,15 +16,16 @@ function MiniPlayerBase() {
   const track = usePlayerStore((state) => state.currentTrack)
   const isPlaying = usePlayerStore((state) => state.isPlaying)
   const progress = usePlayerStore((state) => state.progress)
+  const duration = usePlayerStore((state) => state.duration)
   const togglePlaying = usePlayerStore((state) => state.togglePlaying)
   const liked = useLibraryStore((state) => (track ? state.likedTrackIds.includes(track.id) : false))
   const toggleLike = useLibraryStore((state) => state.toggleLike)
 
   const ratio = useSharedValue(0)
   useEffect(() => {
-    const value = track ? Math.min(1, progress / track.duration) : 0
+    const value = track && duration > 0 ? Math.min(1, progress / duration) : 0
     ratio.value = withTiming(value, { duration: PROGRESS_ANIMATION_MS })
-  }, [progress, track, ratio])
+  }, [progress, duration, track, ratio])
   const barStyle = useAnimatedStyle(() => ({ width: `${ratio.value * 100}%` }))
 
   if (!track) return null

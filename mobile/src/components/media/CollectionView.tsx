@@ -203,7 +203,12 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   center: { textAlign: "center" },
-  controls: { flexDirection: "row", alignItems: "center", marginVertical: spacing.xl },
+  controls: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginVertical: spacing.xl,
+  },
   spacer: { flex: 1 },
   skeleton: { alignItems: "center", gap: spacing.lg, paddingHorizontal: spacing.screen },
 })

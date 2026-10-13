@@ -99,26 +99,27 @@ The app consists of 13 screens:
 
 ```text
 music-stream-app/
-├── assets/
-│   └── images/              # App icons, covers, artists, feed and onboarding art
-├── src/
-│   ├── app/                 # Expo Router routes (each file is a screen)
-│   │   ├── _layout.tsx      # Root layout, fonts and splash handling
-│   │   └── index.tsx        # Entry screen
-│   ├── components/
-│   │   └── ui/              # Reusable UI components
-│   ├── constants/           # App-wide constants and copy
-│   ├── data/                # Catalog, images and mock data
-│   ├── hooks/               # Custom hooks (fonts, toast, ...)
-│   ├── store/               # Zustand stores (player, library)
-│   ├── theme/               # Design tokens
-│   ├── types/               # Shared TypeScript types
-│   └── utils/               # Helpers (formatTime, formatCount, ...)
-├── app.json                 # Expo configuration
-├── eslint.config.js
-├── tsconfig.json
-└── package.json
+├── mobile/                  # Expo app (this is what runs on the phone)
+│   ├── assets/images/       # App icons, covers, artists, feed and onboarding art
+│   ├── src/
+│   │   ├── app/             # Expo Router routes (each file is a screen)
+│   │   ├── components/      # ui/ (base components) and media/ (track rows, player, ...)
+│   │   ├── constants/       # App-wide constants and copy
+│   │   ├── data/            # Catalog, images and mock data
+│   │   ├── hooks/           # Custom hooks (fonts, toast, audio engine, ...)
+│   │   ├── store/           # Zustand stores (player, library)
+│   │   ├── theme/           # Design tokens
+│   │   ├── types/           # Shared TypeScript types
+│   │   └── utils/           # Helpers (formatTime, formatCount, ...)
+│   ├── .env.example         # Copy to .env and fill in
+│   ├── app.json             # Expo configuration
+│   └── package.json
+├── backend/                 # NestJS API (planned)
+├── frontend/                # Admin web app (planned)
+└── README.md
 ```
+
+Each part has its own `package.json` and `package-lock.json` (no npm workspaces), so install and run commands are executed inside the part's folder.
 
 ## Getting Started
 
@@ -133,18 +134,21 @@ music-stream-app/
 ```bash
 # 1. Clone the repository
 git clone https://github.com/vinhmai2109551/music-stream-app.git
-cd music-stream-app
+cd music-stream-app/mobile
 
 # 2. Install dependencies
 npm install
 
-# 3. Start the development server
+# 3. Create your local environment file
+cp .env.example .env
+
+# 4. Start the development server
 npx expo start
 ```
 
 ### Run on a device
 
-1. Run `npx expo start`.
+1. Run `npx expo start` inside the `mobile/` folder.
 2. Open **Expo Go** on your phone.
    - **Android:** scan the QR code from within Expo Go.
    - **iOS:** scan the QR code with the Camera app.
@@ -153,6 +157,8 @@ npx expo start
 Alternatively, press `a` (Android emulator), `i` (iOS simulator) or `w` (web) in the terminal.
 
 ## Available Scripts
+
+Run these from the `mobile/` folder.
 
 | Script              | Command                | Description                    |
 | ------------------- | ---------------------- | ------------------------------ |

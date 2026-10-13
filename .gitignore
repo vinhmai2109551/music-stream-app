@@ -1,15 +1,16 @@
 # dependencies
-node_modules/
+**/node_modules/
 
 # Expo
-.expo/
-dist/
+**/.expo/
+**/dist/
+**/build/
 web-build/
 expo-env.d.ts
 
 # Native (prebuild output)
-/ios
-/android
+**/ios/
+**/android/
 .kotlin/
 
 # Signing & secrets
@@ -19,8 +20,9 @@ expo-env.d.ts
 *.key
 *.pem
 *.mobileprovision
-.env
-.env*.local
+**/.env
+**/.env*.local
+!**/.env.example
 
 # Metro
 .metro-health-check*

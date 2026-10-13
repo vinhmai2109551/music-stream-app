@@ -27,6 +27,7 @@ export const colors = {
   premiumTint: "#F5F3FF",
   premiumText: "#7C3AED",
   premiumCheck: "#8B5CF6",
+  playerScrim: "rgba(0, 0, 0, 0.6)",
   cardScrim: "rgba(0, 0, 0, 0.8)",
   transparent: "transparent",
   chartGradients: {
