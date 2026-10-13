@@ -80,3 +80,12 @@ export type Suggestion = {
 }
 
 export type RepeatMode = "off" | "all" | "one"
+
+export type ChartItem = {
+  /** Id of the playlist this chart opens. */
+  id: string
+  title: string
+  country: string
+  description: string
+  gradient: readonly [string, string]
+}

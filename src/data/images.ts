@@ -43,6 +43,10 @@ export const images = {
     jason: require("../../assets/images/artists/avatar-jason-smith.png"),
     michael: require("../../assets/images/artists/avatar-michael-key.png"),
   },
+  user: {
+    avatar: require("../../assets/images/artists/user-ashley-scott.png"),
+    aboutBanner: require("../../assets/images/artists/about-banner.png"),
+  },
   onboarding: {
     launch: require("../../assets/images/onboarding/launch-bg.png"),
     premium: require("../../assets/images/onboarding/premium-bg.png"),
