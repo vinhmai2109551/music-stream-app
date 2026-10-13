@@ -27,6 +27,13 @@ export const colors = {
   premiumTint: "#F5F3FF",
   premiumText: "#7C3AED",
   premiumCheck: "#8B5CF6",
+  cardScrim: "rgba(0, 0, 0, 0.8)",
+  transparent: "transparent",
+  chartGradients: {
+    violet: ["#6D28D9", "#D946EF"],
+    cyan: ["#22D3EE", "#4F46E5"],
+    orange: ["#FB923C", "#EC4899"],
+  },
   categoryGradients: {
     pop: ["#D946EF", "#F472B6"],
     electronic: ["#06B6D4", "#3B82F6"],
@@ -35,4 +42,4 @@ export const colors = {
   },
 } as const
 
-export type ColorToken = Exclude<keyof typeof colors, "categoryGradients">
+export type ColorToken = Exclude<keyof typeof colors, "categoryGradients" | "chartGradients">

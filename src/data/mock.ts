@@ -1,5 +1,5 @@
 import { colors } from "@/theme"
-import type { Category, Comment, FeedPost, Playlist, Suggestion } from "@/types"
+import type { Category, ChartItem, Comment, FeedPost, Playlist, Suggestion } from "@/types"
 import { tracks } from "./catalog"
 import { images } from "./images"
 
@@ -44,8 +44,30 @@ export const initialPlaylists: Playlist[] = [
   },
 ]
 
-/** Editorial chart playlists shown on Home. */
-export const charts: Playlist[] = initialPlaylists.filter((p) => p.owner === "Music Stream")
+/** Editorial charts shown on Home; each opens the playlist with the same id. */
+export const charts: ChartItem[] = [
+  {
+    id: "top50",
+    title: "Top 50",
+    country: "Canada",
+    description: "Daily chart-toppers update",
+    gradient: colors.chartGradients.violet,
+  },
+  {
+    id: "top50-global",
+    title: "Top 50",
+    country: "Global",
+    description: "Daily chart-toppers update",
+    gradient: colors.chartGradients.cyan,
+  },
+  {
+    id: "top50-trending",
+    title: "Top 50",
+    country: "Trending",
+    description: "Daily chart-toppers update",
+    gradient: colors.chartGradients.orange,
+  },
+]
 
 export const categories: Category[] = [
   {
