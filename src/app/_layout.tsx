@@ -36,6 +36,9 @@ export default function RootLayout() {
           </Stack.Protected>
           <Stack.Protected guard={hasStarted}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="playlist/[id]" />
+            <Stack.Screen name="album/[id]" />
+            <Stack.Screen name="artist/[id]" />
             <Stack.Screen name="player" options={{ presentation: "modal" }} />
           </Stack.Protected>
         </Stack>
