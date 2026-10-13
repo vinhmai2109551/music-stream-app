@@ -5,6 +5,7 @@ import { useEffect } from "react"
 import { StyleSheet } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
+import { AudioEngine } from "@/components/media/AudioEngine"
 import { useAppFonts } from "@/hooks/useAppFonts"
 import { useAppStore } from "@/store/appStore"
 import { colors } from "@/theme"
@@ -25,6 +26,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
         <StatusBar style={hasStarted ? "dark" : "light"} />
+        <AudioEngine />
         <Stack
           screenOptions={{
             headerShown: false,
@@ -39,7 +41,10 @@ export default function RootLayout() {
             <Stack.Screen name="playlist/[id]" />
             <Stack.Screen name="album/[id]" />
             <Stack.Screen name="artist/[id]" />
-            <Stack.Screen name="player" options={{ presentation: "modal" }} />
+            <Stack.Screen
+              name="player"
+              options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+            />
           </Stack.Protected>
         </Stack>
       </SafeAreaProvider>
