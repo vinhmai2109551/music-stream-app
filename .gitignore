@@ -55,3 +55,6 @@ AGENTS.md
 
 # Local work log
 WORKLOG.md
+
+# Generated Prisma client (rebuilt by `prisma generate`)
+backend/src/generated/
