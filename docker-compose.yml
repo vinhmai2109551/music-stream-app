@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    # POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB come from backend/.env
+    env_file: backend/.env
+    ports:
+      - "127.0.0.1:5432:5432" # only this computer (prisma migrate, start:dev); not the LAN
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file: backend/.env
+    environment:
+      # Inside Docker the database host is "db"; DATABASE_URL_LOCAL is for your computer only.
+      DATABASE_URL_LOCAL: ""
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

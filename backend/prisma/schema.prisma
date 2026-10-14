@@ -1,0 +1,252 @@
+// Modular monolith: one database, but every table is OWNED by exactly one module
+// (see the "owner" comment above each model). Other modules never query a table they
+// do not own — they call the owning module's service instead.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ---------------------------------------------------------------- owner: users
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  avatarUrl    String?
+  role         Role     @default(USER)
+  isPremium    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  playlists     Playlist[]
+  trackLikes    TrackLike[]
+  albumLikes    AlbumLike[]
+  playlistLikes PlaylistLike[]
+  follows       Follow[]
+  comments      Comment[]
+  commentLikes  CommentLike[]
+  postLikes     FeedPostLike[]
+}
+
+// -------------------------------------------------------------- owner: artists
+model Artist {
+  id            String   @id @default(cuid())
+  name          String
+  bio           String   @default("")
+  imageUrl      String
+  /// Followers that exist outside this app; real follows (Follow rows) are added on top.
+  baseFollowers Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  tracks    Track[]
+  albums    Album[]
+  follows   Follow[]
+  feedPosts FeedPost[]
+
+  @@index([name])
+}
+
+// --------------------------------------------------------------- owner: tracks
+model Track {
+  id          String   @id @default(cuid())
+  title       String
+  artistId    String
+  coverUrl    String
+  audioUrl    String
+  plays       Int      @default(0)
+  durationSec Int
+  createdAt   DateTime @default(now())
+
+  artist    Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  albums    AlbumTrack[]
+  playlists PlaylistTrack[]
+  likes     TrackLike[]
+  comments  Comment[]
+  feedPosts FeedPost[]
+
+  @@index([artistId])
+  @@index([title])
+}
+
+// --------------------------------------------------------------- owner: albums
+model Album {
+  id        String   @id @default(cuid())
+  title     String
+  coverUrl  String
+  artistId  String
+  createdAt DateTime @default(now())
+
+  artist Artist       @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  tracks AlbumTrack[]
+  likes  AlbumLike[]
+
+  @@index([artistId])
+}
+
+model AlbumTrack {
+  albumId  String
+  trackId  String
+  position Int
+
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([albumId, trackId])
+  @@index([trackId])
+}
+
+// ----------------------------------------------------------- owner: playlists
+model Playlist {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  coverUrl    String?
+  /// Editorial playlists ("Music Stream") have no owner.
+  isOfficial  Boolean  @default(false)
+  ownerId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner  User?            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tracks PlaylistTrack[]
+  likes  PlaylistLike[]
+
+  @@index([ownerId])
+}
+
+model PlaylistTrack {
+  playlistId String
+  trackId    String
+  position   Int
+  addedAt    DateTime @default(now())
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track    Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([playlistId, trackId])
+  @@index([trackId])
+}
+
+// -------------------------------------------------------------- owner: likes
+model TrackLike {
+  userId    String
+  trackId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([userId, trackId])
+  @@index([trackId])
+}
+
+model AlbumLike {
+  userId    String
+  albumId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@id([userId, albumId])
+  @@index([albumId])
+}
+
+model PlaylistLike {
+  userId     String
+  playlistId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@id([userId, playlistId])
+  @@index([playlistId])
+}
+
+// ------------------------------------------------------------- owner: follows
+model Follow {
+  userId    String
+  artistId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@id([userId, artistId])
+  @@index([artistId])
+}
+
+// -------------------------------------------------------------- owner: comments
+/// A comment belongs to a track OR a feed post (exactly one; enforced by the service).
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  userId    String
+  trackId   String?
+  postId    String?
+  parentId  String?
+  createdAt DateTime @default(now())
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track   Track?        @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  post    FeedPost?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent  Comment?      @relation("Replies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]     @relation("Replies")
+  likes   CommentLike[]
+
+  @@index([trackId, createdAt])
+  @@index([postId, createdAt])
+}
+
+model CommentLike {
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@index([commentId])
+}
+
+// ---------------------------------------------------------------- owner: feed
+model FeedPost {
+  id         String   @id @default(cuid())
+  artistId   String
+  trackId    String
+  artworkUrl String
+  caption    String   @default("")
+  createdAt  DateTime @default(now())
+
+  artist   Artist         @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  track    Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  likes    FeedPostLike[]
+  comments Comment[]
+
+  @@index([createdAt])
+}
+
+model FeedPostLike {
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@index([postId])
+}
