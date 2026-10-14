@@ -114,7 +114,8 @@ music-stream-app/
 │   ├── .env.example         # Copy to .env and fill in
 │   ├── app.json             # Expo configuration
 │   └── package.json
-├── backend/                 # NestJS API (planned)
+├── backend/                 # NestJS API: modular monolith + Prisma + PostgreSQL
+├── docker-compose.yml       # PostgreSQL + API
 ├── frontend/                # Admin web app (planned)
 └── README.md
 ```
@@ -155,6 +156,51 @@ npx expo start
 3. The app loads and hot-reloads as you edit the code.
 
 Alternatively, press `a` (Android emulator), `i` (iOS simulator) or `w` (web) in the terminal.
+
+## Backend
+
+The API is a **modular monolith**: one deployable NestJS app, one PostgreSQL database, but every
+domain is a self-contained module that owns its tables and exposes a small public API.
+
+```mermaid
+flowchart LR
+  Mobile[Mobile app] --> API
+  Admin[Admin web] --> API
+  subgraph API[NestJS API]
+    direction TB
+    auth --> users
+    artists --> follows
+    tracks --> artists
+    tracks --> likes
+    albums --> tracks
+    albums --> artists
+    albums --> likes
+    playlists --> tracks
+    playlists --> likes
+    playlists --> users
+    comments --> users
+    feed --> tracks
+    feed --> artists
+    feed --> comments
+  end
+  API --> DB[(PostgreSQL)]
+  API -.-> R2[(Cloudflare R2)]
+```
+
+- An arrow means "uses the public API of" (`modules/<name>/index.ts`). The graph has no cycles.
+- ESLint rejects imports that reach into another module's internals.
+- Run it with Docker (applies migrations and seeds the demo data on start):
+
+```bash
+cp backend/.env.example backend/.env   # then edit the secrets
+docker compose up -d --build
+```
+
+API: `http://localhost:3000/api` · Swagger: `http://localhost:3000/api/docs`.
+The seeded admin account is `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `backend/.env`.
+
+Without Docker for the API (database still in Docker): `docker compose up -d db`, then in `backend/`:
+`npm install`, `npm run prisma:migrate`, `npm run prisma:seed`, `npm run start:dev`.
 
 ## Available Scripts
 
