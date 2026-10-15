@@ -29,7 +29,11 @@ export function useAudioEngine() {
   }, [player, trackId, playVersion])
 
   useEffect(() => {
-    if (!trackId) return
+    if (!trackId) {
+      // The queue was cleared (e.g. logout): make sure nothing keeps playing.
+      if (player.playing) player.pause()
+      return
+    }
     if (isPlaying) player.play()
     else player.pause()
   }, [player, trackId, isPlaying])

@@ -17,6 +17,7 @@ import { copy } from "@/constants/copy"
 import { albums, artists, charts, suggestions, tracks } from "@/data/mock"
 import { useSimulatedLoading } from "@/hooks/useSimulatedLoading"
 import { useToast } from "@/hooks/useToast"
+import { useAuthStore } from "@/store/authStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { colors, radius, sizes, spacing } from "@/theme"
 import type { Suggestion } from "@/types"
@@ -53,7 +54,10 @@ export default function HomeScreen() {
         ) : (
           <>
             <View style={styles.padded}>
-              <HomeHeader onNotifications={() => show(COMING_SOON)} />
+              <HomeHeader
+                onNotifications={() => show(COMING_SOON)}
+                onLogout={() => void useAuthStore.getState().logout()}
+              />
               <Pressable
                 accessibilityRole="search"
                 accessibilityLabel={copy.searchPlaceholder}
