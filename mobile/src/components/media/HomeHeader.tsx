@@ -1,5 +1,5 @@
 import { Image } from "expo-image"
-import { Bell } from "lucide-react-native"
+import { Bell, LogOut } from "lucide-react-native"
 import { StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { IconButton } from "@/components/ui/IconButton"
@@ -9,9 +9,10 @@ import { colors, radius, sizes, spacing } from "@/theme"
 
 type HomeHeaderProps = {
   onNotifications: () => void
+  onLogout: () => void
 }
 
-export function HomeHeader({ onNotifications }: HomeHeaderProps) {
+export function HomeHeader({ onNotifications, onLogout }: HomeHeaderProps) {
   return (
     <View style={styles.row}>
       <View style={styles.greeting}>
@@ -23,6 +24,8 @@ export function HomeHeader({ onNotifications }: HomeHeaderProps) {
         </AppText>
       </View>
       <View style={styles.actions}>
+        {/* Temporary: lets you test the auth flow until the profile screen exists. */}
+        <IconButton icon={LogOut} label={copy.auth.logout} onPress={onLogout} />
         <View>
           <IconButton icon={Bell} label="Notifications" onPress={onNotifications} />
           <View pointerEvents="none" style={styles.dot} />

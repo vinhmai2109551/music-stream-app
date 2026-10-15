@@ -43,8 +43,12 @@ export default function LaunchScreen() {
           {copy.launchHeadline.replace(", ", ",\n")}
         </AppText>
         <View style={styles.actions}>
-          <Button label="Create an account" onPress={start} />
-          <Button label="I already have an account" variant="glass" onPress={start} />
+          <Button label="Create an account" onPress={() => start("register")} />
+          <Button
+            label="I already have an account"
+            variant="glass"
+            onPress={() => start("login")}
+          />
         </View>
       </Animated.View>
     </View>

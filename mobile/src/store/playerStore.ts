@@ -34,6 +34,8 @@ type PlayerActions = {
   retry: () => void
   toggleShuffle: () => void
   cycleRepeat: () => void
+  /** Stops everything and empties the queue (e.g. on logout). */
+  reset: () => void
   // Reported by the audio engine.
   setProgress: (seconds: number) => void
   setDuration: (seconds: number) => void
@@ -152,6 +154,20 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => {
         isBuffering: true,
         isPlaying: true,
         playVersion: get().playVersion + 1,
+      }),
+
+    reset: () =>
+      set({
+        queue: [],
+        currentTrack: null,
+        isPlaying: false,
+        progress: 0,
+        duration: 0,
+        shuffle: false,
+        repeat: "off",
+        queueSource: copy.defaultSource,
+        isBuffering: false,
+        hasError: false,
       }),
 
     toggleShuffle: () => set((state) => ({ shuffle: !state.shuffle })),

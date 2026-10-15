@@ -8,24 +8,34 @@ import { SafeAreaProvider } from "react-native-safe-area-context"
 import { AudioEngine } from "@/components/media/AudioEngine"
 import { useAppFonts } from "@/hooks/useAppFonts"
 import { useAppStore } from "@/store/appStore"
+import { useAuthStore } from "@/store/authStore"
 import { colors } from "@/theme"
 
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
   const fontsReady = useAppFonts()
+  const status = useAuthStore((state) => state.status)
   const hasStarted = useAppStore((state) => state.hasStarted)
 
   useEffect(() => {
-    if (fontsReady) SplashScreen.hideAsync()
-  }, [fontsReady])
+    void useAuthStore.getState().bootstrap()
+  }, [])
 
-  if (!fontsReady) return null
+  // Keep the splash screen up until fonts are loaded and the saved session has been checked.
+  const ready = fontsReady && status !== "loading"
+  useEffect(() => {
+    if (ready) void SplashScreen.hideAsync()
+  }, [ready])
+
+  if (!ready) return null
+
+  const isAuthenticated = status === "authenticated"
 
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar style={hasStarted ? "dark" : "light"} />
+        <StatusBar style={isAuthenticated ? "dark" : "light"} />
         <AudioEngine />
         <Stack
           screenOptions={{
@@ -33,10 +43,16 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: colors.background },
           }}
         >
-          <Stack.Protected guard={!hasStarted}>
+          {/* 1. Not signed in and Launch not seen yet. */}
+          <Stack.Protected guard={!isAuthenticated && !hasStarted}>
             <Stack.Screen name="launch" />
           </Stack.Protected>
-          <Stack.Protected guard={hasStarted}>
+          {/* 2. Not signed in, Launch already seen. */}
+          <Stack.Protected guard={!isAuthenticated && hasStarted}>
+            <Stack.Screen name="(auth)" />
+          </Stack.Protected>
+          {/* 3. Signed in. */}
+          <Stack.Protected guard={isAuthenticated}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="playlist/[id]" />
             <Stack.Screen name="album/[id]" />

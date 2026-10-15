@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   type PressableProps,
@@ -15,6 +16,8 @@ type ButtonProps = Omit<PressableProps, "style" | "children"> & {
   label: string
   variant?: Variant
   compact?: boolean
+  /** Shows a spinner and ignores presses while an action is running. */
+  loading?: boolean
   style?: StyleProp<ViewStyle>
 }
 
@@ -30,15 +33,18 @@ export function Button({
   label,
   variant = "primary",
   compact = false,
+  loading = false,
   style,
   disabled,
   ...props
 }: ButtonProps) {
+  const inactive = disabled || loading
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      disabled={disabled}
+      accessibilityState={{ disabled: inactive, busy: loading }}
+      disabled={inactive}
       hitSlop={compact ? { top: 6, bottom: 6 } : undefined}
       style={({ pressed }) => [
         styles.base,
@@ -50,14 +56,18 @@ export function Button({
       ]}
       {...props}
     >
-      <AppText
-        variant={compact ? "caption" : "button"}
-        color={TEXT_COLOR[variant]}
-        numberOfLines={1}
-        ellipsizeMode="tail"
-      >
-        {label}
-      </AppText>
+      {loading ? (
+        <ActivityIndicator color={colors[TEXT_COLOR[variant]]} />
+      ) : (
+        <AppText
+          variant={compact ? "caption" : "button"}
+          color={TEXT_COLOR[variant]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {label}
+        </AppText>
+      )}
     </Pressable>
   )
 }

@@ -1,3 +1,5 @@
+import { AUTH_LIMITS } from "./auth"
+
 export const copy = {
   appName: "Music Stream",
   greeting: "Good morning,",
@@ -5,4 +7,52 @@ export const copy = {
   searchPlaceholder: "What you want to listen to",
   launchHeadline: "Your music, your artists",
   defaultSource: "Music Stream",
+
+  /** Generic errors, used by the API client and any screen that talks to the server. */
+  errors: {
+    network: "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
+    timeout: "Máy chủ phản hồi quá lâu. Vui lòng thử lại.",
+    server: "Máy chủ đang gặp sự cố. Vui lòng thử lại sau.",
+    unknown: "Đã có lỗi xảy ra. Vui lòng thử lại.",
+    notConfigured: "Chưa cấu hình địa chỉ máy chủ (EXPO_PUBLIC_API_URL).",
+  },
+
+  auth: {
+    login: {
+      title: "Chào mừng trở lại",
+      subtitle: "Đăng nhập để tiếp tục nghe nhạc",
+      submit: "Đăng nhập",
+      switchPrompt: "Chưa có tài khoản?",
+      switchAction: "Đăng ký",
+    },
+    register: {
+      title: "Tạo tài khoản",
+      subtitle: "Chỉ mất một phút để bắt đầu",
+      submit: "Đăng ký",
+      switchPrompt: "Đã có tài khoản?",
+      switchAction: "Đăng nhập",
+    },
+    fields: {
+      email: { label: "Email", placeholder: "ten@email.com" },
+      name: { label: "Tên hiển thị", placeholder: "Tên của bạn" },
+      password: { label: "Mật khẩu", placeholder: "Nhập mật khẩu" },
+    },
+    showPassword: "Hiện mật khẩu",
+    hidePassword: "Ẩn mật khẩu",
+    logout: "Đăng xuất",
+    validation: {
+      emailRequired: "Vui lòng nhập email",
+      emailInvalid: "Email không hợp lệ",
+      emailTooLong: `Email tối đa ${AUTH_LIMITS.emailMax} ký tự`,
+      nameRequired: "Vui lòng nhập tên",
+      nameTooLong: `Tên tối đa ${AUTH_LIMITS.nameMax} ký tự`,
+      passwordRequired: "Vui lòng nhập mật khẩu",
+      passwordTooShort: `Mật khẩu phải có ít nhất ${AUTH_LIMITS.passwordMin} ký tự`,
+      passwordTooLong: `Mật khẩu tối đa ${AUTH_LIMITS.passwordMax} ký tự`,
+    },
+    errors: {
+      invalidCredentials: "Email hoặc mật khẩu không đúng",
+      emailTaken: "Email đã được đăng ký",
+    },
+  },
 } as const
