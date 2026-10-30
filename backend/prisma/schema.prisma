@@ -37,6 +37,26 @@ model User {
   comments      Comment[]
   commentLikes  CommentLike[]
   postLikes     FeedPostLike[]
+  refreshTokens RefreshToken[]
+}
+
+// ---------------------------------------------------------------- owner: auth
+/// Only the SHA-256 hash of a refresh token is stored, never the token itself.
+/// Tokens rotate on every refresh; all tokens of one login share a familyId so that reuse of an
+/// already-revoked token can revoke the whole family.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  familyId  String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
 }
 
 // -------------------------------------------------------------- owner: artists
