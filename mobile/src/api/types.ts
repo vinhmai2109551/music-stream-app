@@ -13,8 +13,13 @@ export interface User {
   isPremium: boolean
 }
 
-export interface AuthResponse {
+/** Short-lived access token (JWT) plus the single-use refresh token that renews it. */
+export interface TokenPair {
   accessToken: string
+  refreshToken: string
+}
+
+export interface AuthResponse extends TokenPair {
   user: User
 }
 
