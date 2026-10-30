@@ -170,11 +170,14 @@ flowchart LR
     direction TB
     auth --> users
     artists --> follows
+    artists --> uploads
     tracks --> artists
     tracks --> likes
+    tracks --> uploads
     albums --> tracks
     albums --> artists
     albums --> likes
+    albums --> uploads
     playlists --> tracks
     playlists --> likes
     playlists --> users
