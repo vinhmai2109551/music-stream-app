@@ -13,6 +13,7 @@ export const copy = {
     network: "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
     timeout: "Máy chủ phản hồi quá lâu. Vui lòng thử lại.",
     server: "Máy chủ đang gặp sự cố. Vui lòng thử lại sau.",
+    tooManyRequests: "Bạn thử quá nhiều lần. Vui lòng đợi một phút rồi thử lại.",
     unknown: "Đã có lỗi xảy ra. Vui lòng thử lại.",
     notConfigured: "Chưa cấu hình địa chỉ máy chủ (EXPO_PUBLIC_API_URL).",
   },

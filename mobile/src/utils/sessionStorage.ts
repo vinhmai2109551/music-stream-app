@@ -1,12 +1,14 @@
 import * as SecureStore from "expo-secure-store"
-import type { User } from "@/api/types"
+import type { TokenPair, User } from "@/api/types"
 
 // SecureStore keys may only contain letters, digits, ".", "-" and "_".
 const TOKEN_KEY = "auth.token"
+const REFRESH_KEY = "auth.refresh"
 const USER_KEY = "auth.user"
 
 export interface StoredSession {
   token: string | null
+  refreshToken: string | null
   /** Last known profile, so the app can open offline. */
   user: User | null
 }
@@ -24,11 +26,12 @@ function isUser(value: unknown): value is User {
   )
 }
 
-/** The token lives only in SecureStore (Keychain / Keystore), never in AsyncStorage. */
+/** Both tokens live only in SecureStore (Keychain / Keystore), never in AsyncStorage. */
 export async function loadSession(): Promise<StoredSession> {
   try {
-    const [token, rawUser] = await Promise.all([
+    const [token, refreshToken, rawUser] = await Promise.all([
       SecureStore.getItemAsync(TOKEN_KEY),
+      SecureStore.getItemAsync(REFRESH_KEY),
       SecureStore.getItemAsync(USER_KEY),
     ])
     let user: User | null = null
@@ -40,22 +43,35 @@ export async function loadSession(): Promise<StoredSession> {
         user = null
       }
     }
-    return { token, user }
+    return { token, refreshToken, user }
   } catch (error) {
     console.warn("Could not read the saved session", error)
-    return { token: null, user: null }
+    return { token: null, refreshToken: null, user: null }
   }
 }
 
-export async function saveSession(token: string, user: User): Promise<void> {
+export async function saveSession(tokens: TokenPair, user: User): Promise<void> {
   try {
     await Promise.all([
-      SecureStore.setItemAsync(TOKEN_KEY, token),
+      SecureStore.setItemAsync(TOKEN_KEY, tokens.accessToken),
+      SecureStore.setItemAsync(REFRESH_KEY, tokens.refreshToken),
       SecureStore.setItemAsync(USER_KEY, JSON.stringify(user)),
     ])
   } catch (error) {
     // The session still works in memory; it just will not survive a restart.
     console.warn("Could not save the session", error)
+  }
+}
+
+/** Called after every refresh: the old refresh token is dead, so the new one must be kept. */
+export async function saveTokens(tokens: TokenPair): Promise<void> {
+  try {
+    await Promise.all([
+      SecureStore.setItemAsync(TOKEN_KEY, tokens.accessToken),
+      SecureStore.setItemAsync(REFRESH_KEY, tokens.refreshToken),
+    ])
+  } catch (error) {
+    console.warn("Could not save the refreshed tokens", error)
   }
 }
 
@@ -71,6 +87,7 @@ export async function clearSession(): Promise<void> {
   try {
     await Promise.all([
       SecureStore.deleteItemAsync(TOKEN_KEY),
+      SecureStore.deleteItemAsync(REFRESH_KEY),
       SecureStore.deleteItemAsync(USER_KEY),
     ])
   } catch (error) {
