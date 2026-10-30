@@ -3,7 +3,6 @@ import { AUTH_LIMITS } from "./auth"
 export const copy = {
   appName: "Music Stream",
   greeting: "Good morning,",
-  userName: "Ashley Scott",
   searchPlaceholder: "What you want to listen to",
   launchHeadline: "Your music, your artists",
   defaultSource: "Music Stream",
@@ -16,6 +15,28 @@ export const copy = {
     tooManyRequests: "Bạn thử quá nhiều lần. Vui lòng đợi một phút rồi thử lại.",
     unknown: "Đã có lỗi xảy ra. Vui lòng thử lại.",
     notConfigured: "Chưa cấu hình địa chỉ máy chủ (EXPO_PUBLIC_API_URL).",
+    loadFailedTitle: "Không tải được dữ liệu",
+    notFoundTitle: "Không tìm thấy",
+    notFoundDescription: "Nội dung này không còn tồn tại.",
+  },
+
+  common: {
+    retry: "Thử lại",
+  },
+
+  home: {
+    emptyTitle: "Nothing to listen to yet",
+    emptyDescription: "New music will show up here.",
+  },
+
+  library: {
+    addedTo: "Added to",
+    alreadyIn: "Already in",
+    addToPlaylist: "Add to playlist",
+    noPlaylists: "You have no playlists yet",
+    newPlaylist: "New playlist",
+    playlistNamePlaceholder: "Playlist name",
+    createPlaylist: "Create",
   },
 
   auth: {

@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/Button"
 import { pressedStyle } from "@/components/ui/pressed"
 import { useLibraryStore } from "@/store/libraryStore"
 import { radius, shadows, sizes, spacing } from "@/theme"
-import type { Artist } from "@/types"
+import type { ImageSource } from "@/types"
 
 type ArtistAvatarProps = {
-  artist: Artist
+  artist: { id: string; name: string; image: ImageSource }
   onPress: (id: string) => void
 }
 

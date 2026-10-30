@@ -8,11 +8,14 @@ import { images } from "@/data/images"
 import { colors, radius, sizes, spacing } from "@/theme"
 
 type HomeHeaderProps = {
+  /** Name of the signed-in user. */
+  name: string
+  avatarUrl: string | null
   onNotifications: () => void
   onLogout: () => void
 }
 
-export function HomeHeader({ onNotifications, onLogout }: HomeHeaderProps) {
+export function HomeHeader({ name, avatarUrl, onNotifications, onLogout }: HomeHeaderProps) {
   return (
     <View style={styles.row}>
       <View style={styles.greeting}>
@@ -20,7 +23,7 @@ export function HomeHeader({ onNotifications, onLogout }: HomeHeaderProps) {
           {copy.greeting}
         </AppText>
         <AppText variant="h2" numberOfLines={1} ellipsizeMode="tail">
-          {copy.userName}
+          {name}
         </AppText>
       </View>
       <View style={styles.actions}>
@@ -30,7 +33,7 @@ export function HomeHeader({ onNotifications, onLogout }: HomeHeaderProps) {
           <IconButton icon={Bell} label="Notifications" onPress={onNotifications} />
           <View pointerEvents="none" style={styles.dot} />
         </View>
-        <Image source={images.user.avatar} contentFit="cover" style={styles.avatar} />
+        <Image source={avatarUrl ?? images.user.avatar} contentFit="cover" style={styles.avatar} />
       </View>
     </View>
   )

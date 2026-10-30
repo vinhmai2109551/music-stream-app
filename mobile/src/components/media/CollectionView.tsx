@@ -1,32 +1,64 @@
 import { Image } from "expo-image"
 import { router } from "expo-router"
 import { Heart, Music, Shuffle } from "lucide-react-native"
-import { useMemo } from "react"
+import { useEffect, useRef } from "react"
 import { FlatList, StyleSheet, View } from "react-native"
+import { getAlbum } from "@/api/albums"
+import { getPlaylist } from "@/api/playlists"
+import type { ApiAlbumDetail, ApiPlaylistDetail } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
 import { EmptyState } from "@/components/ui/EmptyState"
+import { ErrorState } from "@/components/ui/ErrorState"
 import { IconButton } from "@/components/ui/IconButton"
 import { PlayButton } from "@/components/ui/PlayButton"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { TopBar } from "@/components/ui/TopBar"
-import { getAlbum, getTracks } from "@/data/mock"
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading"
-import { useToast } from "@/hooks/useToast"
+import { images } from "@/data/images"
+import { useResource } from "@/hooks/useResource"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
+import { showToast } from "@/store/toastStore"
 import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import type { ImageSource, Track } from "@/types"
 import { formatNumber } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
 import { TrackRow } from "./TrackRow"
 
+const NOTHING_TO_PLAY = "Add some songs first"
+
 type Collection = {
-  id: string
   name: string
   cover: ImageSource
   description: string
-  subtitle: string
   tracks: Track[]
+  /** Second line under the name, without the like count (it changes when the user likes). */
+  byline: string
+  /** Likes from other people; the user's own like is added on top. Null for albums. */
+  otherLikes: number | null
+}
+
+const totalDuration = (tracks: Track[]) => tracks.reduce((sum, track) => sum + track.duration, 0)
+
+function fromPlaylist(playlist: ApiPlaylistDetail): Collection {
+  return {
+    name: playlist.name,
+    cover: playlist.cover ?? images.playlists.fallback,
+    description: playlist.description,
+    tracks: playlist.tracks,
+    byline: formatTime(totalDuration(playlist.tracks)),
+    otherLikes: playlist.likesCount - (playlist.liked ? 1 : 0),
+  }
+}
+
+function fromAlbum(album: ApiAlbumDetail): Collection {
+  return {
+    name: album.title,
+    cover: album.cover,
+    description: `An album by ${album.artist}.`,
+    tracks: album.tracks,
+    byline: `${album.artist} · ${formatTime(totalDuration(album.tracks))}`,
+    otherLikes: null,
+  }
 }
 
 type CollectionViewProps = {
@@ -34,65 +66,51 @@ type CollectionViewProps = {
   id: string
 }
 
-/** Playlist and album details share one layout; the id decides which data is shown. */
+/** Playlist and album details share one layout; the id decides which data is loaded. */
 export function CollectionView({ kind, id }: CollectionViewProps) {
-  const loading = useSimulatedLoading()
-  const playlists = useLibraryStore((state) => state.playlists)
-  const liked = useLibraryStore((state) =>
-    kind === "playlist" ? state.likedPlaylistIds.includes(id) : state.likedAlbumIds.includes(id),
+  const { state, reload, refresh } = useResource<Collection>(
+    async () =>
+      kind === "playlist" ? fromPlaylist(await getPlaylist(id)) : fromAlbum(await getAlbum(id)),
+    `${kind}:${id}`,
   )
-  const togglePlaylistLike = useLibraryStore((state) => state.togglePlaylistLike)
-  const toggleAlbumLike = useLibraryStore((state) => state.toggleAlbumLike)
-  const shuffle = usePlayerStore((state) => state.shuffle)
-  const toggleShuffle = usePlayerStore((state) => state.toggleShuffle)
-  const playFromList = usePlayerStore((state) => state.playFromList)
-  const togglePlaying = usePlayerStore((state) => state.togglePlaying)
-  const { show, toast } = useToast()
 
-  const collection = useMemo<Collection | null>(() => {
-    if (kind === "playlist") {
-      const playlist = playlists.find((item) => item.id === id)
-      if (!playlist) return null
-      const tracks = getTracks(playlist.trackIds)
-      return {
-        id: playlist.id,
-        name: playlist.name,
-        cover: playlist.cover,
-        description: playlist.description,
-        subtitle: `${formatNumber(playlist.likes)} likes · ${formatTime(totalDuration(tracks))}`,
-        tracks,
-      }
-    }
-    const album = getAlbum(id)
-    if (!album) return null
-    const tracks = getTracks(album.trackIds)
-    return {
-      id: album.id,
-      name: album.title,
-      cover: album.cover,
-      description: `An album by ${album.artist}.`,
-      subtitle: `${album.artist} · ${formatTime(totalDuration(tracks))}`,
-      tracks,
-    }
-  }, [kind, id, playlists])
+  // A track added to a playlist from anywhere (e.g. the menu of a row) must show up here too.
+  const revision = useLibraryStore((library) => library.playlistRevision)
+  const seenRevision = useRef(revision)
+  useEffect(() => {
+    if (seenRevision.current === revision) return
+    seenRevision.current = revision
+    if (kind === "playlist") void refresh()
+  }, [revision, kind, refresh])
 
+  const liked = useLibraryStore((library) =>
+    kind === "playlist"
+      ? library.likedPlaylistIds.includes(id)
+      : library.likedAlbumIds.includes(id),
+  )
+  const togglePlaylistLike = useLibraryStore((library) => library.togglePlaylistLike)
+  const toggleAlbumLike = useLibraryStore((library) => library.toggleAlbumLike)
+  const shuffle = usePlayerStore((player) => player.shuffle)
+  const toggleShuffle = usePlayerStore((player) => player.toggleShuffle)
+  const playFromList = usePlayerStore((player) => player.playFromList)
+  const togglePlaying = usePlayerStore((player) => player.togglePlaying)
+  const collectionName = state.status === "ready" ? state.data.name : null
   const playingFromHere = usePlayerStore(
-    (state) => state.isPlaying && collection !== null && state.queueSource === collection.name,
+    (player) =>
+      player.isPlaying && collectionName !== null && player.queueSource === collectionName,
   )
 
-  if (loading) return <CollectionSkeleton />
-  if (!collection) {
+  if (state.status === "loading") return <CollectionSkeleton />
+  if (state.status === "error") {
     return (
       <View style={styles.screen}>
         <TopBar />
-        <EmptyState
-          icon={Music}
-          title="Not found"
-          description="This collection is no longer available."
-        />
+        <ErrorState error={state.error} onRetry={() => void reload()} />
       </View>
     )
   }
+
+  const collection = state.data
 
   const onPlay = () => {
     if (playingFromHere) {
@@ -100,14 +118,20 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
       return
     }
     if (collection.tracks.length === 0) {
-      show("Add some songs first")
+      showToast(NOTHING_TO_PLAY)
       return
     }
     playFromList(collection.tracks, 0, collection.name)
     router.push("/player")
   }
 
-  const onToggleLike = () => (kind === "playlist" ? togglePlaylistLike(id) : toggleAlbumLike(id))
+  const onToggleLike = () =>
+    void (kind === "playlist" ? togglePlaylistLike(id) : toggleAlbumLike(id))
+
+  const subtitle =
+    collection.otherLikes === null
+      ? collection.byline
+      : `${formatNumber(collection.otherLikes + (liked ? 1 : 0))} likes · ${collection.byline}`
 
   const header = (
     <View>
@@ -117,7 +141,7 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
           {collection.name}
         </AppText>
         <AppText variant="caption" color="secondary" style={styles.center}>
-          {collection.subtitle}
+          {subtitle}
         </AppText>
         <AppText variant="body" color="secondary" numberOfLines={3} style={styles.center}>
           {collection.description}
@@ -159,18 +183,14 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
             list={collection.tracks}
             source={collection.name}
             numbered
-            onNotify={show}
           />
         )}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       />
-      {toast}
     </View>
   )
 }
-
-const totalDuration = (tracks: Track[]) => tracks.reduce((sum, track) => sum + track.duration, 0)
 
 function CollectionSkeleton() {
   return (

@@ -10,6 +10,7 @@ import {
   saveUser,
 } from "@/utils/sessionStorage"
 import { useAppStore } from "./appStore"
+import { useLibraryStore } from "./libraryStore"
 import { usePlayerStore } from "./playerStore"
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated"
@@ -60,6 +61,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
     // Switch the UI first, then clean up.
     set(SIGNED_OUT)
     usePlayerStore.getState().reset()
+    useLibraryStore.getState().reset()
     useAppStore.getState().start("login")
     await clearSession()
   }

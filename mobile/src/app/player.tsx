@@ -13,8 +13,8 @@ import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
 import { SwipeToDismiss } from "@/components/ui/SwipeToDismiss"
 import { BASE_COMMENT_COUNT, BASE_LIKE_COUNT, LIKE_COUNT_BUMP } from "@/constants/player"
-import { useToast } from "@/hooks/useToast"
 import { useLibraryStore } from "@/store/libraryStore"
+import { showToast } from "@/store/toastStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { colors, spacing } from "@/theme"
 
@@ -24,7 +24,6 @@ const close = () => router.back()
 
 export default function PlayerScreen() {
   const insets = useSafeAreaInsets()
-  const { show, toast } = useToast()
 
   const track = usePlayerStore((state) => state.currentTrack)
   const isPlaying = usePlayerStore((state) => state.isPlaying)
@@ -63,7 +62,7 @@ export default function PlayerScreen() {
             { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + spacing.lg },
           ]}
         >
-          <PlayerHeader source={source} onClose={close} onMore={() => show(COMING_SOON)} />
+          <PlayerHeader source={source} onClose={close} onMore={() => showToast(COMING_SOON)} />
           <View style={styles.artwork}>
             <PlayerArtwork source={track.cover} />
           </View>
@@ -101,12 +100,11 @@ export default function PlayerScreen() {
             likeCount={BASE_LIKE_COUNT + (liked ? LIKE_COUNT_BUMP : 0)}
             commentCount={BASE_COMMENT_COUNT}
             onToggleLike={() => toggleLike(track.id)}
-            onComments={() => show(COMING_SOON)}
-            onShare={() => show(COMING_SOON)}
+            onComments={() => showToast(COMING_SOON)}
+            onShare={() => showToast(COMING_SOON)}
           />
         </View>
       </SwipeToDismiss>
-      {toast}
     </View>
   )
 }

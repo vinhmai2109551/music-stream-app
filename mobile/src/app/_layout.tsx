@@ -6,9 +6,11 @@ import { StyleSheet } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { AudioEngine } from "@/components/media/AudioEngine"
+import { ToastHost } from "@/components/ui/ToastHost"
 import { useAppFonts } from "@/hooks/useAppFonts"
 import { useAppStore } from "@/store/appStore"
 import { useAuthStore } from "@/store/authStore"
+import { useLibraryStore } from "@/store/libraryStore"
 import { colors } from "@/theme"
 
 SplashScreen.preventAutoHideAsync()
@@ -22,6 +24,12 @@ export default function RootLayout() {
     void useAuthStore.getState().bootstrap()
   }, [])
 
+  // Likes, follows and playlists belong to the account: fetch them once signed in.
+  const isAuthenticated = status === "authenticated"
+  useEffect(() => {
+    if (isAuthenticated) void useLibraryStore.getState().load()
+  }, [isAuthenticated])
+
   // Keep the splash screen up until fonts are loaded and the saved session has been checked.
   const ready = fontsReady && status !== "loading"
   useEffect(() => {
@@ -29,8 +37,6 @@ export default function RootLayout() {
   }, [ready])
 
   if (!ready) return null
-
-  const isAuthenticated = status === "authenticated"
 
   return (
     <GestureHandlerRootView style={styles.root}>
@@ -63,6 +69,7 @@ export default function RootLayout() {
             />
           </Stack.Protected>
         </Stack>
+        <ToastHost />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   )
