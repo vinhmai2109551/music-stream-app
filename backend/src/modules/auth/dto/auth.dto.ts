@@ -25,3 +25,11 @@ export class LoginDto {
   @MaxLength(72)
   password!: string
 }
+
+export class RefreshTokenDto {
+  /** The refresh token received from login, register or the previous refresh. */
+  @IsString()
+  @MinLength(1)
+  @MaxLength(512)
+  refreshToken!: string
+}
