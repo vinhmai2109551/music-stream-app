@@ -1,7 +1,19 @@
 import { plainToInstance } from "class-transformer"
-import { IsNotEmpty, IsOptional, IsString, Matches, MinLength, validateSync } from "class-validator"
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Matches,
+  MinLength,
+  ValidateIf,
+  validateSync,
+} from "class-validator"
 
 const POSITIVE_INTEGER = /^[1-9]\d*$/
+
+/** Cloudflare R2 settings are mandatory in production and optional while developing. */
+const requiredInProduction = (env: EnvironmentVariables) => env.NODE_ENV === "production"
 
 class EnvironmentVariables {
   @IsString()
@@ -15,6 +27,37 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   PORT?: string
+
+  @IsOptional()
+  @IsString()
+  NODE_ENV?: string
+
+  @ValidateIf(requiredInProduction)
+  @IsString()
+  @IsNotEmpty({ message: "R2_ACCOUNT_ID is required in production" })
+  R2_ACCOUNT_ID?: string
+
+  @ValidateIf(requiredInProduction)
+  @IsString()
+  @IsNotEmpty({ message: "R2_ACCESS_KEY_ID is required in production" })
+  R2_ACCESS_KEY_ID?: string
+
+  @ValidateIf(requiredInProduction)
+  @IsString()
+  @IsNotEmpty({ message: "R2_SECRET_ACCESS_KEY is required in production" })
+  R2_SECRET_ACCESS_KEY?: string
+
+  @ValidateIf(requiredInProduction)
+  @IsString()
+  @IsNotEmpty({ message: "R2_BUCKET is required in production" })
+  R2_BUCKET?: string
+
+  /** Public address of the bucket (r2.dev or a custom domain). Checked whenever it is set. */
+  @ValidateIf(
+    (env: EnvironmentVariables) => requiredInProduction(env) || Boolean(env.R2_PUBLIC_URL),
+  )
+  @IsUrl({ require_tld: false }, { message: "R2_PUBLIC_URL must be a valid URL" })
+  R2_PUBLIC_URL?: string
 
   /** Access token lifetime, e.g. 15m, 1h, 30s, 1d. */
   @IsOptional()

@@ -2,7 +2,12 @@ import { spawn, type ChildProcess } from "node:child_process"
 import { existsSync } from "node:fs"
 import net from "node:net"
 import path from "node:path"
-import { prepareTestDatabase, TEST_EMAIL_DOMAIN, TestDb } from "./test-database.js"
+import {
+  prepareTestDatabase,
+  TEST_EMAIL_DOMAIN,
+  TEST_NAME_PREFIX,
+  TestDb,
+} from "./test-database.js"
 
 const ENTRY = path.join("dist", "main.js")
 const STARTUP_TIMEOUT_MS = 30_000
@@ -17,6 +22,12 @@ const TEST_ENV = {
   AUTH_THROTTLE_LIMIT: "1000",
   AUTH_THROTTLE_TTL_SECONDS: "60",
   SEED_ON_START: "false",
+  // Blank, so the real R2 keys from .env never reach a test server unless a spec sets them.
+  R2_ACCOUNT_ID: "",
+  R2_ACCESS_KEY_ID: "",
+  R2_SECRET_ACCESS_KEY: "",
+  R2_BUCKET: "",
+  R2_PUBLIC_URL: "",
 }
 
 export interface TestServer {
@@ -63,14 +74,14 @@ export async function startTestServer(env: Record<string, string> = {}): Promise
     url,
     db,
     stop: async () => {
-      await db.deleteTestUsers()
+      await db.deleteTestData()
       await db.close()
       await stopProcess(child)
     },
   }
 }
 
-export { TEST_EMAIL_DOMAIN }
+export { TEST_EMAIL_DOMAIN, TEST_NAME_PREFIX }
 
 let counter = 0
 

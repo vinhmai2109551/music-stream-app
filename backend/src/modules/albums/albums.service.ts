@@ -5,6 +5,7 @@ import { pageArgs, toPage, type Page } from "../../shared/index.js"
 import { ArtistsService } from "../artists/index.js"
 import { LikeKind, LikesService } from "../likes/index.js"
 import { TracksService, type TrackView } from "../tracks/index.js"
+import { UploadsService } from "../uploads/index.js"
 import { CreateAlbumDto, ListAlbumsQueryDto, UpdateAlbumDto } from "./dto/album.dto.js"
 
 type AlbumRow = Album & { tracks: Pick<AlbumTrack, "trackId" | "position">[] }
@@ -35,6 +36,7 @@ export class AlbumsService {
     private readonly artists: ArtistsService,
     private readonly tracks: TracksService,
     private readonly likes: LikesService,
+    private readonly uploads: UploadsService,
   ) {}
 
   async list(query: ListAlbumsQueryDto, userId?: string): Promise<Page<AlbumView>> {
@@ -71,6 +73,7 @@ export class AlbumsService {
   }
 
   async create(dto: CreateAlbumDto): Promise<AlbumDetail> {
+    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl })
     const { trackIds = [], ...data } = dto
     const album = await this.prisma.album.create({
       data: {
@@ -82,6 +85,7 @@ export class AlbumsService {
   }
 
   async update(id: string, dto: UpdateAlbumDto): Promise<AlbumDetail> {
+    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl })
     const { trackIds, ...data } = dto
     await this.prisma.$transaction(async (tx) => {
       await tx.album.update({ where: { id }, data })
