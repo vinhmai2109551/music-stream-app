@@ -8,6 +8,7 @@ export function describeAuthError(error: unknown, mode: "login" | "register"): s
   if (error.kind !== "http") return error.message
   if (error.status === 401 && mode === "login") return copy.auth.errors.invalidCredentials
   if (error.status === 409) return copy.auth.errors.emailTaken
+  if (error.status === 429) return copy.errors.tooManyRequests
   if (error.status >= 500) return copy.errors.server
   return error.message
 }
