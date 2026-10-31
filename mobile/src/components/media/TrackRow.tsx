@@ -40,6 +40,7 @@ function TrackRowBase({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Play ${track.title} by ${track.artist}`}
+        accessibilityState={{ selected: active }}
         onPress={() => playFromList(list, index, source)}
         style={({ pressed }) => [styles.main, pressedStyle(pressed)]}
       >
@@ -48,7 +49,7 @@ function TrackRowBase({
             {playing ? (
               <Equalizer />
             ) : (
-              <AppText variant="caption" color={active ? "accent" : "tertiary"}>
+              <AppText variant="caption" color={active ? "accentText" : "secondary"}>
                 {index + 1}
               </AppText>
             )}
@@ -58,7 +59,7 @@ function TrackRowBase({
         <View style={styles.text}>
           <AppText
             variant="subtitle"
-            color={active ? "accent" : "text"}
+            color={active ? "accentText" : "text"}
             numberOfLines={1}
             ellipsizeMode="tail"
           >

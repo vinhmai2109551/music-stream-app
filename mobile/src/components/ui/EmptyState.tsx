@@ -18,7 +18,7 @@ export function EmptyState({ title, description, icon: Icon = Search, action }: 
   return (
     <View style={styles.container}>
       <View style={styles.badge}>
-        <Icon size={ICON_SIZE} strokeWidth={1.5} color={colors.accent} />
+        <Icon size={ICON_SIZE} strokeWidth={1.5} color={colors.accentText} />
       </View>
       <AppText variant="title" style={styles.center}>
         {title}

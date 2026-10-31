@@ -10,7 +10,7 @@ type IconButtonProps = Omit<PressableProps, "children"> & {
   label: string
   active?: boolean
   color?: ColorToken
-  /** Color used when active. Defaults to the accent color. */
+  /** Color used when active. Defaults to `accentText`; pass `accent` on dark backgrounds. */
   activeColor?: ColorToken
   size?: number
 }
@@ -20,7 +20,7 @@ export function IconButton({
   label,
   active = false,
   color = "secondary",
-  activeColor = "accent",
+  activeColor = "accentText",
   size = sizes.icon,
   style,
   ...props

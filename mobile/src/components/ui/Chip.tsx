@@ -24,7 +24,7 @@ export function Chip({ label, selected = false, ...props }: ChipProps) {
       ]}
       {...props}
     >
-      <AppText variant="caption" color={selected ? "white" : "secondary"} numberOfLines={1}>
+      <AppText variant="caption" color={selected ? "onAccent" : "secondary"} numberOfLines={1}>
         {label}
       </AppText>
     </Pressable>

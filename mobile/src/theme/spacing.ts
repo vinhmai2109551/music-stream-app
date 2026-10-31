@@ -54,4 +54,6 @@ export const sizes = {
   waveformHeight: 48,
   waveformGap: 2,
   playerArtworkMax: 360,
+  borderThin: 1,
+  borderThick: 2,
 } as const

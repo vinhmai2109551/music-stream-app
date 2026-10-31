@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     width: sizes.equalizerBarWidth,
     height: sizes.equalizerHeight,
     borderRadius: radius.pill,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.accentText,
     transformOrigin: "bottom",
   },
 })

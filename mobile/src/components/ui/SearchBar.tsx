@@ -15,7 +15,7 @@ export function SearchBar({ value, onClear, ...props }: SearchBarProps) {
       <TextInput
         value={value}
         style={styles.input}
-        placeholderTextColor={colors.tertiary}
+        placeholderTextColor={colors.secondary}
         selectionColor={colors.accent}
         returnKeyType="search"
         autoCorrect={false}
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.pill,
-    borderWidth: 1,
+    borderWidth: sizes.borderThin,
     borderColor: colors.divider,
     backgroundColor: colors.background,
     ...shadows.soft,
@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     ...typography.body,
     paddingVertical: 0,
+    outlineWidth: 0,
   },
   clear: {
     width: 28,
