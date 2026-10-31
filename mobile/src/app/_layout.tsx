@@ -1,4 +1,4 @@
-import { Stack } from "expo-router"
+import { Stack, type Href } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import { StatusBar } from "expo-status-bar"
 import { useEffect } from "react"
@@ -19,6 +19,7 @@ export default function RootLayout() {
   const fontsReady = useAppFonts()
   const status = useAuthStore((state) => state.status)
   const hasStarted = useAppStore((state) => state.hasStarted)
+  const authIntent = useAppStore((state) => state.authIntent)
 
   useEffect(() => {
     void useAuthStore.getState().bootstrap()
@@ -26,6 +27,8 @@ export default function RootLayout() {
 
   // Likes, follows and playlists belong to the account: fetch them once signed in.
   const isAuthenticated = status === "authenticated"
+  // The auth screen Launch (or a sign-out) chose.
+  const authHref: Href = authIntent === "register" ? "/register" : "/login"
   useEffect(() => {
     if (isAuthenticated) void useLibraryStore.getState().load()
   }, [isAuthenticated])
@@ -49,16 +52,26 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: colors.background },
           }}
         >
+          {/*
+            When a guard is false the router sends the user to `redirectTo`; without it Expo Router
+            picks the first accessible route, which for the (auth) group has no URL.
+          */}
           {/* 1. Not signed in and Launch not seen yet. */}
-          <Stack.Protected guard={!isAuthenticated && !hasStarted}>
+          <Stack.Protected
+            guard={!isAuthenticated && !hasStarted}
+            redirectTo={isAuthenticated ? "/" : authHref}
+          >
             <Stack.Screen name="launch" />
           </Stack.Protected>
           {/* 2. Not signed in, Launch already seen. */}
-          <Stack.Protected guard={!isAuthenticated && hasStarted}>
+          <Stack.Protected
+            guard={!isAuthenticated && hasStarted}
+            redirectTo={isAuthenticated ? "/" : "/launch"}
+          >
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
           {/* 3. Signed in. */}
-          <Stack.Protected guard={isAuthenticated}>
+          <Stack.Protected guard={isAuthenticated} redirectTo={hasStarted ? authHref : "/launch"}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="playlist/[id]" />
             <Stack.Screen name="album/[id]" />
