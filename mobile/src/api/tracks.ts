@@ -2,7 +2,7 @@ import { api } from "./client"
 import { pathId, toQuery } from "./query"
 import type { ApiTrack, Page, TrackQuery } from "./types"
 
-/** Most played first; filter with `q` (title or artist) and `artistId`. */
+/** Most played first; filter with `q` (title or artist), `artistId` and `region`. */
 export const listTracks = (query: TrackQuery = {}) =>
   api.get<Page<ApiTrack>>(`/tracks${toQuery(query)}`)
 

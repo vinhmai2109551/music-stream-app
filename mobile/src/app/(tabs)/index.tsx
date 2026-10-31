@@ -3,10 +3,12 @@ import { Search } from "lucide-react-native"
 import { useState } from "react"
 import { Pressable, ScrollView, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import type { Region } from "@/api/types"
 import { AccountSheet } from "@/components/media/AccountSheet"
 import { HomeContent } from "@/components/media/HomeContent"
 import { HomeHeader } from "@/components/media/HomeHeader"
 import { HomeSkeleton } from "@/components/media/HomeSkeleton"
+import { RegionChips } from "@/components/media/RegionChips"
 import { AppText } from "@/components/ui/AppText"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { pressedStyle } from "@/components/ui/pressed"
@@ -22,7 +24,8 @@ const openSearch = () => router.navigate("/search")
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets()
-  const { state, reload } = useHomeData()
+  const [region, setRegion] = useState<Region | null>(null)
+  const { state, reload } = useHomeData(region)
   const user = useAuthStore((auth) => auth.user)
   const [accountOpen, setAccountOpen] = useState(false)
 
@@ -32,36 +35,31 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingTop: insets.top + spacing.lg, paddingBottom: spacing.xxl }}
         showsVerticalScrollIndicator={false}
       >
-        {state.status === "loading" ? (
-          <HomeSkeleton />
-        ) : (
-          <>
-            <View style={styles.padded}>
-              <HomeHeader
-                name={user?.name ?? ""}
-                avatarUrl={user?.avatarUrl ?? null}
-                onNotifications={() => showToast(COMING_SOON)}
-                onAccount={() => setAccountOpen(true)}
-              />
-              <Pressable
-                accessibilityRole="search"
-                accessibilityLabel={copy.searchPlaceholder}
-                onPress={openSearch}
-                style={({ pressed }) => [styles.search, pressedStyle(pressed)]}
-              >
-                <Search size={sizes.iconMd} color={colors.tertiary} />
-                <AppText color="secondary" numberOfLines={1}>
-                  {copy.searchPlaceholder}
-                </AppText>
-              </Pressable>
-            </View>
-            {state.status === "error" ? (
-              <ErrorState error={state.error} onRetry={() => void reload()} />
-            ) : (
-              <HomeContent data={state.data} />
-            )}
-          </>
+        <View style={styles.padded}>
+          <HomeHeader
+            name={user?.name ?? ""}
+            avatarUrl={user?.avatarUrl ?? null}
+            onNotifications={() => showToast(COMING_SOON)}
+            onAccount={() => setAccountOpen(true)}
+          />
+          <Pressable
+            accessibilityRole="search"
+            accessibilityLabel={copy.searchPlaceholder}
+            onPress={openSearch}
+            style={({ pressed }) => [styles.search, pressedStyle(pressed)]}
+          >
+            <Search size={sizes.iconMd} color={colors.tertiary} />
+            <AppText color="secondary" numberOfLines={1}>
+              {copy.searchPlaceholder}
+            </AppText>
+          </Pressable>
+        </View>
+        <RegionChips selected={region} onSelect={setRegion} />
+        {state.status === "loading" && <HomeSkeleton />}
+        {state.status === "error" && (
+          <ErrorState error={state.error} onRetry={() => void reload()} />
         )}
+        {state.status === "ready" && <HomeContent data={state.data} />}
       </ScrollView>
       <AccountSheet
         visible={accountOpen}

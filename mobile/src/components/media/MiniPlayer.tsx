@@ -1,25 +1,33 @@
-import { Image } from "expo-image"
 import { router } from "expo-router"
 import { Heart, Pause, Play } from "lucide-react-native"
 import { memo, useEffect } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { youTubeSource } from "@/utils/youtubeSource"
 
 const PROGRESS_ANIMATION_MS = 500
 
 function MiniPlayerBase() {
   const track = usePlayerStore((state) => state.currentTrack)
   const isPlaying = usePlayerStore((state) => state.isPlaying)
+  const fromYouTube = usePlayerStore((state) => state.source === "youtube")
   const progress = usePlayerStore((state) => state.progress)
   const duration = usePlayerStore((state) => state.duration)
   const togglePlaying = usePlayerStore((state) => state.togglePlaying)
   const liked = useLibraryStore((state) => (track ? state.likedTrackIds.includes(track.id) : false))
   const toggleLike = useLibraryStore((state) => state.toggleLike)
+
+  const onTogglePlay = () => {
+    togglePlaying()
+    // A YouTube video only plays while the player screen is open, so starting one opens it.
+    if (!isPlaying && fromYouTube && !youTubeSource.isAttached()) router.push("/player")
+  }
 
   const ratio = useSharedValue(0)
   useEffect(() => {
@@ -42,7 +50,11 @@ function MiniPlayerBase() {
           onPress={() => router.push("/player")}
           style={({ pressed }) => [styles.info, pressed && styles.pressed]}
         >
-          <Image source={track.cover} contentFit="cover" style={styles.cover} />
+          <CoverImage
+            source={track.cover}
+            youtubeVideoId={track.youtubeVideoId}
+            style={styles.cover}
+          />
           <View style={styles.text}>
             <AppText variant="caption" color="white" numberOfLines={1} ellipsizeMode="tail">
               {track.title}
@@ -64,7 +76,7 @@ function MiniPlayerBase() {
           icon={isPlaying ? Pause : Play}
           label={isPlaying ? "Pause" : "Play"}
           color="white"
-          onPress={togglePlaying}
+          onPress={onTogglePlay}
         />
       </View>
     </View>

@@ -36,6 +36,25 @@ export const copy = {
   home: {
     emptyTitle: "Nothing to listen to yet",
     emptyDescription: "New music will show up here.",
+    regionsLabel: "Khu vực",
+    regions: {
+      all: "Tất cả",
+      vietnam: "Việt Nam",
+      korea: "K-Pop",
+      japan: "J-Pop",
+      china: "C-Pop",
+    },
+  },
+
+  player: {
+    viaYoutube: "Phát qua YouTube",
+    openOnYoutube: "Mở trên YouTube",
+    cannotPlayInApp: "Bài này không phát được trong app",
+    noSource: "Bài này chưa có nguồn phát",
+    networkError: "Không phát được bài này. Kiểm tra kết nối rồi thử lại.",
+    openPlayerToListen: "Mở trình phát để nghe bài này",
+    skipPrefix: "Tự chuyển bài sau",
+    secondsSuffix: "giây",
   },
 
   library: {

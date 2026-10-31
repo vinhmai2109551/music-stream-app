@@ -1,8 +1,9 @@
-import { Image } from "expo-image"
 import { memo } from "react"
+import { User } from "lucide-react-native"
 import { Pressable, StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { pressedStyle } from "@/components/ui/pressed"
 import { useLibraryStore } from "@/store/libraryStore"
 import { radius, shadows, sizes, spacing } from "@/theme"
@@ -25,7 +26,7 @@ function ArtistAvatarBase({ artist, onPress }: ArtistAvatarProps) {
         onPress={() => onPress(artist.id)}
         style={({ pressed }) => [styles.link, pressedStyle(pressed)]}
       >
-        <Image source={artist.image} contentFit="cover" style={styles.image} />
+        <CoverImage source={artist.image} icon={User} style={styles.image} />
         <AppText variant="caption" numberOfLines={1} ellipsizeMode="tail" style={styles.name}>
           {artist.name}
         </AppText>

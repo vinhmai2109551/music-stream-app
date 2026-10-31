@@ -1,8 +1,9 @@
-import { Image } from "expo-image"
+import { router } from "expo-router"
 import { Ellipsis } from "lucide-react-native"
 import { memo, useState } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
@@ -11,6 +12,7 @@ import { colors, radius, sizes, spacing } from "@/theme"
 import type { Track } from "@/types"
 import { formatCount } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
+import { getPlaybackKind } from "@/utils/playbackKind"
 import { Equalizer } from "./Equalizer"
 import { TrackMenuSheet } from "./TrackMenuSheet"
 
@@ -35,13 +37,19 @@ function TrackRowBase({
   const playFromList = usePlayerStore((state) => state.playFromList)
   const [menuOpen, setMenuOpen] = useState(false)
 
+  const play = () => {
+    playFromList(list, index, source)
+    // A YouTube video only plays on the player screen, so tapping one opens it.
+    if (getPlaybackKind(track) === "youtube") router.push("/player")
+  }
+
   return (
     <View style={[styles.row, active && styles.active]}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Play ${track.title} by ${track.artist}`}
         accessibilityState={{ selected: active }}
-        onPress={() => playFromList(list, index, source)}
+        onPress={play}
         style={({ pressed }) => [styles.main, pressedStyle(pressed)]}
       >
         {numbered && (
@@ -55,7 +63,11 @@ function TrackRowBase({
             )}
           </View>
         )}
-        <Image source={track.cover} contentFit="cover" style={styles.cover} />
+        <CoverImage
+          source={track.cover}
+          youtubeVideoId={track.youtubeVideoId}
+          style={styles.cover}
+        />
         <View style={styles.text}>
           <AppText
             variant="subtitle"

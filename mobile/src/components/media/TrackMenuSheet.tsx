@@ -3,6 +3,7 @@ import { Heart, ListPlus, Plus } from "lucide-react-native"
 import { useState } from "react"
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { BottomSheet } from "@/components/ui/BottomSheet"
 import { Button } from "@/components/ui/Button"
 import { Skeleton } from "@/components/ui/Skeleton"
@@ -54,7 +55,11 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={styles.header}>
-        <Image source={track.cover} contentFit="cover" style={styles.cover} />
+        <CoverImage
+          source={track.cover}
+          youtubeVideoId={track.youtubeVideoId}
+          style={styles.cover}
+        />
         <View style={styles.headerText}>
           <AppText variant="subtitle" numberOfLines={1} ellipsizeMode="tail">
             {track.title}

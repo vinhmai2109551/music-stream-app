@@ -26,5 +26,6 @@ export function toSuggestion(track: ApiTrack): Suggestion {
     subtitle: track.artist,
     image: track.cover,
     trackId: track.id,
+    youtubeVideoId: track.youtubeVideoId,
   }
 }

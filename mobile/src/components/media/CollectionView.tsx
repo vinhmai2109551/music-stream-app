@@ -1,4 +1,3 @@
-import { Image } from "expo-image"
 import { router } from "expo-router"
 import { Heart, Music, Shuffle } from "lucide-react-native"
 import { useEffect, useRef } from "react"
@@ -7,6 +6,7 @@ import { getAlbum } from "@/api/albums"
 import { getPlaylist } from "@/api/playlists"
 import type { ApiAlbumDetail, ApiPlaylistDetail } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { IconButton } from "@/components/ui/IconButton"
@@ -138,7 +138,11 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
   const header = (
     <View>
       <View style={styles.hero}>
-        <Image source={collection.cover} contentFit="cover" style={styles.cover} />
+        <CoverImage
+          source={collection.cover}
+          youtubeVideoId={collection.tracks[0]?.youtubeVideoId}
+          style={styles.cover}
+        />
         <AppText variant="h2" numberOfLines={2} style={styles.center}>
           {collection.name}
         </AppText>
