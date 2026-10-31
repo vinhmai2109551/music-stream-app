@@ -4,6 +4,7 @@ import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
 import { pageArgs, toPage, type Page } from "../../shared/index.js"
 import { ArtistsService } from "../artists/index.js"
 import { LikeKind, LikesService } from "../likes/index.js"
+import { UploadsService } from "../uploads/index.js"
 import { CreateTrackDto, ListTracksQueryDto, UpdateTrackDto } from "./dto/track.dto.js"
 
 export interface TrackView {
@@ -26,6 +27,7 @@ export class TracksService {
     private readonly prisma: PrismaService,
     private readonly artists: ArtistsService,
     private readonly likes: LikesService,
+    private readonly uploads: UploadsService,
   ) {}
 
   async list(query: ListTracksQueryDto, userId?: string): Promise<Page<TrackView>> {
@@ -72,11 +74,13 @@ export class TracksService {
   }
 
   async create(dto: CreateTrackDto): Promise<TrackView> {
+    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl })
     const track = await this.prisma.track.create({ data: dto })
     return this.get(track.id)
   }
 
   async update(id: string, dto: UpdateTrackDto): Promise<TrackView> {
+    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl })
     await this.prisma.track.update({ where: { id }, data: dto })
     return this.get(id)
   }

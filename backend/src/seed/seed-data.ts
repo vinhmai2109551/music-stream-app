@@ -1,19 +1,33 @@
 /**
- * Seed content, ported from the mobile app mock data (mobile/src/data).
+ * Seed content: the mock data ported from the mobile app (mobile/src/data), followed by the
+ * regional catalog in ./catalog.
  * Media is referenced as { folder, file } and turned into `${R2_PUBLIC_URL}/folder/file` by the seeder.
  */
-export interface MediaRef {
-  folder: "audio" | "covers" | "artists" | "banners"
-  file: string
-}
+import {
+  CATALOG_ALBUMS,
+  CATALOG_ARTISTS,
+  CATALOG_TRACKS,
+  china,
+  japan,
+  korea,
+  vietnam,
+} from "./catalog/index.js"
+import {
+  artistImage,
+  audio,
+  cover,
+  type MediaRef,
+  type SeedAlbum,
+  type SeedArtist,
+  type SeedTrack,
+} from "./catalog/shared.js"
 
-const cover = (file: string): MediaRef => ({ folder: "covers", file })
-const artistImage = (file: string): MediaRef => ({ folder: "artists", file })
-const audio = (id: string): MediaRef => ({ folder: "audio", file: `${id}.mp3` })
+export type { MediaRef, Region } from "./catalog/shared.js"
 
-export const ARTISTS = [
+const MOCK_ARTISTS = [
   {
     id: "ryan",
+    region: "GLOBAL",
     name: "Ryan Young",
     baseFollowers: 65_100,
     image: artistImage("ryan-young.png"),
@@ -21,6 +35,7 @@ export const ARTISTS = [
   },
   {
     id: "jessica",
+    region: "GLOBAL",
     name: "Jessica Gonzalez",
     baseFollowers: 84_200,
     image: artistImage("jessica-gonzalez.png"),
@@ -28,6 +43,7 @@ export const ARTISTS = [
   },
   {
     id: "jennifer",
+    region: "GLOBAL",
     name: "Jennifer Wilson",
     baseFollowers: 32_800,
     image: artistImage("jennifer-wilson.png"),
@@ -35,6 +51,7 @@ export const ARTISTS = [
   },
   {
     id: "elizabeth",
+    region: "GLOBAL",
     name: "Elizabeth Hall",
     baseFollowers: 28_400,
     image: artistImage("elizabeth-hall.png"),
@@ -42,6 +59,7 @@ export const ARTISTS = [
   },
   {
     id: "anthony",
+    region: "GLOBAL",
     name: "Anthony Taylor",
     baseFollowers: 19_700,
     image: artistImage("anthony-taylor.png"),
@@ -49,6 +67,7 @@ export const ARTISTS = [
   },
   {
     id: "brian",
+    region: "GLOBAL",
     name: "Brian Bailey",
     baseFollowers: 41_300,
     image: artistImage("brian-bailey.png"),
@@ -56,6 +75,7 @@ export const ARTISTS = [
   },
   {
     id: "pedro",
+    region: "GLOBAL",
     name: "Pedro Moreno",
     baseFollowers: 37_600,
     image: artistImage("pedro-moreno.png"),
@@ -63,6 +83,7 @@ export const ARTISTS = [
   },
   {
     id: "elena",
+    region: "GLOBAL",
     name: "Elena Jimenez",
     baseFollowers: 22_100,
     image: artistImage("jennifer-wilson.png"),
@@ -70,6 +91,7 @@ export const ARTISTS = [
   },
   {
     id: "william",
+    region: "GLOBAL",
     name: "William King",
     baseFollowers: 54_900,
     image: artistImage("william-king.png"),
@@ -77,7 +99,9 @@ export const ARTISTS = [
   },
 ] as const
 
-export const TRACKS = [
+export const ARTISTS: SeedArtist[] = [...MOCK_ARTISTS, ...CATALOG_ARTISTS]
+
+const MOCK_TRACKS = [
   {
     id: "flower",
     title: "FLOWER",
@@ -136,7 +160,9 @@ export const TRACKS = [
   },
 ].map((track) => ({ ...track, audio: audio(track.id) }))
 
-export const ALBUMS = [
+export const TRACKS: SeedTrack[] = [...MOCK_TRACKS, ...CATALOG_TRACKS]
+
+const MOCK_ALBUMS = [
   {
     id: "me-album",
     title: "ME",
@@ -159,6 +185,39 @@ export const ALBUMS = [
     trackIds: ["astronaut", "dynamite"],
   },
 ] as const
+
+export const ALBUMS: SeedAlbum[] = [...MOCK_ALBUMS, ...CATALOG_ALBUMS]
+
+/** Track ids from most to least played. */
+const rankedIds = (tracks: readonly SeedTrack[]) =>
+  [...tracks].sort((a, b) => b.plays - a.plays).map((track) => track.id)
+
+/** The 2026 hits that lead the Vietnam chart. */
+const HOT_VIETNAM_IDS = ["hngle-khong-buong", "hngle-tim-em"]
+
+/** Highlights of the four regions, taken in turns: Vietnam, Korea, Japan, China. */
+const ASIA_MIX_IDS = [
+  "hngle-khong-buong",
+  "bts-dynamite",
+  "yoasobi-idol",
+  "jay-chou-love-confession",
+  "son-tung-lac-troi",
+  "rose-apt",
+  "kenshi-yonezu-lemon",
+  "jay-chou-sunny-day",
+  "hieuthuhai-khong-the-say",
+  "newjeans-hype-boy",
+  "ado-usseewa",
+  "gem-light-years-away",
+  "den-mang-tien-ve-cho-me",
+  "blackpink-pink-venom",
+  "creepy-nuts-bling-bang-bang-born",
+  "mayday-stubborn",
+  "hoa-minzy-bac-bling",
+  "jung-kook-seven",
+  "fujii-kaze-shinunoga-e-wa",
+  "eason-chan-lonely-warrior",
+]
 
 export const PLAYLISTS = [
   {
@@ -184,6 +243,52 @@ export const PLAYLISTS = [
     cover: cover("playlist-top50-trending.png"),
     description: "Fast-rising tracks and new favorites updated every day.",
     trackIds: ["astronaut", "levitating", "me", "flower"],
+  },
+  {
+    id: "top50-vietnam",
+    name: "Top 50 – Việt Nam",
+    official: true,
+    cover: cover("playlists/top50-vietnam.jpg"),
+    description:
+      "Những bài hát Việt Nam được nghe nhiều nhất, với hai bản hit mới của Hngle ở đầu danh sách.",
+    trackIds: [
+      ...HOT_VIETNAM_IDS,
+      ...rankedIds(vietnam.TRACKS).filter((id) => !HOT_VIETNAM_IDS.includes(id)),
+    ],
+  },
+  {
+    id: "top-kpop",
+    name: "Top K-Pop",
+    official: true,
+    cover: cover("playlists/top-kpop.jpg"),
+    description: "Tuyển tập K-Pop từ BTS, BLACKPINK, NewJeans, IU và nhiều nghệ sĩ Hàn Quốc khác.",
+    trackIds: rankedIds(korea.TRACKS),
+  },
+  {
+    id: "top-jpop",
+    name: "J-Pop Hits",
+    official: true,
+    cover: cover("playlists/top-jpop.jpg"),
+    description:
+      "Những ca khúc Nhật Bản nổi bật của YOASOBI, Kenshi Yonezu, Ado và nhiều nghệ sĩ khác.",
+    trackIds: rankedIds(japan.TRACKS),
+  },
+  {
+    id: "top-cpop",
+    name: "C-Pop Hits",
+    official: true,
+    cover: cover("playlists/top-cpop.jpg"),
+    description:
+      "Những ca khúc nhạc Hoa nổi tiếng của Jay Chou, G.E.M., JJ Lin, Mayday và Eason Chan.",
+    trackIds: rankedIds(china.TRACKS),
+  },
+  {
+    id: "asia-mix",
+    name: "Nhạc Á – Tuyển chọn",
+    official: true,
+    cover: cover("playlists/asia-mix.jpg"),
+    description: "Tuyển chọn những bài hát nổi bật từ Việt Nam, Hàn Quốc, Nhật Bản và Trung Quốc.",
+    trackIds: ASIA_MIX_IDS,
   },
   {
     id: "favorites",

@@ -10,7 +10,7 @@ import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
 
-type Variant = "primary" | "secondary" | "text" | "dark" | "glass"
+type Variant = "primary" | "secondary" | "text" | "glass" | "outline" | "tonal"
 
 type ButtonProps = Omit<PressableProps, "style" | "children"> & {
   label: string
@@ -22,11 +22,12 @@ type ButtonProps = Omit<PressableProps, "style" | "children"> & {
 }
 
 const TEXT_COLOR = {
-  primary: "white",
+  primary: "onAccent",
   secondary: "text",
-  text: "accent",
-  dark: "white",
+  text: "accentText",
   glass: "white",
+  outline: "accentText",
+  tonal: "accentText",
 } as const
 
 export function Button({
@@ -81,13 +82,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   compact: {
-    minHeight: 32,
+    minHeight: sizes.compactButton,
     paddingHorizontal: spacing.md,
   },
   primary: { backgroundColor: colors.accent, ...shadows.card },
-  secondary: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.divider },
-  text: { backgroundColor: "transparent" },
-  dark: { backgroundColor: colors.text },
-  glass: { backgroundColor: colors.glass, borderWidth: 1, borderColor: colors.glassBorder },
+  secondary: {
+    backgroundColor: colors.white,
+    borderWidth: sizes.borderThin,
+    borderColor: colors.divider,
+  },
+  text: { backgroundColor: colors.transparent },
+  glass: {
+    backgroundColor: colors.glass,
+    borderWidth: sizes.borderThin,
+    borderColor: colors.glassBorder,
+  },
+  outline: {
+    backgroundColor: colors.transparent,
+    borderWidth: sizes.borderThick,
+    borderColor: colors.accentText,
+  },
+  tonal: { backgroundColor: colors.accentSoft },
   disabled: { opacity: 0.5 },
 })

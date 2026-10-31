@@ -1,76 +1,13 @@
-import type { ImageSourcePropType } from "react-native"
+import type { ApiAlbum, ApiTrack } from "@/api/types"
 
-export type ImageSource = ImageSourcePropType
+/** A remote image URL, or a bundled asset (`require(...)`). Both work with expo-image. */
+export type ImageSource = string | number
 
-export type Track = {
-  id: string
-  title: string
-  artist: string
-  artistId: string
-  cover: ImageSource
-  plays: number
-  /** Duration in seconds. */
-  duration: number
-}
+// The UI works with the shapes the API returns; there is no second copy of these models.
+export type Track = ApiTrack
+export type Album = ApiAlbum
 
-export type Artist = {
-  id: string
-  name: string
-  followers: number
-  image: ImageSource
-  bio: string
-  trackIds: string[]
-  albumIds: string[]
-}
-
-export type Album = {
-  id: string
-  title: string
-  artist: string
-  artistId: string
-  cover: ImageSource
-  trackIds: string[]
-}
-
-export type Playlist = {
-  id: string
-  name: string
-  owner: string
-  trackIds: string[]
-  cover: ImageSource
-  description: string
-  likes: number
-}
-
-export type FeedPost = {
-  id: string
-  user: string
-  artistId: string
-  avatar: ImageSource
-  age: string
-  trackId: string
-  artwork: ImageSource
-  likes: number
-  comments: number
-}
-
-export type Comment = {
-  id: string
-  name: string
-  avatar: ImageSource
-  text: string
-  time: string
-  likes: number
-  parentId?: string
-}
-
-export type Category = {
-  id: string
-  name: string
-  gradient: readonly [string, string]
-  image: ImageSource
-}
-
+/** A track shown as a large "suggested for you" card on Home. */
 export type Suggestion = {
   id: string
   title: string
@@ -79,8 +16,7 @@ export type Suggestion = {
   trackId: string
 }
 
-export type RepeatMode = "off" | "all" | "one"
-
+/** An editorial playlist shown as a gradient card on Home. */
 export type ChartItem = {
   /** Id of the playlist this chart opens. */
   id: string
@@ -89,3 +25,5 @@ export type ChartItem = {
   description: string
   gradient: readonly [string, string]
 }
+
+export type RepeatMode = "off" | "all" | "one"

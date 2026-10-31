@@ -41,6 +41,7 @@ export function PlayerControls({
         label={shuffle ? "Shuffle on" : "Shuffle off"}
         active={shuffle}
         color="white"
+        activeColor="accent"
         onPress={onToggleShuffle}
       />
       <IconButton icon={SkipBack} label="Previous" color="white" onPress={onPrevious} />
@@ -56,6 +57,7 @@ export function PlayerControls({
         label={REPEAT_LABEL[repeat]}
         active={repeat !== "off"}
         color="white"
+        activeColor="accent"
         onPress={onCycleRepeat}
       />
     </View>

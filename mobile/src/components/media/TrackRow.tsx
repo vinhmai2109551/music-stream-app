@@ -21,7 +21,6 @@ type TrackRowProps = {
   list: Track[]
   numbered?: boolean
   source?: string
-  onNotify?: (message: string) => void
 }
 
 function TrackRowBase({
@@ -30,7 +29,6 @@ function TrackRowBase({
   list,
   numbered = false,
   source = copy.defaultSource,
-  onNotify,
 }: TrackRowProps) {
   const active = usePlayerStore((state) => state.currentTrack?.id === track.id)
   const playing = usePlayerStore((state) => state.currentTrack?.id === track.id && state.isPlaying)
@@ -42,6 +40,7 @@ function TrackRowBase({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Play ${track.title} by ${track.artist}`}
+        accessibilityState={{ selected: active }}
         onPress={() => playFromList(list, index, source)}
         style={({ pressed }) => [styles.main, pressedStyle(pressed)]}
       >
@@ -50,7 +49,7 @@ function TrackRowBase({
             {playing ? (
               <Equalizer />
             ) : (
-              <AppText variant="caption" color={active ? "accent" : "tertiary"}>
+              <AppText variant="caption" color={active ? "accentText" : "secondary"}>
                 {index + 1}
               </AppText>
             )}
@@ -60,7 +59,7 @@ function TrackRowBase({
         <View style={styles.text}>
           <AppText
             variant="subtitle"
-            color={active ? "accent" : "text"}
+            color={active ? "accentText" : "text"}
             numberOfLines={1}
             ellipsizeMode="tail"
           >
@@ -73,12 +72,7 @@ function TrackRowBase({
       </Pressable>
       <IconButton icon={Ellipsis} label="More options" onPress={() => setMenuOpen(true)} />
       {menuOpen && (
-        <TrackMenuSheet
-          track={track}
-          visible={menuOpen}
-          onClose={() => setMenuOpen(false)}
-          onNotify={onNotify}
-        />
+        <TrackMenuSheet track={track} visible={menuOpen} onClose={() => setMenuOpen(false)} />
       )}
     </View>
   )

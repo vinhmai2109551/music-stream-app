@@ -1,4 +1,4 @@
-import { Stack } from "expo-router"
+import { Stack, type Href } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import { StatusBar } from "expo-status-bar"
 import { useEffect } from "react"
@@ -6,9 +6,11 @@ import { StyleSheet } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { AudioEngine } from "@/components/media/AudioEngine"
+import { ToastHost } from "@/components/ui/ToastHost"
 import { useAppFonts } from "@/hooks/useAppFonts"
 import { useAppStore } from "@/store/appStore"
 import { useAuthStore } from "@/store/authStore"
+import { useLibraryStore } from "@/store/libraryStore"
 import { colors } from "@/theme"
 
 SplashScreen.preventAutoHideAsync()
@@ -17,10 +19,19 @@ export default function RootLayout() {
   const fontsReady = useAppFonts()
   const status = useAuthStore((state) => state.status)
   const hasStarted = useAppStore((state) => state.hasStarted)
+  const authIntent = useAppStore((state) => state.authIntent)
 
   useEffect(() => {
     void useAuthStore.getState().bootstrap()
   }, [])
+
+  // Likes, follows and playlists belong to the account: fetch them once signed in.
+  const isAuthenticated = status === "authenticated"
+  // The auth screen Launch (or a sign-out) chose.
+  const authHref: Href = authIntent === "register" ? "/register" : "/login"
+  useEffect(() => {
+    if (isAuthenticated) void useLibraryStore.getState().load()
+  }, [isAuthenticated])
 
   // Keep the splash screen up until fonts are loaded and the saved session has been checked.
   const ready = fontsReady && status !== "loading"
@@ -29,8 +40,6 @@ export default function RootLayout() {
   }, [ready])
 
   if (!ready) return null
-
-  const isAuthenticated = status === "authenticated"
 
   return (
     <GestureHandlerRootView style={styles.root}>
@@ -43,16 +52,26 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: colors.background },
           }}
         >
+          {/*
+            When a guard is false the router sends the user to `redirectTo`; without it Expo Router
+            picks the first accessible route, which for the (auth) group has no URL.
+          */}
           {/* 1. Not signed in and Launch not seen yet. */}
-          <Stack.Protected guard={!isAuthenticated && !hasStarted}>
+          <Stack.Protected
+            guard={!isAuthenticated && !hasStarted}
+            redirectTo={isAuthenticated ? "/" : authHref}
+          >
             <Stack.Screen name="launch" />
           </Stack.Protected>
           {/* 2. Not signed in, Launch already seen. */}
-          <Stack.Protected guard={!isAuthenticated && hasStarted}>
+          <Stack.Protected
+            guard={!isAuthenticated && hasStarted}
+            redirectTo={isAuthenticated ? "/" : "/launch"}
+          >
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
           {/* 3. Signed in. */}
-          <Stack.Protected guard={isAuthenticated}>
+          <Stack.Protected guard={isAuthenticated} redirectTo={hasStarted ? authHref : "/launch"}>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="playlist/[id]" />
             <Stack.Screen name="album/[id]" />
@@ -63,6 +82,7 @@ export default function RootLayout() {
             />
           </Stack.Protected>
         </Stack>
+        <ToastHost />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   )

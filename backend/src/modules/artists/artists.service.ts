@@ -3,6 +3,7 @@ import type { Artist } from "../../generated/prisma/client.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
 import { pageArgs, toPage, type Page, type PaginationQueryDto } from "../../shared/index.js"
 import { FollowsService } from "../follows/index.js"
+import { UploadsService } from "../uploads/index.js"
 import { CreateArtistDto, UpdateArtistDto } from "./dto/artist.dto.js"
 
 export interface ArtistView {
@@ -26,6 +27,7 @@ export class ArtistsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly follows: FollowsService,
+    private readonly uploads: UploadsService,
   ) {}
 
   async list(query: PaginationQueryDto, userId?: string): Promise<Page<ArtistView>> {
@@ -56,10 +58,12 @@ export class ArtistsService {
   }
 
   create(dto: CreateArtistDto): Promise<Artist> {
+    this.uploads.assertManagedUrls({ imageUrl: dto.imageUrl })
     return this.prisma.artist.create({ data: dto })
   }
 
   update(id: string, dto: UpdateArtistDto): Promise<Artist> {
+    this.uploads.assertManagedUrls({ imageUrl: dto.imageUrl })
     return this.prisma.artist.update({ where: { id }, data: dto })
   }
 

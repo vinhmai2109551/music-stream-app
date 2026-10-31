@@ -9,6 +9,9 @@ const SAFE_DB_NAME = /^[A-Za-z0-9_]+$/
 /** Every account created by the tests uses this domain so cleanup can find it. */
 export const TEST_EMAIL_DOMAIN = "e2e.test"
 
+/** Artists created by the tests start with this so cleanup can find them. */
+export const TEST_NAME_PREFIX = "E2E "
+
 let ready: Promise<string> | undefined
 
 /**
@@ -80,9 +83,11 @@ export class TestDb {
     await this.client.query(sql, params)
   }
 
-  /** Removes test accounts; their refresh tokens go with them (ON DELETE CASCADE). */
-  deleteTestUsers(): Promise<void> {
-    return this.run(`DELETE FROM "User" WHERE email LIKE $1`, [`%@${TEST_EMAIL_DOMAIN}`])
+  /** Removes test accounts (their refresh tokens go with them) and test catalog entries. */
+  async deleteTestData(): Promise<void> {
+    await this.run(`DELETE FROM "User" WHERE email LIKE $1`, [`%@${TEST_EMAIL_DOMAIN}`])
+    // Tracks of a deleted artist are removed by ON DELETE CASCADE.
+    await this.run(`DELETE FROM "Artist" WHERE name LIKE $1`, [`${TEST_NAME_PREFIX}%`])
   }
 
   close(): Promise<void> {

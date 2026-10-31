@@ -28,9 +28,9 @@ export function PlayButton({
       style={({ pressed }) => [styles.button, { width: size, height: size }, pressedStyle(pressed)]}
     >
       {loading ? (
-        <ActivityIndicator color={colors.white} />
+        <ActivityIndicator color={colors.onAccent} />
       ) : (
-        <Icon size={sizes.icon} color={colors.white} fill={colors.white} />
+        <Icon size={sizes.icon} color={colors.onAccent} fill={colors.onAccent} />
       )}
     </Pressable>
   )

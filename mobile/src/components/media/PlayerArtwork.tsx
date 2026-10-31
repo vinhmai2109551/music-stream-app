@@ -20,8 +20,10 @@ const styles = StyleSheet.create({
   wrapper: {
     width: "100%",
     maxWidth: sizes.playerArtworkMax,
+    maxHeight: "100%",
+    aspectRatio: 1,
     alignSelf: "center",
     ...shadows.card,
   },
-  image: { width: "100%", aspectRatio: 1, borderRadius: radius.card },
+  image: { width: "100%", height: "100%", borderRadius: radius.card },
 })

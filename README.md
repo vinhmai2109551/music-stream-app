@@ -6,8 +6,8 @@
 
 Final project for the **Mobile Programming** course — Industrial University of Ho Chi Minh City (IUH)
 
-![Expo](https://img.shields.io/badge/Expo-SDK%2057-000020?logo=expo&logoColor=white)
-![React Native](https://img.shields.io/badge/React%20Native-0.86-61DAFB?logo=react&logoColor=black)
+![Expo](https://img.shields.io/badge/Expo-SDK%2058-000020?logo=expo&logoColor=white)
+![React Native](https://img.shields.io/badge/React%20Native-0.88-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-lightgrey)
 
@@ -84,7 +84,7 @@ The app consists of 13 screens:
 
 | Area         | Technology                                                                                   |
 | ------------ | -------------------------------------------------------------------------------------------- |
-| Framework    | [Expo](https://expo.dev) SDK 57, React Native 0.86, React 19                                 |
+| Framework    | [Expo](https://expo.dev) SDK 58, React Native 0.88, React 19                                 |
 | Language     | TypeScript                                                                                   |
 | Navigation   | Expo Router (file-based, typed routes)                                                       |
 | State        | Zustand with `persist` middleware                                                            |
@@ -170,11 +170,14 @@ flowchart LR
     direction TB
     auth --> users
     artists --> follows
+    artists --> uploads
     tracks --> artists
     tracks --> likes
+    tracks --> uploads
     albums --> tracks
     albums --> artists
     albums --> likes
+    albums --> uploads
     playlists --> tracks
     playlists --> likes
     playlists --> users

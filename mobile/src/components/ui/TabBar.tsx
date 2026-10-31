@@ -18,23 +18,23 @@ const TABS: Record<string, TabConfig> = {
   library: { label: "Library", icon: Library },
 }
 
-export function TabBar({ state, navigation, insets }: TabBarProps) {
+export function TabBar({ state, emitter, navigateToTab, insets }: TabBarProps) {
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       {state.routes.map((route, index) => {
         const config = TABS[route.name]
         if (!config) return null
         const focused = state.index === index
-        const tint = focused ? colors.accent : colors.secondary
+        const tint = focused ? colors.accentText : colors.secondary
         const Icon = config.icon
 
         const onPress = () => {
-          const event = navigation.emit({
+          const event = emitter.emit({
             type: "tabPress",
             target: route.key,
             canPreventDefault: true,
           })
-          if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params)
+          if (!focused && !event.defaultPrevented) navigateToTab(route.key)
         }
 
         return (

@@ -1,6 +1,6 @@
 /**
- * Types of the backend REST API. Kept apart from `@/types` (mock/UI models such as Track) so
- * the two worlds never get mixed up.
+ * Types of the backend REST API (see the controllers and views in backend/src/modules).
+ * Dates travel as ISO strings in JSON.
  */
 export type UserRole = "USER" | "ADMIN"
 
@@ -37,4 +37,156 @@ export interface ApiErrorBody {
   statusCode: number
   message: string | string[]
   error?: string
+}
+
+// ---------------------------------------------------------------- shared
+
+export interface Page<T> {
+  items: T[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
+/** Query string accepted by every paginated list endpoint. */
+export interface PageQuery {
+  page?: number
+  limit?: number
+  /** Free-text search. */
+  q?: string
+}
+
+export type LikeKind = "tracks" | "albums" | "playlists"
+
+export interface PublicUser {
+  id: string
+  name: string
+  avatarUrl: string | null
+}
+
+// ---------------------------------------------------------------- catalog
+
+export interface ApiTrack {
+  id: string
+  title: string
+  /** Name of the artist. */
+  artist: string
+  artistId: string
+  /** Cover image URL. */
+  cover: string
+  audioUrl: string
+  plays: number
+  /** Length in seconds. */
+  duration: number
+  likesCount: number
+  liked: boolean
+}
+
+export interface TrackQuery extends PageQuery {
+  artistId?: string
+}
+
+export interface ApiArtist {
+  id: string
+  name: string
+  bio: string
+  /** Portrait image URL. */
+  image: string
+  followers: number
+  followed: boolean
+}
+
+export interface ApiArtistSummary {
+  id: string
+  name: string
+  image: string
+}
+
+export interface ApiAlbum {
+  id: string
+  title: string
+  /** Name of the artist. */
+  artist: string
+  artistId: string
+  cover: string
+  trackIds: string[]
+  likesCount: number
+  liked: boolean
+}
+
+export interface ApiAlbumDetail extends ApiAlbum {
+  tracks: ApiTrack[]
+}
+
+export interface AlbumQuery extends PageQuery {
+  artistId?: string
+}
+
+export interface ApiPlaylist {
+  id: string
+  name: string
+  /** Display name of the owner ("Music Stream" for editorial playlists). */
+  owner: string
+  ownerId: string | null
+  isOfficial: boolean
+  description: string
+  cover: string | null
+  trackIds: string[]
+  likesCount: number
+  liked: boolean
+}
+
+export interface ApiPlaylistDetail extends ApiPlaylist {
+  tracks: ApiTrack[]
+}
+
+export interface CreatePlaylistInput {
+  name: string
+  description?: string
+  coverUrl?: string
+}
+
+export type UpdatePlaylistInput = Partial<CreatePlaylistInput>
+
+// ---------------------------------------------------------------- social
+
+export interface ApiComment {
+  id: string
+  user: PublicUser | null
+  text: string
+  createdAt: string
+  likesCount: number
+  liked: boolean
+  parentId: string | null
+  trackId: string | null
+  postId: string | null
+}
+
+/** Comments belong to exactly one target. */
+export type CommentTarget = { trackId: string } | { postId: string }
+
+export type CreateCommentInput = CommentTarget & {
+  text: string
+  /** Reply to another comment on the same track or post. */
+  parentId?: string
+}
+
+export interface ApiFeedPost {
+  id: string
+  artist: ApiArtistSummary | null
+  track: ApiTrack | null
+  artwork: string
+  caption: string
+  createdAt: string
+  likesCount: number
+  commentsCount: number
+  liked: boolean
+}
+
+// ---------------------------------------------------------------- users
+
+export interface UpdateProfileInput {
+  name?: string
+  avatarUrl?: string
 }

@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native"
 import Animated, { FadeInDown, FadeOut } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { colors, radius, shadows, spacing } from "@/theme"
+import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 
 type ToastProps = {
@@ -10,7 +10,8 @@ type ToastProps = {
 
 export function Toast({ message }: ToastProps) {
   const insets = useSafeAreaInsets()
-  const bottom = insets.bottom + spacing.xxl
+  // Above the tab bar and the mini player, which is where the toast shows up most often.
+  const bottom = insets.bottom + sizes.tabBarContent + sizes.miniPlayerHeight + spacing.xl
   return (
     <Animated.View
       accessibilityRole="alert"

@@ -1,7 +1,6 @@
 import { router } from "expo-router"
 import { useRef, useState } from "react"
-import { TextInput } from "react-native"
-import { AppText } from "@/components/ui/AppText"
+import type { TextInputInstance } from "react-native"
 import { AuthScreenLayout } from "@/components/ui/AuthScreenLayout"
 import { Button } from "@/components/ui/Button"
 import { FormError } from "@/components/ui/FormError"
@@ -28,12 +27,17 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [errors, setErrors] = useState<FieldErrors<LoginField>>({})
-  const passwordRef = useRef<TextInput>(null)
+  const emailRef = useRef<TextInputInstance>(null)
+  const passwordRef = useRef<TextInputInstance>(null)
 
   const submit = () => {
     const found = validateLogin({ email, password })
     setErrors(found)
-    if (hasErrors(found)) return
+    if (hasErrors(found)) {
+      const first = found.email ? emailRef : passwordRef
+      first.current?.focus()
+      return
+    }
     void run(
       () => login({ email: normalizeEmail(email), password }),
       (caught) => describeAuthError(caught, "login"),
@@ -45,19 +49,15 @@ export default function LoginScreen() {
       title={text.login.title}
       subtitle={text.login.subtitle}
       background={images.onboarding.launch}
-      footer={
-        <>
-          <AppText color="onDarkMuted">{text.login.switchPrompt}</AppText>
-          <Button
-            variant="text"
-            label={text.login.switchAction}
-            disabled={submitting}
-            onPress={() => router.replace("/register")}
-          />
-        </>
-      }
+      footer={{
+        prompt: text.login.switchPrompt,
+        action: text.login.switchAction,
+        disabled: submitting,
+        onPress: () => router.replace("/register"),
+      }}
     >
       <TextField
+        ref={emailRef}
         label={text.fields.email.label}
         placeholder={text.fields.email.placeholder}
         value={email}
