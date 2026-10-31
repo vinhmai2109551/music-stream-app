@@ -1,7 +1,6 @@
 import { router } from "expo-router"
 import { useRef, useState } from "react"
-import { TextInput } from "react-native"
-import { AppText } from "@/components/ui/AppText"
+import type { TextInputInstance } from "react-native"
 import { AuthScreenLayout } from "@/components/ui/AuthScreenLayout"
 import { Button } from "@/components/ui/Button"
 import { FormError } from "@/components/ui/FormError"
@@ -29,8 +28,9 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [errors, setErrors] = useState<FieldErrors<RegisterField>>({})
-  const emailRef = useRef<TextInput>(null)
-  const passwordRef = useRef<TextInput>(null)
+  const nameRef = useRef<TextInputInstance>(null)
+  const emailRef = useRef<TextInputInstance>(null)
+  const passwordRef = useRef<TextInputInstance>(null)
 
   const clearError = (field: RegisterField) =>
     setErrors((current) => ({ ...current, [field]: undefined }))
@@ -38,7 +38,11 @@ export default function RegisterScreen() {
   const submit = () => {
     const found = validateRegister({ email, name, password })
     setErrors(found)
-    if (hasErrors(found)) return
+    if (hasErrors(found)) {
+      const first = found.name ? nameRef : found.email ? emailRef : passwordRef
+      first.current?.focus()
+      return
+    }
     void run(
       () => register({ email: normalizeEmail(email), name: name.trim(), password }),
       (caught) => describeAuthError(caught, "register"),
@@ -50,19 +54,15 @@ export default function RegisterScreen() {
       title={text.register.title}
       subtitle={text.register.subtitle}
       background={images.onboarding.launch}
-      footer={
-        <>
-          <AppText color="onDarkMuted">{text.register.switchPrompt}</AppText>
-          <Button
-            variant="text"
-            label={text.register.switchAction}
-            disabled={submitting}
-            onPress={() => router.replace("/login")}
-          />
-        </>
-      }
+      footer={{
+        prompt: text.register.switchPrompt,
+        action: text.register.switchAction,
+        disabled: submitting,
+        onPress: () => router.replace("/login"),
+      }}
     >
       <TextField
+        ref={nameRef}
         label={text.fields.name.label}
         placeholder={text.fields.name.placeholder}
         value={name}

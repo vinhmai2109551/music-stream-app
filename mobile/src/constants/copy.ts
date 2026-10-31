@@ -2,9 +2,14 @@ import { AUTH_LIMITS } from "./auth"
 
 export const copy = {
   appName: "Music Stream",
-  greeting: "Good morning,",
-  searchPlaceholder: "What you want to listen to",
+  greeting: {
+    morning: "Good morning,",
+    afternoon: "Good afternoon,",
+    evening: "Good evening,",
+  },
+  searchPlaceholder: "What do you want to listen to?",
   launchHeadline: "Your music, your artists",
+  launchSubtitle: "Millions of songs from artists you love.",
   defaultSource: "Music Stream",
 
   /** Generic errors, used by the API client and any screen that talks to the server. */
@@ -18,6 +23,10 @@ export const copy = {
     loadFailedTitle: "Không tải được dữ liệu",
     notFoundTitle: "Không tìm thấy",
     notFoundDescription: "Nội dung này không còn tồn tại.",
+  },
+
+  account: {
+    title: "Account",
   },
 
   common: {
@@ -34,6 +43,7 @@ export const copy = {
     alreadyIn: "Already in",
     addToPlaylist: "Add to playlist",
     noPlaylists: "You have no playlists yet",
+    loadFailed: "Couldn't load your playlists",
     newPlaylist: "New playlist",
     playlistNamePlaceholder: "Playlist name",
     createPlaylist: "Create",
