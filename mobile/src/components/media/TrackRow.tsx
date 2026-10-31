@@ -1,11 +1,12 @@
-import { Image } from "expo-image"
-import { Ellipsis } from "lucide-react-native"
+import { Ellipsis, Heart } from "lucide-react-native"
 import { memo, useState } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
+import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { colors, radius, sizes, spacing } from "@/theme"
 import type { Track } from "@/types"
@@ -21,6 +22,8 @@ type TrackRowProps = {
   list: Track[]
   numbered?: boolean
   source?: string
+  /** What sits at the end of the row: the "more" menu, or a heart that un-likes the track. */
+  trailing?: "menu" | "like"
 }
 
 function TrackRowBase({
@@ -29,10 +32,13 @@ function TrackRowBase({
   list,
   numbered = false,
   source = copy.defaultSource,
+  trailing = "menu",
 }: TrackRowProps) {
   const active = usePlayerStore((state) => state.currentTrack?.id === track.id)
   const playing = usePlayerStore((state) => state.currentTrack?.id === track.id && state.isPlaying)
   const playFromList = usePlayerStore((state) => state.playFromList)
+  const liked = useLibraryStore((state) => state.likedTrackIds.includes(track.id))
+  const toggleLike = useLibraryStore((state) => state.toggleLike)
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -55,7 +61,12 @@ function TrackRowBase({
             )}
           </View>
         )}
-        <Image source={track.cover} contentFit="cover" style={styles.cover} />
+        <CoverImage
+          source={track.cover}
+          youtubeVideoId={track.youtubeVideoId}
+          label={track.title}
+          style={styles.cover}
+        />
         <View style={styles.text}>
           <AppText
             variant="subtitle"
@@ -70,9 +81,21 @@ function TrackRowBase({
           </AppText>
         </View>
       </Pressable>
-      <IconButton icon={Ellipsis} label="More options" onPress={() => setMenuOpen(true)} />
-      {menuOpen && (
-        <TrackMenuSheet track={track} visible={menuOpen} onClose={() => setMenuOpen(false)} />
+      {trailing === "like" ? (
+        <IconButton
+          icon={Heart}
+          label={liked ? "Unlike" : "Like"}
+          active={liked}
+          activeColor="like"
+          onPress={() => void toggleLike(track.id)}
+        />
+      ) : (
+        <>
+          <IconButton icon={Ellipsis} label="More options" onPress={() => setMenuOpen(true)} />
+          {menuOpen && (
+            <TrackMenuSheet track={track} visible={menuOpen} onClose={() => setMenuOpen(false)} />
+          )}
+        </>
       )}
     </View>
   )

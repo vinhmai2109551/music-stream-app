@@ -1,7 +1,7 @@
-import { Image } from "expo-image"
 import { memo } from "react"
 import { Pressable, StyleSheet } from "react-native"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { pressedStyle } from "@/components/ui/pressed"
 import { radius, shadows, sizes, spacing } from "@/theme"
 import type { Album } from "@/types"
@@ -19,7 +19,7 @@ function AlbumCardBase({ album, onPress }: AlbumCardProps) {
       onPress={() => onPress(album.id)}
       style={({ pressed }) => [styles.card, pressedStyle(pressed)]}
     >
-      <Image source={album.cover} contentFit="cover" style={styles.cover} />
+      <CoverImage source={album.cover} label={album.artist} style={styles.cover} />
       <AppText variant="bodyMedium" numberOfLines={1} ellipsizeMode="tail" style={styles.title}>
         {album.title}
       </AppText>

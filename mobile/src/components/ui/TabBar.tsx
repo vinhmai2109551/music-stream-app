@@ -18,13 +18,18 @@ const TABS: Record<string, TabConfig> = {
   library: { label: "Library", icon: Library },
 }
 
+/** Screens that are not tabs themselves but sit under one. */
+const PARENT_TAB: Record<string, string> = { playlists: "library" }
+
 export function TabBar({ state, emitter, navigateToTab, insets }: TabBarProps) {
+  const openName = state.routes[state.index]?.name ?? ""
+  const activeName = PARENT_TAB[openName] ?? openName
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       {state.routes.map((route, index) => {
         const config = TABS[route.name]
         if (!config) return null
-        const focused = state.index === index
+        const focused = route.name === activeName
         const tint = focused ? colors.accentText : colors.secondary
         const Icon = config.icon
 
@@ -34,7 +39,7 @@ export function TabBar({ state, emitter, navigateToTab, insets }: TabBarProps) {
             target: route.key,
             canPreventDefault: true,
           })
-          if (!focused && !event.defaultPrevented) navigateToTab(route.key)
+          if (state.index !== index && !event.defaultPrevented) navigateToTab(route.key)
         }
 
         return (

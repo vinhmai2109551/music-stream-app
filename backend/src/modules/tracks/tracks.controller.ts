@@ -12,7 +12,7 @@ export class TracksController {
 
   @Get()
   @OptionalAuth()
-  @ApiOperation({ summary: "List tracks (filter with ?q= and ?artistId=)" })
+  @ApiOperation({ summary: "List tracks (filter with ?q=, ?artistId= and ?region=)" })
   list(
     @Query() query: ListTracksQueryDto,
     @CurrentUser() user: AuthUser | null,

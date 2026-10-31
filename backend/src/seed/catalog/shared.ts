@@ -1,3 +1,5 @@
+import { YOUTUBE_VIDEO_IDS } from "./youtube-ids.js"
+
 /**
  * Types and helpers shared by `seed-data.ts` and the regional catalog files.
  * They live here (not in `seed-data.ts`) so the catalog files do not import `seed-data.ts`,
@@ -35,7 +37,7 @@ export interface SeedTrack {
   plays: number
   durationSec: number
   audio: MediaRef
-  /** Id of the official YouTube video this track plays from; empty until it has been verified. */
+  /** Id of the official YouTube video this track plays from (see youtube-ids.ts). */
   youtubeVideoId?: string
 }
 
@@ -61,7 +63,10 @@ export function createArtist(
   return { id, name, region, baseFollowers, image: artistImage(`${id}.jpg`), bio }
 }
 
-/** Id: `<artistId>-<slug>`. Cover: `covers/<region>/<id>.jpg`. Audio: `audio/<id>.mp3`. */
+/**
+ * Id: `<artistId>-<slug>`. Cover: `covers/<region>/<id>.jpg`. Audio: `audio/<id>.mp3`.
+ * The YouTube video comes from the verified list in youtube-ids.ts.
+ */
 export function createTrack(
   region: CatalogRegion,
   artistId: string,
@@ -71,6 +76,7 @@ export function createTrack(
   durationSec: number,
 ): SeedTrack {
   const id = `${artistId}-${slug}`
+  const youtubeVideoId = YOUTUBE_VIDEO_IDS[id]
   return {
     id,
     title,
@@ -79,6 +85,7 @@ export function createTrack(
     plays,
     durationSec,
     audio: audio(id),
+    ...(youtubeVideoId ? { youtubeVideoId } : {}),
   }
 }
 

@@ -29,6 +29,8 @@ type AuthActions = {
   bootstrap: () => Promise<void>
   login: (input: LoginInput) => Promise<void>
   register: (input: RegisterInput) => Promise<void>
+  /** Replaces the signed-in user (e.g. after the profile or Premium changed on the server). */
+  setUser: (user: User) => Promise<void>
   /** Revokes the refresh token on the server (best effort) and clears the session locally. */
   logout: () => Promise<void>
   /** Clears the session locally only; for when the server already said it is invalid. */
@@ -126,6 +128,11 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
     bootstrap: () => {
       bootstrapPromise ??= restoreSession()
       return bootstrapPromise
+    },
+
+    setUser: async (user) => {
+      set({ user })
+      await saveUser(user)
     },
 
     login: async (input) => startSession(await authApi.login(input)),

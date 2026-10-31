@@ -1,17 +1,26 @@
-import { Image } from "expo-image"
 import { StyleSheet, View } from "react-native"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { radius, shadows, sizes } from "@/theme"
 import type { ImageSource } from "@/types"
 
 type PlayerArtworkProps = {
   source: ImageSource
+  /** Picture to use when `source` cannot be loaded. */
+  youtubeVideoId?: string | null
+  /** Name of the track, for the placeholder. */
+  label?: string
 }
 
 /** Square cover that fills the available width. */
-export function PlayerArtwork({ source }: PlayerArtworkProps) {
+export function PlayerArtwork({ source, youtubeVideoId, label }: PlayerArtworkProps) {
   return (
     <View style={styles.wrapper}>
-      <Image source={source} contentFit="cover" style={styles.image} />
+      <CoverImage
+        source={source}
+        youtubeVideoId={youtubeVideoId}
+        label={label}
+        style={styles.image}
+      />
     </View>
   )
 }

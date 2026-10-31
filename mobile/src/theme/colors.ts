@@ -43,6 +43,17 @@ export const colors = {
     cyan: ["#22D3EE", "#4F46E5"],
     orange: ["#FB923C", "#EC4899"],
   },
+  /** Backgrounds of pictures that have no photo; one is picked per item. White reads on all. */
+  coverGradients: [
+    ["#B91C1C", "#EA580C"],
+    ["#7E22CE", "#DB2777"],
+    ["#1D4ED8", "#0891B2"],
+    ["#047857", "#0E7490"],
+    ["#BE185D", "#9333EA"],
+    ["#4338CA", "#7C3AED"],
+    ["#0F766E", "#2563EB"],
+    ["#9F1239", "#C2410C"],
+  ],
   categoryGradients: {
     pop: ["#D946EF", "#F472B6"],
     electronic: ["#06B6D4", "#3B82F6"],
@@ -51,4 +62,7 @@ export const colors = {
   },
 } as const
 
-export type ColorToken = Exclude<keyof typeof colors, "categoryGradients" | "chartGradients">
+export type ColorToken = Exclude<
+  keyof typeof colors,
+  "categoryGradients" | "chartGradients" | "coverGradients"
+>

@@ -67,6 +67,9 @@ export interface PublicUser {
 
 // ---------------------------------------------------------------- catalog
 
+/** Where an artist comes from; the catalog can be filtered by it. */
+export type Region = "VIETNAM" | "KOREA" | "JAPAN" | "CHINA" | "GLOBAL"
+
 export interface ApiTrack {
   id: string
   title: string
@@ -75,7 +78,10 @@ export interface ApiTrack {
   artistId: string
   /** Cover image URL. */
   cover: string
+  /** File in our storage (R2). Tracks of real artists have none: they play from YouTube. */
   audioUrl: string
+  /** Official YouTube video to play from; null when the track plays `audioUrl` instead. */
+  youtubeVideoId: string | null
   plays: number
   /** Length in seconds. */
   duration: number
@@ -85,6 +91,8 @@ export interface ApiTrack {
 
 export interface TrackQuery extends PageQuery {
   artistId?: string
+  /** Only tracks whose artist comes from this region. */
+  region?: Region
 }
 
 export interface ApiArtist {
@@ -93,8 +101,14 @@ export interface ApiArtist {
   bio: string
   /** Portrait image URL. */
   image: string
+  region: Region
   followers: number
   followed: boolean
+}
+
+export interface ArtistQuery extends PageQuery {
+  /** Only artists from this region. */
+  region?: Region
 }
 
 export interface ApiArtistSummary {

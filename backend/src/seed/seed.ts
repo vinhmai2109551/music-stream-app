@@ -21,7 +21,7 @@ const DAY_MS = 24 * 60 * MINUTE_MS
 export interface SeedOptions {
   adminEmail?: string
   adminPassword?: string
-  /** Public base URL of the R2 bucket, e.g. https://pub-xxxx.r2.dev */
+  /** Public base URL of the R2 bucket, e.g. https://pub-xxxx.r2.dev. Without it the seed is skipped. */
   mediaBaseUrl?: string
 }
 
@@ -31,11 +31,16 @@ export interface SeedOptions {
  */
 export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promise<void> {
   const log = new Logger("Seed")
-  const { adminEmail, adminPassword, mediaBaseUrl } = options
+  const { adminEmail, adminPassword } = options
+  const mediaBaseUrl = options.mediaBaseUrl?.trim()
+  // Every cover and audio link starts with the bucket address; a missing one must not stop the API.
+  if (!mediaBaseUrl) {
+    log.warn("R2_PUBLIC_URL is not set: skipping the seed (set it to the public URL of the bucket)")
+    return
+  }
   if (!adminEmail || !adminPassword) {
     throw new Error("Seed needs SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD")
   }
-  if (!mediaBaseUrl) throw new Error("Seed needs R2_PUBLIC_URL for media links")
   const media = (ref: MediaRef) => `${mediaBaseUrl.replace(/\/$/, "")}/${ref.folder}/${ref.file}`
 
   // Users
@@ -71,6 +76,7 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
       bio: artist.bio,
       imageUrl: media(artist.image),
       baseFollowers: artist.baseFollowers,
+      region: artist.region,
     }
     await prisma.artist.upsert({
       where: { id: artist.id },
@@ -85,6 +91,7 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
       coverUrl: media(track.cover),
       audioUrl: media(track.audio),
       durationSec: track.durationSec,
+      youtubeVideoId: track.youtubeVideoId ?? null,
     }
     await prisma.track.upsert({
       where: { id: track.id },

@@ -7,8 +7,8 @@ import { HorizontalList } from "@/components/ui/HorizontalList"
 import { SectionHeader } from "@/components/ui/SectionHeader"
 import { copy } from "@/constants/copy"
 import type { HomeData } from "@/hooks/useHomeData"
+import { useAuthStore } from "@/store/authStore"
 import { usePlayerStore } from "@/store/playerStore"
-import { showToast } from "@/store/toastStore"
 import { spacing } from "@/theme"
 import type { Suggestion } from "@/types"
 import { toChartItem, toSuggestion } from "@/utils/homeMappers"
@@ -18,13 +18,13 @@ import { ChartCard } from "./ChartCard"
 import { PremiumBanner } from "./PremiumBanner"
 import { SuggestionCard } from "./SuggestionCard"
 
-const COMING_SOON = "Coming soon"
 const SUGGESTION_SOURCE = "Suggestions for you"
 
 const openPlaylist = (id: string) => router.push({ pathname: "/playlist/[id]", params: { id } })
 const openAlbum = (id: string) => router.push({ pathname: "/album/[id]", params: { id } })
 const openArtist = (id: string) => router.push({ pathname: "/artist/[id]", params: { id } })
 const openSearch = () => router.navigate("/search")
+const openPremium = () => router.push("/premium")
 
 type HomeContentProps = {
   data: HomeData
@@ -33,6 +33,7 @@ type HomeContentProps = {
 /** The sections of the Home screen, below the header and the search field. */
 export function HomeContent({ data }: HomeContentProps) {
   const playFromList = usePlayerStore((state) => state.playFromList)
+  const isPremium = useAuthStore((state) => state.user?.isPremium ?? false)
 
   const isEmpty =
     data.suggestions.length === 0 &&
@@ -96,9 +97,11 @@ export function HomeContent({ data }: HomeContentProps) {
         />
       </Section>
 
-      <View style={[styles.padded, styles.banner]}>
-        <PremiumBanner onPress={() => showToast(COMING_SOON)} />
-      </View>
+      {!isPremium && (
+        <View style={[styles.padded, styles.banner]}>
+          <PremiumBanner onPress={openPremium} />
+        </View>
+      )}
     </>
   )
 }

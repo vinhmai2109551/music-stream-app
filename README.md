@@ -28,6 +28,9 @@ Final project for the **Mobile Programming** course — Industrial University of
     - [Prerequisites](#prerequisites)
     - [Installation](#installation)
     - [Run on a device](#run-on-a-device)
+  - [Backend](#backend)
+  - [Playback architecture](#playback-architecture)
+  - [Known limitations](#known-limitations)
   - [Available Scripts](#available-scripts)
   - [Branching Workflow](#branching-workflow)
   - [Project Management](#project-management)
@@ -60,13 +63,14 @@ The app consists of 13 screens:
 
 **Cross-cutting features**
 
-- Audio playback powered by `expo-audio`
+- Two playback sources: audio files from our own storage (`expo-audio`) and official YouTube videos (embedded player) — see [Playback architecture](#playback-architecture)
+- Region filter on Home (Vietnam, K-Pop, J-Pop, C-Pop)
 - Persistent library state (likes, follows, playlists, recent searches) via Zustand + AsyncStorage
 - Reusable UI kit: `AppText`, `Button`, `Chip`, `IconButton`, `SearchBar`, `BottomSheet`, `Toast`, `Skeleton`, `EmptyState`
 - Centralised design tokens (colors, typography, spacing, radius, shadows)
 - File-based navigation with Expo Router and typed routes
 
-> **Note:** The project is under active development. The foundation layer (theme, types, mock data, stores, base UI) is in place and screens are being delivered epic by epic — see [Project Management](#project-management).
+> **Note:** The 13 screens are in place (Launch, Home, Playlist / Album / Artist details, Player, Search with results, Feed with comments, Library, My Playlists, Premium launch and plans). Remaining work is tracked in [Project Management](#project-management).
 
 ## Screenshots
 
@@ -82,18 +86,18 @@ The app consists of 13 screens:
 
 ## Tech Stack
 
-| Area         | Technology                                                                                   |
-| ------------ | -------------------------------------------------------------------------------------------- |
-| Framework    | [Expo](https://expo.dev) SDK 58, React Native 0.88, React 19                                 |
-| Language     | TypeScript                                                                                   |
-| Navigation   | Expo Router (file-based, typed routes)                                                       |
-| State        | Zustand with `persist` middleware                                                            |
-| Storage      | `@react-native-async-storage/async-storage`                                                  |
-| Audio        | `expo-audio`                                                                                 |
-| Animation    | React Native Reanimated, Gesture Handler, Worklets                                           |
-| UI & visuals | `expo-image`, `expo-linear-gradient`, `expo-blur`, `lucide-react-native`, `react-native-svg` |
-| Typography   | Inter via `@expo-google-fonts/inter`                                                         |
-| Code quality | ESLint (`eslint-config-expo`), Prettier, `tsc`                                               |
+| Area         | Technology                                                                                     |
+| ------------ | ---------------------------------------------------------------------------------------------- |
+| Framework    | [Expo](https://expo.dev) SDK 58, React Native 0.88, React 19                                   |
+| Language     | TypeScript                                                                                     |
+| Navigation   | Expo Router (file-based, typed routes)                                                         |
+| State        | Zustand with `persist` middleware                                                              |
+| Storage      | `@react-native-async-storage/async-storage`                                                    |
+| Audio        | `expo-audio` (files from R2), `react-native-youtube-iframe` + `react-native-webview` (YouTube) |
+| Animation    | React Native Reanimated, Gesture Handler, Worklets                                             |
+| UI & visuals | `expo-image`, `expo-linear-gradient`, `expo-blur`, `lucide-react-native`, `react-native-svg`   |
+| Typography   | Inter via `@expo-google-fonts/inter`                                                           |
+| Code quality | ESLint (`eslint-config-expo`), Prettier, `tsc`                                                 |
 
 ## Project Structure
 
@@ -204,6 +208,48 @@ The seeded admin account is `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `bac
 
 Without Docker for the API (database still in Docker): `docker compose up -d db`, then in `backend/`:
 `npm install`, `npm run prisma:migrate`, `npm run prisma:seed`, `npm run start:dev`.
+
+## Playback architecture
+
+Every track can carry two places to play from: `youtubeVideoId` (the official video, from the artist's own channel) and `audioUrl` (an audio file in our Cloudflare R2 bucket). The player picks one **per track**, and never plays anything else in its place.
+
+```mermaid
+flowchart TD
+  Store["playerStore<br/>queue · current track · play / pause · seek"] --> Controller[PlaybackController]
+  Controller -->|"track has youtubeVideoId"| YT[YouTubeSource]
+  Controller -->|"only audioUrl"| R2S[R2AudioSource]
+  Controller -->|"neither"| None["'Bài này chưa có nguồn phát'<br/>then the next track"]
+  YT --> View["YouTubePlayerView<br/>official IFrame player on the Player screen"]
+  R2S --> Audio["expo-audio<br/>background playback + lock screen"]
+  Audio -.-> R2[(Cloudflare R2)]
+  View -.-> YouTube[(YouTube)]
+```
+
+- `playerStore` is the source of truth (queue, shuffle, repeat, position). `PlaybackController` applies it to the source that fits the track and reports position, duration and errors back.
+- Both sources implement the same `PlaybackSource` interface (`load`, `play`, `pause`, `seekTo`, `getPosition`, `getDuration`, `onEnded`, `onError`), so queue, next / previous, shuffle and repeat work the same for a queue that mixes them.
+- A YouTube track shows the official player in place of the cover on the Player screen (square, at least 200 × 200, never covered). The seek bar and buttons are the app's own; the position is read from the player every 500 ms.
+- When a track cannot be played:
+
+| Situation                                                        | What happens                                                                                                                                                 |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| YouTube refuses the embed (error 101 / 150) or the video is gone | Toast "Bài này không phát được trong app", button "Mở trên YouTube"; if the track has an R2 file it plays that instead, otherwise the player skips after 3 s |
+| Offline / the load never finishes                                | Error with a "Thử lại" button                                                                                                                                |
+| No `youtubeVideoId` and the R2 file is missing (404)             | "Bài này chưa có nguồn phát", then the next track. No substitute audio is played                                                                             |
+
+**Why two sources.** Music we do not own is never downloaded, extracted or re-streamed: it is played only through YouTube's official embedded player, which keeps the ads, attribution and rights-holder control that YouTube's terms require (so the player must stay visible and unobscured). The R2 bucket holds only audio we have the right to host (original or licensed demo tracks), which is what allows background playback and lock screen controls.
+
+## Known limitations
+
+- **YouTube tracks do not play with the screen off.** The embedded player has to stay visible, so closing the Player screen does not stop the video: it moves into a floating 200 × 200 card above the mini player (YouTube's minimum size; its × stops playback). The track pauses when the app goes to the background. Audio files from R2 keep playing with the screen off.
+- **No lock screen / notification controls for YouTube tracks** (the video is not an audio session of the app).
+- **Ads can appear** on YouTube tracks; they are shown by YouTube and cannot be skipped by the app.
+- **The floating card covers part of the screen** while a YouTube track is current. The player lives above all screens (`YouTubeHost`), so the Player screen is a normal pushed screen, not a native modal (a native modal would hide the video on iOS).
+- **Lock screen buttons of R2 tracks:** play / pause and ±15 s. Next / previous are not offered because `expo-audio` only provides them for its native playlist, not for a single player.
+- **Expo Go:** background audio on iOS is part of Expo Go; on Android, the foreground service and lock screen controls come from the `expo-audio` config plugin in `app.json`, which Expo Go does not apply. If they do not show up on an Android phone, use a development build (`npx expo run:android` or EAS Build).
+- **The YouTube player page is hosted by the author of `react-native-youtube-iframe`** (GitHub Pages). Its play / pause handler is out of date (it expects plain text while the library sends JSON), so the app injects a small script that fixes it and makes the video fill the square. For production, host your own copy of the page and pass its address as `baseUrlOverride`.
+- **Pictures:** the covers, artist photos and album covers of the new catalog are not in R2 yet (see `backend/src/seed/R2_UPLOAD_LIST.md`; ready-made pictures are in `backend/local-images/`, not committed). Until they are uploaded, the app shows a track's video picture and, for everything else, a coloured tile with the initials.
+- **Search ignores accents only one way:** typing `son` does not find `Sơn Tùng`; the server compares the exact letters.
+- Some videos forbid embedding; they fall back to the R2 file or are reported as above.
 
 ## Available Scripts
 

@@ -3,6 +3,7 @@
 Every file the seed refers to, as a path relative to the bucket root. The seeder links each one as `${R2_PUBLIC_URL}/<path>`, so the file name and folder must match exactly (lowercase, no spaces).
 
 - Images are `.jpg`. Track ids follow `<artistId>-<slug>`; a cover is named after the track id.
+- `backend/local-images/` (not committed) holds a generated picture for each of the 165 files of the new catalog, with the same folders and names. Upload its contents to the bucket root: `artists/`, `covers/albums/` and `covers/playlists/` matter most; the track covers (`covers/vietnam/` ...) are optional because the app shows each track's video picture first.
 - Nothing is uploaded by the seed itself; until the files exist, the app shows empty covers.
 - **Do not upload audio for the new catalog.** Those are commercial recordings: they play through the official YouTube embed. The seed still stores `audio/<trackId>.mp3` for each of them (the column is required), but those files do not exist and must stay out of the bucket.
 - Only the original demo tracks (section below) are hosted on R2 as mp3. `durationSec` is approximate in the seed: update it to the real file length when you add real files.

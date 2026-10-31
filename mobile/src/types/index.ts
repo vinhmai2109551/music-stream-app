@@ -14,6 +14,8 @@ export type Suggestion = {
   subtitle: string
   image: ImageSource
   trackId: string
+  /** The track's official video, whose picture stands in for a missing cover. */
+  youtubeVideoId?: string | null
 }
 
 /** An editorial playlist shown as a gradient card on Home. */

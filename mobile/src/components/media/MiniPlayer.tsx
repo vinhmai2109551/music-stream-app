@@ -1,10 +1,10 @@
-import { Image } from "expo-image"
 import { router } from "expo-router"
 import { Heart, Pause, Play } from "lucide-react-native"
 import { memo, useEffect } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
@@ -42,7 +42,12 @@ function MiniPlayerBase() {
           onPress={() => router.push("/player")}
           style={({ pressed }) => [styles.info, pressed && styles.pressed]}
         >
-          <Image source={track.cover} contentFit="cover" style={styles.cover} />
+          <CoverImage
+            source={track.cover}
+            youtubeVideoId={track.youtubeVideoId}
+            label={track.title}
+            style={styles.cover}
+          />
           <View style={styles.text}>
             <AppText variant="caption" color="white" numberOfLines={1} ellipsizeMode="tail">
               {track.title}

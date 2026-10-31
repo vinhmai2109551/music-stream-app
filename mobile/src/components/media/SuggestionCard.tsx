@@ -1,8 +1,8 @@
-import { Image } from "expo-image"
 import { LinearGradient } from "expo-linear-gradient"
 import { memo } from "react"
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { pressedStyle } from "@/components/ui/pressed"
 import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import type { Suggestion } from "@/types"
@@ -23,7 +23,12 @@ function SuggestionCardBase({ suggestion, onPress }: SuggestionCardProps) {
       onPress={() => onPress(suggestion)}
       style={({ pressed }) => [styles.card, { width: width * WIDTH_RATIO }, pressedStyle(pressed)]}
     >
-      <Image source={suggestion.image} contentFit="cover" style={StyleSheet.absoluteFill} />
+      <CoverImage
+        source={suggestion.image}
+        youtubeVideoId={suggestion.youtubeVideoId}
+        label={suggestion.title}
+        style={StyleSheet.absoluteFill}
+      />
       <LinearGradient colors={[colors.transparent, colors.cardScrim]} style={styles.scrim}>
         <View>
           <AppText variant="subtitle" color="white" numberOfLines={1} ellipsizeMode="tail">

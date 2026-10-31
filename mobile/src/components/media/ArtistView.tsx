@@ -1,6 +1,5 @@
-import { Image } from "expo-image"
 import { router } from "expo-router"
-import { Shuffle } from "lucide-react-native"
+import { Shuffle, User } from "lucide-react-native"
 import { ScrollView, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { listAlbums } from "@/api/albums"
@@ -8,6 +7,7 @@ import { getArtist, listArtists } from "@/api/artists"
 import { listTracks } from "@/api/tracks"
 import type { ApiAlbum, ApiArtist, ApiTrack } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { Button } from "@/components/ui/Button"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { HorizontalList } from "@/components/ui/HorizontalList"
@@ -128,7 +128,12 @@ function ArtistContent({
       >
         <View style={styles.padded}>
           <View style={styles.hero}>
-            <Image source={artist.image} contentFit="cover" style={styles.image} />
+            <CoverImage
+              source={artist.image}
+              label={artist.name}
+              icon={User}
+              style={styles.image}
+            />
             <AppText variant="h2" numberOfLines={2} style={styles.center}>
               {artist.name}
             </AppText>
