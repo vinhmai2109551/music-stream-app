@@ -1,16 +1,18 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import type { Artist } from "../../generated/prisma/client.js"
+import type { Region } from "../../generated/prisma/enums.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
-import { pageArgs, toPage, type Page, type PaginationQueryDto } from "../../shared/index.js"
+import { pageArgs, toPage, type Page } from "../../shared/index.js"
 import { FollowsService } from "../follows/index.js"
 import { UploadsService } from "../uploads/index.js"
-import { CreateArtistDto, UpdateArtistDto } from "./dto/artist.dto.js"
+import { CreateArtistDto, ListArtistsQueryDto, UpdateArtistDto } from "./dto/artist.dto.js"
 
 export interface ArtistView {
   id: string
   name: string
   bio: string
   image: string
+  region: Region
   followers: number
   followed: boolean
 }
@@ -30,8 +32,11 @@ export class ArtistsService {
     private readonly uploads: UploadsService,
   ) {}
 
-  async list(query: PaginationQueryDto, userId?: string): Promise<Page<ArtistView>> {
-    const where = query.q ? { name: { contains: query.q, mode: "insensitive" as const } } : {}
+  async list(query: ListArtistsQueryDto, userId?: string): Promise<Page<ArtistView>> {
+    const where = {
+      ...(query.q ? { name: { contains: query.q, mode: "insensitive" as const } } : {}),
+      ...(query.region ? { region: query.region } : {}),
+    }
     const [rows, total] = await Promise.all([
       this.prisma.artist.findMany({
         where,
@@ -88,6 +93,7 @@ export class ArtistsService {
       name: row.name,
       bio: row.bio,
       image: row.imageUrl,
+      region: row.region,
       followers: row.baseFollowers + (counts.get(row.id) ?? 0),
       followed: followed.has(row.id),
     }))

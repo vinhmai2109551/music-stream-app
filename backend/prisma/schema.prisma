@@ -17,6 +17,15 @@ enum Role {
   ADMIN
 }
 
+/// Where an artist comes from; the catalog is filtered by it. GLOBAL is everything else.
+enum Region {
+  VIETNAM
+  KOREA
+  JAPAN
+  CHINA
+  GLOBAL
+}
+
 // ---------------------------------------------------------------- owner: users
 model User {
   id           String   @id @default(cuid())
@@ -67,6 +76,7 @@ model Artist {
   imageUrl      String
   /// Followers that exist outside this app; real follows (Follow rows) are added on top.
   baseFollowers Int      @default(0)
+  region        Region   @default(GLOBAL)
   createdAt     DateTime @default(now())
 
   tracks    Track[]
@@ -75,18 +85,21 @@ model Artist {
   feedPosts FeedPost[]
 
   @@index([name])
+  @@index([region])
 }
 
 // --------------------------------------------------------------- owner: tracks
 model Track {
-  id          String   @id @default(cuid())
-  title       String
-  artistId    String
-  coverUrl    String
-  audioUrl    String
-  plays       Int      @default(0)
-  durationSec Int
-  createdAt   DateTime @default(now())
+  id             String   @id @default(cuid())
+  title          String
+  artistId       String
+  coverUrl       String
+  audioUrl       String
+  plays          Int      @default(0)
+  durationSec    Int
+  /// Id of the official YouTube video the app plays this track from; null = play `audioUrl`.
+  youtubeVideoId String?
+  createdAt      DateTime @default(now())
 
   artist    Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
   albums    AlbumTrack[]

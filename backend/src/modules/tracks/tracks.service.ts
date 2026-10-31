@@ -17,6 +17,8 @@ export interface TrackView {
   plays: number
   /** Length in seconds. */
   duration: number
+  /** Official YouTube video to play from; null when the track plays `audioUrl` instead. */
+  youtubeVideoId: string | null
   likesCount: number
   liked: boolean
 }
@@ -33,6 +35,7 @@ export class TracksService {
   async list(query: ListTracksQueryDto, userId?: string): Promise<Page<TrackView>> {
     const where = {
       ...(query.artistId ? { artistId: query.artistId } : {}),
+      ...(query.region ? { artist: { region: query.region } } : {}),
       ...(query.q
         ? {
             OR: [
@@ -114,6 +117,7 @@ export class TracksService {
       audioUrl: row.audioUrl,
       plays: row.plays,
       duration: row.durationSec,
+      youtubeVideoId: row.youtubeVideoId,
       likesCount: counts.get(row.id) ?? 0,
       liked: liked.has(row.id),
     }))
