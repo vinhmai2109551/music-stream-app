@@ -5,12 +5,14 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native
 import { AppText } from "@/components/ui/AppText"
 import { BottomSheet } from "@/components/ui/BottomSheet"
 import { Button } from "@/components/ui/Button"
+import { Skeleton } from "@/components/ui/Skeleton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
 import { useLibraryStore } from "@/store/libraryStore"
 import { colors, radius, sizes, spacing, typography } from "@/theme"
 import type { Track } from "@/types"
+import { plural } from "@/utils/plural"
 
 const MAX_PLAYLIST_NAME = 100
 
@@ -23,6 +25,8 @@ type TrackMenuSheetProps = {
 export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps) {
   const liked = useLibraryStore((state) => state.likedTrackIds.includes(track.id))
   const playlists = useLibraryStore((state) => state.playlists)
+  const libraryStatus = useLibraryStore((state) => state.status)
+  const loadLibrary = useLibraryStore((state) => state.load)
   const toggleLike = useLibraryStore((state) => state.toggleLike)
   const addTrackToPlaylist = useLibraryStore((state) => state.addTrackToPlaylist)
   const createPlaylist = useLibraryStore((state) => state.createPlaylist)
@@ -62,8 +66,15 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
       </View>
       <Pressable
         accessibilityRole="button"
+        accessibilityState={{ disabled: libraryStatus !== "ready" }}
+        disabled={libraryStatus !== "ready"}
         onPress={() => void toggleLike(track.id)}
-        style={({ pressed }) => [styles.row, styles.divided, pressedStyle(pressed)]}
+        style={({ pressed }) => [
+          styles.row,
+          styles.divided,
+          libraryStatus !== "ready" && styles.waiting,
+          pressedStyle(pressed),
+        ]}
       >
         <Heart
           size={sizes.icon}
@@ -71,7 +82,7 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
           fill={liked ? colors.like : "none"}
         />
         <AppText variant="bodyMedium" style={styles.flex}>
-          {liked ? "Remove from liked songs" : "Like this track"}
+          {liked ? "Remove from liked songs" : "Add to liked songs"}
         </AppText>
       </Pressable>
       <AppText variant="caption" color="secondary" style={styles.sectionTitle}>
@@ -82,7 +93,26 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {playlists.length === 0 && !creating && (
+        {libraryStatus === "idle" || libraryStatus === "loading" ? (
+          <View style={styles.row}>
+            <Skeleton width={sizes.coverSm} height={sizes.coverSm} />
+            <Skeleton width="60%" height={sizes.iconMd} />
+          </View>
+        ) : null}
+        {libraryStatus === "error" && (
+          <View style={styles.row}>
+            <AppText variant="caption" color="secondary" style={styles.flex}>
+              {copy.library.loadFailed}
+            </AppText>
+            <Button
+              compact
+              variant="tonal"
+              label={copy.common.retry}
+              onPress={() => void loadLibrary()}
+            />
+          </View>
+        )}
+        {libraryStatus === "ready" && playlists.length === 0 && !creating && (
           <AppText variant="caption" color="secondary" style={styles.empty}>
             {copy.library.noPlaylists}
           </AppText>
@@ -104,7 +134,7 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
                 {playlist.name}
               </AppText>
               <AppText variant="small" color="secondary">
-                {playlist.trackIds.length} songs
+                {playlist.trackIds.length} {plural("song", playlist.trackIds.length)}
               </AppText>
             </View>
             <ListPlus size={sizes.iconMd} color={colors.secondary} />
@@ -118,7 +148,7 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
               onChangeText={setName}
               onSubmitEditing={() => void createAndAdd()}
               placeholder={copy.library.playlistNamePlaceholder}
-              placeholderTextColor={colors.tertiary}
+              placeholderTextColor={colors.secondary}
               selectionColor={colors.accent}
               maxLength={MAX_PLAYLIST_NAME}
               returnKeyType="done"
@@ -140,9 +170,9 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
             style={({ pressed }) => [styles.row, pressedStyle(pressed)]}
           >
             <View style={[styles.playlistCover, styles.plus]}>
-              <Plus size={sizes.iconMd} color={colors.accent} />
+              <Plus size={sizes.iconMd} color={colors.accentText} />
             </View>
-            <AppText variant="bodyMedium" color="accent" style={styles.flex}>
+            <AppText variant="bodyMedium" color="accentText" style={styles.flex}>
               {copy.library.newPlaylist}
             </AppText>
           </Pressable>
@@ -169,6 +199,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.md,
   },
+  waiting: { opacity: 0.5 },
   divided: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.divider },
   flex: { flex: 1, minWidth: 0 },
   sectionTitle: { marginTop: spacing.xl, marginBottom: spacing.sm },
@@ -187,7 +218,7 @@ const styles = StyleSheet.create({
     height: sizes.minTouch,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.pill,
-    borderWidth: 1,
+    borderWidth: sizes.borderThin,
     borderColor: colors.divider,
     color: colors.text,
     ...typography.body,

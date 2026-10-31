@@ -1,7 +1,9 @@
 import { router } from "expo-router"
 import { Search } from "lucide-react-native"
+import { useState } from "react"
 import { Pressable, ScrollView, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { AccountSheet } from "@/components/media/AccountSheet"
 import { HomeContent } from "@/components/media/HomeContent"
 import { HomeHeader } from "@/components/media/HomeHeader"
 import { HomeSkeleton } from "@/components/media/HomeSkeleton"
@@ -22,6 +24,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets()
   const { state, reload } = useHomeData()
   const user = useAuthStore((auth) => auth.user)
+  const [accountOpen, setAccountOpen] = useState(false)
 
   return (
     <View style={styles.screen}>
@@ -38,7 +41,7 @@ export default function HomeScreen() {
                 name={user?.name ?? ""}
                 avatarUrl={user?.avatarUrl ?? null}
                 onNotifications={() => showToast(COMING_SOON)}
-                onLogout={() => void useAuthStore.getState().logout()}
+                onAccount={() => setAccountOpen(true)}
               />
               <Pressable
                 accessibilityRole="search"
@@ -47,7 +50,7 @@ export default function HomeScreen() {
                 style={({ pressed }) => [styles.search, pressedStyle(pressed)]}
               >
                 <Search size={sizes.iconMd} color={colors.tertiary} />
-                <AppText color="tertiary" numberOfLines={1}>
+                <AppText color="secondary" numberOfLines={1}>
                   {copy.searchPlaceholder}
                 </AppText>
               </Pressable>
@@ -60,6 +63,14 @@ export default function HomeScreen() {
           </>
         )}
       </ScrollView>
+      <AccountSheet
+        visible={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        name={user?.name ?? ""}
+        email={user?.email ?? ""}
+        avatarUrl={user?.avatarUrl ?? null}
+        onLogout={() => void useAuthStore.getState().logout()}
+      />
     </View>
   )
 }
@@ -75,7 +86,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.pill,
-    borderWidth: 1,
+    borderWidth: sizes.borderThin,
     borderColor: colors.divider,
   },
 })

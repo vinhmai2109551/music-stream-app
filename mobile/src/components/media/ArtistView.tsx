@@ -22,6 +22,7 @@ import { usePlayerStore } from "@/store/playerStore"
 import { showToast } from "@/store/toastStore"
 import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import { formatCount } from "@/utils/formatCount"
+import { plural } from "@/utils/plural"
 import { AlbumCard } from "./AlbumCard"
 import { ArtistAbout } from "./ArtistAbout"
 import { ArtistAvatar } from "./ArtistAvatar"
@@ -132,13 +133,13 @@ function ArtistContent({
               {artist.name}
             </AppText>
             <AppText variant="caption" color="secondary">
-              {formatCount(followers)} Followers
+              {formatCount(followers)} {plural("follower", followers)}
             </AppText>
           </View>
           <View style={styles.controls}>
             <Button
               label={followed ? "Following" : "Follow"}
-              variant={followed ? "secondary" : "primary"}
+              variant={followed ? "tonal" : "primary"}
               onPress={onToggleFollow}
             />
             <View style={styles.spacer} />

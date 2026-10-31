@@ -16,7 +16,7 @@ export function PlayerHeader({ source, onClose, onMore }: PlayerHeaderProps) {
     <View style={styles.row}>
       <IconButton icon={ChevronDown} label="Close player" color="white" onPress={onClose} />
       <View style={styles.center}>
-        <AppText variant="micro" color="onDarkMuted" style={styles.caps}>
+        <AppText variant="small" color="onDarkMuted">
           Playing from
         </AppText>
         <AppText variant="caption" color="white" numberOfLines={1} ellipsizeMode="tail">
@@ -35,6 +35,5 @@ export function PlayerHeader({ source, onClose, onMore }: PlayerHeaderProps) {
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center" },
   center: { flex: 1, minWidth: 0, alignItems: "center" },
-  caps: { textTransform: "uppercase", letterSpacing: 1 },
   placeholder: { width: sizes.minTouch, height: sizes.minTouch },
 })

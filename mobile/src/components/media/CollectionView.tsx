@@ -22,6 +22,7 @@ import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import type { ImageSource, Track } from "@/types"
 import { formatNumber } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
+import { plural } from "@/utils/plural"
 import { TrackRow } from "./TrackRow"
 
 const NOTHING_TO_PLAY = "Add some songs first"
@@ -128,10 +129,11 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
   const onToggleLike = () =>
     void (kind === "playlist" ? togglePlaylistLike(id) : toggleAlbumLike(id))
 
+  const likeCount = collection.otherLikes === null ? 0 : collection.otherLikes + (liked ? 1 : 0)
   const subtitle =
     collection.otherLikes === null
       ? collection.byline
-      : `${formatNumber(collection.otherLikes + (liked ? 1 : 0))} likes · ${collection.byline}`
+      : `${formatNumber(likeCount)} ${plural("like", likeCount)} · ${collection.byline}`
 
   const header = (
     <View>
@@ -164,7 +166,7 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
 
   return (
     <View style={styles.screen}>
-      <TopBar title={collection.name} />
+      <TopBar />
       <FlatList
         data={collection.tracks}
         keyExtractor={(track) => track.id}

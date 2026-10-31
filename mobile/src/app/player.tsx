@@ -94,15 +94,16 @@ export default function PlayerScreen() {
               <Button compact label="Try again" variant="glass" onPress={retry} />
             </View>
           )}
-          <View style={styles.spacer} />
-          <PlayerActions
-            liked={liked}
-            likeCount={BASE_LIKE_COUNT + (liked ? LIKE_COUNT_BUMP : 0)}
-            commentCount={BASE_COMMENT_COUNT}
-            onToggleLike={() => toggleLike(track.id)}
-            onComments={() => showToast(COMING_SOON)}
-            onShare={() => showToast(COMING_SOON)}
-          />
+          <View style={styles.actions}>
+            <PlayerActions
+              liked={liked}
+              likeCount={BASE_LIKE_COUNT + (liked ? LIKE_COUNT_BUMP : 0)}
+              commentCount={BASE_COMMENT_COUNT}
+              onToggleLike={() => toggleLike(track.id)}
+              onComments={() => showToast(COMING_SOON)}
+              onShare={() => showToast(COMING_SOON)}
+            />
+          </View>
         </View>
       </SwipeToDismiss>
     </View>
@@ -112,9 +113,9 @@ export default function PlayerScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.text },
   content: { flex: 1, paddingHorizontal: spacing.xxl },
-  artwork: { marginTop: spacing.xxl, marginBottom: spacing.xl },
+  artwork: { flex: 1, justifyContent: "center", marginVertical: spacing.lg },
+  actions: { marginTop: spacing.xl },
   seek: { marginTop: spacing.xl, marginBottom: spacing.sm },
-  spacer: { flex: 1 },
   error: { alignItems: "center", gap: spacing.sm, marginTop: spacing.lg },
   errorText: { textAlign: "center" },
   empty: {

@@ -33,7 +33,7 @@ function ArtistAvatarBase({ artist, onPress }: ArtistAvatarProps) {
       <Button
         compact
         label={followed ? "Following" : "Follow"}
-        variant={followed ? "secondary" : "dark"}
+        variant={followed ? "tonal" : "outline"}
         onPress={() => toggleFollow(artist.id)}
         style={styles.follow}
       />

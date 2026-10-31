@@ -1,39 +1,51 @@
 import { Image } from "expo-image"
-import { Bell, LogOut } from "lucide-react-native"
-import { StyleSheet, View } from "react-native"
+import { Bell } from "lucide-react-native"
+import { Pressable, StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { IconButton } from "@/components/ui/IconButton"
+import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { useGreeting } from "@/hooks/useGreeting"
 
 type HomeHeaderProps = {
   /** Name of the signed-in user. */
   name: string
   avatarUrl: string | null
   onNotifications: () => void
-  onLogout: () => void
+  onAccount: () => void
 }
 
-export function HomeHeader({ name, avatarUrl, onNotifications, onLogout }: HomeHeaderProps) {
+export function HomeHeader({ name, avatarUrl, onNotifications, onAccount }: HomeHeaderProps) {
+  const greeting = useGreeting()
   return (
     <View style={styles.row}>
       <View style={styles.greeting}>
         <AppText variant="caption" color="secondary">
-          {copy.greeting}
+          {greeting}
         </AppText>
         <AppText variant="h2" numberOfLines={1} ellipsizeMode="tail">
           {name}
         </AppText>
       </View>
       <View style={styles.actions}>
-        {/* Temporary: lets you test the auth flow until the profile screen exists. */}
-        <IconButton icon={LogOut} label={copy.auth.logout} onPress={onLogout} />
         <View>
           <IconButton icon={Bell} label="Notifications" onPress={onNotifications} />
           <View pointerEvents="none" style={styles.dot} />
         </View>
-        <Image source={avatarUrl ?? images.user.avatar} contentFit="cover" style={styles.avatar} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={copy.account.title}
+          onPress={onAccount}
+          style={({ pressed }) => [styles.avatarButton, pressedStyle(pressed)]}
+        >
+          <Image
+            source={avatarUrl ?? images.user.avatar}
+            contentFit="cover"
+            style={styles.avatar}
+          />
+        </Pressable>
       </View>
     </View>
   )
@@ -51,9 +63,22 @@ const styles = StyleSheet.create({
     height: sizes.notificationDot,
     borderRadius: radius.pill,
     backgroundColor: colors.accent,
-    borderWidth: 2,
+    borderWidth: sizes.borderThick,
     borderColor: colors.white,
     boxSizing: "content-box",
   },
-  avatar: { width: sizes.userAvatar, height: sizes.userAvatar, borderRadius: radius.pill },
+  avatarButton: {
+    width: sizes.minTouch,
+    height: sizes.minTouch,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatar: {
+    width: sizes.userAvatar,
+    height: sizes.userAvatar,
+    borderRadius: radius.pill,
+    borderWidth: sizes.borderThick,
+    borderColor: colors.white,
+    ...shadows.soft,
+  },
 })
