@@ -1,6 +1,14 @@
 import { ChevronDown } from "lucide-react-native"
 import type { ReactNode } from "react"
-import { Modal, Pressable, StyleSheet, View } from "react-native"
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type DimensionValue,
+} from "react-native"
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { colors, radius, sizes, spacing } from "@/theme"
@@ -13,10 +21,12 @@ type BottomSheetProps = {
   visible: boolean
   onClose: () => void
   title?: string
+  /** A fixed height (e.g. "70%") for content that fills the sheet, such as a list. */
+  height?: DimensionValue
   children: ReactNode
 }
 
-export function BottomSheet({ visible, onClose, title, children }: BottomSheetProps) {
+export function BottomSheet({ visible, onClose, title, height, children }: BottomSheetProps) {
   const insets = useSafeAreaInsets()
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -31,11 +41,19 @@ export function BottomSheet({ visible, onClose, title, children }: BottomSheetPr
           onPress={onClose}
         />
       </Animated.View>
-      <View pointerEvents="box-none" style={styles.anchor}>
+      <KeyboardAvoidingView
+        pointerEvents="box-none"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.anchor}
+      >
         <Animated.View
           entering={SlideInDown.duration(260)}
           exiting={SlideOutDown.duration(200)}
-          style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}
+          style={[
+            styles.sheet,
+            height !== undefined && { height },
+            { paddingBottom: insets.bottom + spacing.lg },
+          ]}
         >
           <View style={styles.handle} />
           {title !== undefined && (
@@ -48,7 +66,7 @@ export function BottomSheet({ visible, onClose, title, children }: BottomSheetPr
           )}
           {children}
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   )
 }

@@ -8,7 +8,7 @@ export const YOUTUBE_POLL_INTERVAL_MS = 500
 export const YOUTUBE_MIN_SIZE = 200
 /** A track that cannot be played is skipped after this long, when another one follows. */
 export const AUTO_SKIP_DELAY_MS = 3_000
-/** A YouTube track waits this long for the player screen to open before it pauses. */
+/** A YouTube track waits this long for its player to appear before it pauses. */
 export const PLAYER_SCREEN_GRACE_MS = 2_500
 /** Length of the lock screen skip buttons, in seconds. */
 export const LOCK_SCREEN_SEEK_SECONDS = 15

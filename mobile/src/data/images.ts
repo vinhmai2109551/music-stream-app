@@ -7,10 +7,6 @@ export const images = {
     launch: require("../../assets/images/onboarding/launch-bg.png"),
     premium: require("../../assets/images/onboarding/premium-bg.png"),
   },
-  playlists: {
-    /** Cover of a playlist that has none. */
-    fallback: require("../../assets/images/covers/playlist-new.png"),
-  },
   user: {
     /** Avatar of a user who has not set one. */
     avatar: require("../../assets/images/artists/user-ashley-scott.png"),

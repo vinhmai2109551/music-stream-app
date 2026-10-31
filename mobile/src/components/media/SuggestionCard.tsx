@@ -26,6 +26,7 @@ function SuggestionCardBase({ suggestion, onPress }: SuggestionCardProps) {
       <CoverImage
         source={suggestion.image}
         youtubeVideoId={suggestion.youtubeVideoId}
+        label={suggestion.title}
         style={StyleSheet.absoluteFill}
       />
       <LinearGradient colors={[colors.transparent, colors.cardScrim]} style={styles.scrim}>

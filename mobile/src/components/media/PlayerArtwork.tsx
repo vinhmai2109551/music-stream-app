@@ -7,13 +7,20 @@ type PlayerArtworkProps = {
   source: ImageSource
   /** Picture to use when `source` cannot be loaded. */
   youtubeVideoId?: string | null
+  /** Name of the track, for the placeholder. */
+  label?: string
 }
 
 /** Square cover that fills the available width. */
-export function PlayerArtwork({ source, youtubeVideoId }: PlayerArtworkProps) {
+export function PlayerArtwork({ source, youtubeVideoId, label }: PlayerArtworkProps) {
   return (
     <View style={styles.wrapper}>
-      <CoverImage source={source} youtubeVideoId={youtubeVideoId} style={styles.image} />
+      <CoverImage
+        source={source}
+        youtubeVideoId={youtubeVideoId}
+        label={label}
+        style={styles.image}
+      />
     </View>
   )
 }

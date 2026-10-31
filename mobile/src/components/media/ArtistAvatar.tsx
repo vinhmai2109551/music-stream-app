@@ -26,7 +26,7 @@ function ArtistAvatarBase({ artist, onPress }: ArtistAvatarProps) {
         onPress={() => onPress(artist.id)}
         style={({ pressed }) => [styles.link, pressedStyle(pressed)]}
       >
-        <CoverImage source={artist.image} icon={User} style={styles.image} />
+        <CoverImage source={artist.image} label={artist.name} icon={User} style={styles.image} />
         <AppText variant="caption" numberOfLines={1} ellipsizeMode="tail" style={styles.name}>
           {artist.name}
         </AppText>

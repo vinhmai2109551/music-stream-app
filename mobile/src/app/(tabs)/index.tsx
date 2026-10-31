@@ -20,7 +20,7 @@ import { colors, radius, sizes, spacing } from "@/theme"
 
 const COMING_SOON = "Coming soon"
 
-const openSearch = () => router.navigate("/search")
+const openSearch = () => router.navigate({ pathname: "/search", params: { focus: "1" } })
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets()

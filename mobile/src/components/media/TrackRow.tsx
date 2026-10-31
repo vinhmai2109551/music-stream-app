@@ -1,5 +1,4 @@
-import { router } from "expo-router"
-import { Ellipsis } from "lucide-react-native"
+import { Ellipsis, Heart } from "lucide-react-native"
 import { memo, useState } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
@@ -7,12 +6,12 @@ import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
+import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { colors, radius, sizes, spacing } from "@/theme"
 import type { Track } from "@/types"
 import { formatCount } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
-import { getPlaybackKind } from "@/utils/playbackKind"
 import { Equalizer } from "./Equalizer"
 import { TrackMenuSheet } from "./TrackMenuSheet"
 
@@ -23,6 +22,8 @@ type TrackRowProps = {
   list: Track[]
   numbered?: boolean
   source?: string
+  /** What sits at the end of the row: the "more" menu, or a heart that un-likes the track. */
+  trailing?: "menu" | "like"
 }
 
 function TrackRowBase({
@@ -31,17 +32,14 @@ function TrackRowBase({
   list,
   numbered = false,
   source = copy.defaultSource,
+  trailing = "menu",
 }: TrackRowProps) {
   const active = usePlayerStore((state) => state.currentTrack?.id === track.id)
   const playing = usePlayerStore((state) => state.currentTrack?.id === track.id && state.isPlaying)
   const playFromList = usePlayerStore((state) => state.playFromList)
+  const liked = useLibraryStore((state) => state.likedTrackIds.includes(track.id))
+  const toggleLike = useLibraryStore((state) => state.toggleLike)
   const [menuOpen, setMenuOpen] = useState(false)
-
-  const play = () => {
-    playFromList(list, index, source)
-    // A YouTube video only plays on the player screen, so tapping one opens it.
-    if (getPlaybackKind(track) === "youtube") router.push("/player")
-  }
 
   return (
     <View style={[styles.row, active && styles.active]}>
@@ -49,7 +47,7 @@ function TrackRowBase({
         accessibilityRole="button"
         accessibilityLabel={`Play ${track.title} by ${track.artist}`}
         accessibilityState={{ selected: active }}
-        onPress={play}
+        onPress={() => playFromList(list, index, source)}
         style={({ pressed }) => [styles.main, pressedStyle(pressed)]}
       >
         {numbered && (
@@ -66,6 +64,7 @@ function TrackRowBase({
         <CoverImage
           source={track.cover}
           youtubeVideoId={track.youtubeVideoId}
+          label={track.title}
           style={styles.cover}
         />
         <View style={styles.text}>
@@ -82,9 +81,21 @@ function TrackRowBase({
           </AppText>
         </View>
       </Pressable>
-      <IconButton icon={Ellipsis} label="More options" onPress={() => setMenuOpen(true)} />
-      {menuOpen && (
-        <TrackMenuSheet track={track} visible={menuOpen} onClose={() => setMenuOpen(false)} />
+      {trailing === "like" ? (
+        <IconButton
+          icon={Heart}
+          label={liked ? "Unlike" : "Like"}
+          active={liked}
+          activeColor="like"
+          onPress={() => void toggleLike(track.id)}
+        />
+      ) : (
+        <>
+          <IconButton icon={Ellipsis} label="More options" onPress={() => setMenuOpen(true)} />
+          {menuOpen && (
+            <TrackMenuSheet track={track} visible={menuOpen} onClose={() => setMenuOpen(false)} />
+          )}
+        </>
       )}
     </View>
   )

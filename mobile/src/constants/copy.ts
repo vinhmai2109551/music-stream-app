@@ -57,6 +57,63 @@ export const copy = {
     secondsSuffix: "giây",
   },
 
+  search: {
+    recentTitle: "Recent searches",
+    clearAll: "Clear all",
+    removeRecent: "Remove from recent searches",
+    hintTitle: "Search Music Stream",
+    hintDescription: "Find songs, albums and artists.",
+    noResultsTitle: "No results found",
+    noResultsDescription: "Try a different word or check the spelling.",
+    tabs: { all: "All", tracks: "Tracks", albums: "Albums", artists: "Artists" },
+  },
+
+  feed: {
+    title: "Feed",
+    postedTrack: "Posted a track",
+    emptyTitle: "Nothing posted yet",
+    emptyDescription: "New tracks from artists will show up here.",
+  },
+
+  comments: {
+    placeholder: "Write a comment...",
+    send: "Send comment",
+    reply: "Reply",
+    replyingTo: "Replying to",
+    cancelReply: "Cancel reply",
+    hideReplies: "Hide replies",
+    emptyTitle: "No comments yet",
+    emptyDescription: "Be the first to say something.",
+    likeComment: "Like comment",
+    unlikeComment: "Unlike comment",
+  },
+
+  libraryScreen: {
+    title: "Your Library",
+    chips: { playlists: "Playlists", songs: "Songs", albums: "Albums", artists: "Artists" },
+    emptyTitle: "Your library is empty",
+    emptyDescription: "Like songs, save albums and follow artists to see them here.",
+  },
+
+  playlistsScreen: {
+    title: "Playlists",
+    heading: "Your playlists",
+    emptyTitle: "No playlists yet",
+    emptyDescription: "Tap + to create your first playlist.",
+    create: "Create playlist",
+    created: "Playlist created",
+  },
+
+  premium: {
+    welcomeTitle: "Welcome to Premium",
+    welcomeAction: "Start listening",
+    plansTitle: "Unlimited music selections",
+    subscribe: "Subscribe now",
+    currentPlan: "Your current plan",
+    backHome: "Back home",
+    subscribeFailed: "Could not start Premium. Please try again.",
+  },
+
   library: {
     addedTo: "Added to",
     alreadyIn: "Already in",

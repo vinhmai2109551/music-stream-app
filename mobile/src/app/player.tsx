@@ -1,8 +1,10 @@
 import { router } from "expo-router"
 import { StatusBar } from "expo-status-bar"
+import { useState } from "react"
 import { Linking, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { BlurredBackdrop } from "@/components/media/BlurredBackdrop"
+import { CommentsSheet } from "@/components/media/CommentsSheet"
 import { PlayerActions } from "@/components/media/PlayerActions"
 import { PlayerArtwork } from "@/components/media/PlayerArtwork"
 import { PlayerControls } from "@/components/media/PlayerControls"
@@ -11,7 +13,7 @@ import { PlayerHeader } from "@/components/media/PlayerHeader"
 import { PlayerTrackInfo } from "@/components/media/PlayerTrackInfo"
 import { SeekBar } from "@/components/media/SeekBar"
 import { YouTubeLabel } from "@/components/media/YouTubeLabel"
-import { YouTubePlayerView } from "@/components/media/YouTubePlayerView"
+import { YouTubeSlot } from "@/components/media/YouTubeSlot"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
 import { SwipeToDismiss } from "@/components/ui/SwipeToDismiss"
@@ -55,6 +57,10 @@ export default function PlayerScreen() {
   const { togglePlaying, next, previous, seek, toggleShuffle, cycleRepeat, retry } =
     usePlayerStore.getState()
 
+  const [commentsOpen, setCommentsOpen] = useState(false)
+  /** Comments counted once the sheet has been opened; until then the design's sample number. */
+  const [commentCount, setCommentCount] = useState<{ trackId: string; count: number } | null>(null)
+
   const liked = useLibraryStore((state) => (track ? state.likedTrackIds.includes(track.id) : false))
   const toggleLike = useLibraryStore((state) => state.toggleLike)
 
@@ -90,9 +96,13 @@ export default function PlayerScreen() {
           {/* The video takes the place of the cover; it must stay at least 200 x 200 and visible. */}
           <View style={[styles.artwork, playsFromYouTube && styles.video]}>
             {playsFromYouTube ? (
-              <YouTubePlayerView />
+              <YouTubeSlot />
             ) : (
-              <PlayerArtwork source={track.cover} youtubeVideoId={track.youtubeVideoId} />
+              <PlayerArtwork
+                source={track.cover}
+                youtubeVideoId={track.youtubeVideoId}
+                label={track.title}
+              />
             )}
           </View>
           {playsFromYouTube && <YouTubeLabel />}
@@ -128,14 +138,23 @@ export default function PlayerScreen() {
             <PlayerActions
               liked={liked}
               likeCount={BASE_LIKE_COUNT + (liked ? LIKE_COUNT_BUMP : 0)}
-              commentCount={BASE_COMMENT_COUNT}
+              commentCount={
+                commentCount?.trackId === track.id ? commentCount.count : BASE_COMMENT_COUNT
+              }
               onToggleLike={() => toggleLike(track.id)}
-              onComments={() => showToast(COMING_SOON)}
+              onComments={() => setCommentsOpen(true)}
               onShare={() => showToast(COMING_SOON)}
             />
           </View>
         </View>
       </SwipeToDismiss>
+      {commentsOpen && (
+        <CommentsSheet
+          target={{ trackId: track.id }}
+          onClose={() => setCommentsOpen(false)}
+          onCountChange={(count) => setCommentCount({ trackId: track.id, count })}
+        />
+      )}
     </View>
   )
 }

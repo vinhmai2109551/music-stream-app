@@ -70,7 +70,7 @@ The app consists of 13 screens:
 - Centralised design tokens (colors, typography, spacing, radius, shadows)
 - File-based navigation with Expo Router and typed routes
 
-> **Note:** The project is under active development. The foundation layer (theme, types, mock data, stores, base UI) is in place and screens are being delivered epic by epic — see [Project Management](#project-management).
+> **Note:** The 13 screens are in place (Launch, Home, Playlist / Album / Artist details, Player, Search with results, Feed with comments, Library, My Playlists, Premium launch and plans). Remaining work is tracked in [Project Management](#project-management).
 
 ## Screenshots
 
@@ -240,14 +240,15 @@ flowchart TD
 
 ## Known limitations
 
-- **YouTube tracks do not play in the background.** The embedded player has to stay on screen, so the track pauses when the Player screen is closed or the app goes to the background. Audio files from R2 keep playing with the screen off.
+- **YouTube tracks do not play with the screen off.** The embedded player has to stay visible, so closing the Player screen does not stop the video: it moves into a floating 200 × 200 card above the mini player (YouTube's minimum size; its × stops playback). The track pauses when the app goes to the background. Audio files from R2 keep playing with the screen off.
 - **No lock screen / notification controls for YouTube tracks** (the video is not an audio session of the app).
 - **Ads can appear** on YouTube tracks; they are shown by YouTube and cannot be skipped by the app.
-- **The mini player does not play YouTube tracks by itself.** Pressing play on one opens the Player screen. A single YouTube player kept alive above every screen would have to shrink below the 200 × 200 minimum when it becomes a mini player, which YouTube's rules do not allow.
+- **The floating card covers part of the screen** while a YouTube track is current. The player lives above all screens (`YouTubeHost`), so the Player screen is a normal pushed screen, not a native modal (a native modal would hide the video on iOS).
 - **Lock screen buttons of R2 tracks:** play / pause and ±15 s. Next / previous are not offered because `expo-audio` only provides them for its native playlist, not for a single player.
 - **Expo Go:** background audio on iOS is part of Expo Go; on Android, the foreground service and lock screen controls come from the `expo-audio` config plugin in `app.json`, which Expo Go does not apply. If they do not show up on an Android phone, use a development build (`npx expo run:android` or EAS Build).
 - **The YouTube player page is hosted by the author of `react-native-youtube-iframe`** (GitHub Pages). Its play / pause handler is out of date (it expects plain text while the library sends JSON), so the app injects a small script that fixes it and makes the video fill the square. For production, host your own copy of the page and pass its address as `baseUrlOverride`.
-- **Pictures:** the covers, artist photos and album covers of the new catalog are not in R2 yet (see `backend/src/seed/R2_UPLOAD_LIST.md`). Until they are uploaded, the app shows the official video's thumbnail for tracks and a plain placeholder for artists and albums.
+- **Pictures:** the covers, artist photos and album covers of the new catalog are not in R2 yet (see `backend/src/seed/R2_UPLOAD_LIST.md`; ready-made pictures are in `backend/local-images/`, not committed). Until they are uploaded, the app shows a track's video picture and, for everything else, a coloured tile with the initials.
+- **Search ignores accents only one way:** typing `son` does not find `Sơn Tùng`; the server compares the exact letters.
 - Some videos forbid embedding; they fall back to the R2 file or are reported as above.
 
 ## Available Scripts

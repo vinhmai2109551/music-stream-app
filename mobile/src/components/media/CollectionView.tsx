@@ -13,7 +13,6 @@ import { IconButton } from "@/components/ui/IconButton"
 import { PlayButton } from "@/components/ui/PlayButton"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { TopBar } from "@/components/ui/TopBar"
-import { images } from "@/data/images"
 import { useResource } from "@/hooks/useResource"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
@@ -43,7 +42,7 @@ const totalDuration = (tracks: Track[]) => tracks.reduce((sum, track) => sum + t
 function fromPlaylist(playlist: ApiPlaylistDetail): Collection {
   return {
     name: playlist.name,
-    cover: playlist.cover ?? images.playlists.fallback,
+    cover: playlist.cover ?? "",
     description: playlist.description,
     tracks: playlist.tracks,
     byline: formatTime(totalDuration(playlist.tracks)),
@@ -141,6 +140,7 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
         <CoverImage
           source={collection.cover}
           youtubeVideoId={collection.tracks[0]?.youtubeVideoId}
+          label={collection.name}
           style={styles.cover}
         />
         <AppText variant="h2" numberOfLines={2} style={styles.center}>

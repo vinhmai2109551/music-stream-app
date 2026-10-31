@@ -1,4 +1,3 @@
-import { Image } from "expo-image"
 import { Heart, ListPlus, Plus } from "lucide-react-native"
 import { useState } from "react"
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native"
@@ -9,7 +8,6 @@ import { Button } from "@/components/ui/Button"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
-import { images } from "@/data/images"
 import { useLibraryStore } from "@/store/libraryStore"
 import { colors, radius, sizes, spacing, typography } from "@/theme"
 import type { Track } from "@/types"
@@ -58,6 +56,7 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
         <CoverImage
           source={track.cover}
           youtubeVideoId={track.youtubeVideoId}
+          label={track.title}
           style={styles.cover}
         />
         <View style={styles.headerText}>
@@ -129,9 +128,9 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
             onPress={() => addTo(playlist.id)}
             style={({ pressed }) => [styles.row, pressedStyle(pressed)]}
           >
-            <Image
-              source={playlist.cover ?? images.playlists.fallback}
-              contentFit="cover"
+            <CoverImage
+              source={playlist.cover ?? ""}
+              label={playlist.name}
               style={styles.playlistCover}
             />
             <View style={styles.flex}>

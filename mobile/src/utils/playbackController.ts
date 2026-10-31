@@ -9,7 +9,7 @@ import { canAutoSkip, type PlayerStore, type usePlayerStore } from "@/store/play
 import type { PlaybackErrorKind, PlaybackSource, Unsubscribe } from "@/types/playback"
 import { probeAudio, type ProbeResult } from "./probeAudio"
 
-/** The YouTube source also tells whether its player (a view of the player screen) exists. */
+/** The YouTube source also tells whether its player (a view mounted above the screens) exists. */
 export interface AttachableSource extends PlaybackSource {
   isAttached(): boolean
   onAttachedChange(listener: (attached: boolean) => void): Unsubscribe
@@ -22,7 +22,7 @@ export interface PlaybackControllerOptions {
   pollMs: number
   /** A track that keeps loading for this long fails as `network`. */
   loadTimeoutMs: number
-  /** A YouTube track waits this long for the player screen before it pauses. */
+  /** A YouTube track waits this long for its player to appear before it pauses. */
   playerScreenGraceMs: number
   /** A track that cannot be played is skipped after this long. */
   autoSkipMs: number
@@ -185,7 +185,7 @@ export class PlaybackController {
     }
   }
 
-  // ------------------------------------------------------------ the YouTube player screen
+  // ------------------------------------------------------------ the YouTube player
 
   private onAttached(attached: boolean): void {
     if (attached) {
@@ -194,7 +194,7 @@ export class PlaybackController {
       this.graceTimer = null
       return
     }
-    // The player screen closed, so its video cannot go on playing. A view that is only being
+    // The video player went away, so the video cannot go on playing. A view that is only being
     // rebuilt is back before this runs.
     setTimeout(() => {
       const { store, youtube } = this.deps
@@ -211,7 +211,7 @@ export class PlaybackController {
     else state.pause()
   }
 
-  /** The player screen is not open yet; if it does not open soon, the track pauses. */
+  /** The video player is not there yet; if it does not appear soon, the track pauses. */
   private waitForPlayerScreen(): void {
     this.waitingForScreen = true
     const token = this.token

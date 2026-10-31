@@ -19,7 +19,7 @@ function AlbumCardBase({ album, onPress }: AlbumCardProps) {
       onPress={() => onPress(album.id)}
       style={({ pressed }) => [styles.card, pressedStyle(pressed)]}
     >
-      <CoverImage source={album.cover} style={styles.cover} />
+      <CoverImage source={album.cover} label={album.artist} style={styles.cover} />
       <AppText variant="bodyMedium" numberOfLines={1} ellipsizeMode="tail" style={styles.title}>
         {album.title}
       </AppText>

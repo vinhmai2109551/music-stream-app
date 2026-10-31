@@ -128,7 +128,12 @@ function ArtistContent({
       >
         <View style={styles.padded}>
           <View style={styles.hero}>
-            <CoverImage source={artist.image} icon={User} style={styles.image} />
+            <CoverImage
+              source={artist.image}
+              label={artist.name}
+              icon={User}
+              style={styles.image}
+            />
             <AppText variant="h2" numberOfLines={2} style={styles.center}>
               {artist.name}
             </AppText>

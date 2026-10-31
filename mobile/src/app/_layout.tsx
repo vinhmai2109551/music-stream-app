@@ -6,6 +6,7 @@ import { StyleSheet } from "react-native"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { AudioEngine } from "@/components/media/AudioEngine"
+import { YouTubeHost } from "@/components/media/YouTubeHost"
 import { ToastHost } from "@/components/ui/ToastHost"
 import { useAppFonts } from "@/hooks/useAppFonts"
 import { useAppStore } from "@/store/appStore"
@@ -76,12 +77,22 @@ export default function RootLayout() {
             <Stack.Screen name="playlist/[id]" />
             <Stack.Screen name="album/[id]" />
             <Stack.Screen name="artist/[id]" />
+            <Stack.Screen name="premium" />
+            <Stack.Screen
+              name="premium-welcome"
+              options={{ animation: "fade", gestureEnabled: false }}
+            />
+            {/*
+              A plain screen, not a native modal: the YouTube player is drawn above the screens
+              (see YouTubeHost) and a native modal would hide it on iOS.
+            */}
             <Stack.Screen
               name="player"
-              options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }}
+              options={{ animation: "slide_from_bottom", gestureEnabled: false }}
             />
           </Stack.Protected>
         </Stack>
+        <YouTubeHost />
         <ToastHost />
       </SafeAreaProvider>
     </GestureHandlerRootView>

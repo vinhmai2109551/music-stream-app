@@ -10,7 +10,7 @@ import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
 
-type Variant = "primary" | "secondary" | "text" | "glass" | "outline" | "tonal"
+type Variant = "primary" | "secondary" | "text" | "glass" | "outline" | "tonal" | "dark"
 
 type ButtonProps = Omit<PressableProps, "style" | "children"> & {
   label: string
@@ -28,6 +28,7 @@ const TEXT_COLOR = {
   glass: "white",
   outline: "accentText",
   tonal: "accentText",
+  dark: "white",
 } as const
 
 export function Button({
@@ -103,5 +104,6 @@ const styles = StyleSheet.create({
     borderColor: colors.accentText,
   },
   tonal: { backgroundColor: colors.accentSoft },
+  dark: { backgroundColor: colors.text },
   disabled: { opacity: 0.5 },
 })
