@@ -89,7 +89,7 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
       title: track.title,
       artistId: track.artistId,
       coverUrl: media(track.cover),
-      audioUrl: media(track.audio),
+      audioUrl: track.audio ? media(track.audio) : null,
       durationSec: track.durationSec,
       youtubeVideoId: track.youtubeVideoId ?? null,
     }

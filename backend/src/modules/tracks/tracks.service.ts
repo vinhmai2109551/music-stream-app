@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common"
+import { ConfigService } from "@nestjs/config"
 import type { Track } from "../../generated/prisma/client.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
 import { pageArgs, toPage, type Page } from "../../shared/index.js"
@@ -6,6 +7,7 @@ import { ArtistsService } from "../artists/index.js"
 import { LikeKind, LikesService } from "../likes/index.js"
 import { UploadsService } from "../uploads/index.js"
 import { CreateTrackDto, ListTracksQueryDto, UpdateTrackDto } from "./dto/track.dto.js"
+import { readPlayConfig } from "./tracks.config.js"
 
 export interface TrackView {
   id: string
@@ -13,7 +15,8 @@ export interface TrackView {
   artist: string
   artistId: string
   cover: string
-  audioUrl: string
+  /** Audio file in our storage; null when the track only plays through its YouTube video. */
+  audioUrl: string | null
   plays: number
   /** Length in seconds. */
   duration: number
@@ -23,14 +26,26 @@ export interface TrackView {
   liked: boolean
 }
 
+/** Result of `POST /tracks/:id/play`. */
+export interface PlayResult {
+  plays: number
+  /** False when this listen was ignored because the user just played the track. */
+  counted: boolean
+}
+
 @Injectable()
 export class TracksService {
+  private readonly playDedupeMs: number
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly artists: ArtistsService,
     private readonly likes: LikesService,
     private readonly uploads: UploadsService,
-  ) {}
+    config: ConfigService,
+  ) {
+    this.playDedupeMs = readPlayConfig(config).dedupeMs
+  }
 
   async list(query: ListTracksQueryDto, userId?: string): Promise<Page<TrackView>> {
     const where = {
@@ -77,13 +92,21 @@ export class TracksService {
   }
 
   async create(dto: CreateTrackDto): Promise<TrackView> {
-    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl })
+    this.assertPlayable(dto)
+    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl ?? undefined })
     const track = await this.prisma.track.create({ data: dto })
     return this.get(track.id)
   }
 
   async update(id: string, dto: UpdateTrackDto): Promise<TrackView> {
-    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl })
+    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl ?? undefined })
+    if (dto.audioUrl !== undefined || dto.youtubeVideoId !== undefined) {
+      const current = await this.prisma.track.findUnique({
+        where: { id },
+        select: { audioUrl: true, youtubeVideoId: true },
+      })
+      if (current) this.assertPlayable({ ...current, ...dto })
+    }
     await this.prisma.track.update({ where: { id }, data: dto })
     return this.get(id)
   }
@@ -92,13 +115,45 @@ export class TracksService {
     await this.prisma.track.delete({ where: { id } })
   }
 
-  async recordPlay(id: string): Promise<{ plays: number }> {
-    const track = await this.prisma.track.update({
-      where: { id },
-      data: { plays: { increment: 1 } },
-      select: { plays: true },
+  /**
+   * Counts one listen by `userId`. The same user playing the same track again within the dedupe
+   * window answers `counted: false`, so replaying cannot inflate the number.
+   */
+  async recordPlay(userId: string, id: string): Promise<PlayResult> {
+    const track = await this.prisma.track.findUnique({ where: { id }, select: { id: true } })
+    if (!track) throw new NotFoundException("Track not found")
+
+    return this.prisma.$transaction(async (tx) => {
+      // One request at a time per (user, track): otherwise two parallel ones both see "no recent
+      // listen" and both count. The lock is released when the transaction ends.
+      const lockKey = `${userId}:${id}`
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`
+
+      const since = new Date(Date.now() - this.playDedupeMs)
+      const recent = await tx.playEvent.findFirst({
+        where: { userId, trackId: id, createdAt: { gt: since } },
+        select: { id: true },
+      })
+      if (recent) {
+        const current = await tx.track.findUniqueOrThrow({ where: { id }, select: { plays: true } })
+        return { plays: current.plays, counted: false }
+      }
+
+      await tx.playEvent.create({ data: { userId, trackId: id } })
+      const updated = await tx.track.update({
+        where: { id },
+        data: { plays: { increment: 1 } },
+        select: { plays: true },
+      })
+      return { plays: updated.plays, counted: true }
     })
-    return track
+  }
+
+  /** A track nobody can play (no audio file and no YouTube video) is a data mistake. */
+  private assertPlayable(source: { audioUrl?: string | null; youtubeVideoId?: string | null }) {
+    if (!source.audioUrl && !source.youtubeVideoId) {
+      throw new BadRequestException("A track needs an audioUrl or a youtubeVideoId to be played")
+    }
   }
 
   private async toViews(rows: Track[], userId?: string): Promise<TrackView[]> {

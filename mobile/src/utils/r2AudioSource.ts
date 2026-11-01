@@ -46,10 +46,18 @@ export class R2AudioSource implements PlaybackSource {
 
   load(track: Track): void {
     const id = ++this.loadId
+    const url = track.audioUrl
+    if (!url) {
+      // The controller only picks this source for a track that has a file; a track without one
+      // (audioUrl is null) is reported like a file that is not there.
+      this.loaded = false
+      this.emitError("missing")
+      return
+    }
     this.loaded = true
-    this.player.replace(track.audioUrl)
+    this.player.replace(url)
     this.showOnLockScreen(track)
-    void this.probe(track.audioUrl).then((result) => {
+    void this.probe(url).then((result) => {
       if (id === this.loadId && result === "missing") this.emitError("missing")
     })
   }

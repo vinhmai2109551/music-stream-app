@@ -18,9 +18,15 @@ const TEST_ENV = {
   JWT_SECRET: "e2e-secret-that-is-long-enough-to-pass-validation",
   JWT_ACCESS_EXPIRES_IN: "15m",
   REFRESH_TOKEN_TTL_DAYS: "30",
-  // Effectively unlimited, so only the throttle spec ever hits the limit.
+  // Effectively unlimited, so only the throttle specs ever hit a limit.
   AUTH_THROTTLE_LIMIT: "1000",
   AUTH_THROTTLE_TTL_SECONDS: "60",
+  REFRESH_THROTTLE_LIMIT: "1000",
+  REFRESH_THROTTLE_TTL_SECONDS: "60",
+  PLAY_THROTTLE_LIMIT: "1000",
+  PLAY_THROTTLE_TTL_SECONDS: "60",
+  REFRESH_REUSE_GRACE_SECONDS: "10",
+  PLAY_DEDUPE_MINUTES: "30",
   SEED_ON_START: "false",
   // Blank, so the real R2 keys from .env never reach a test server unless a spec sets them.
   R2_ACCOUNT_ID: "",

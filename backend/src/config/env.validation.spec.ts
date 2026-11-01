@@ -49,4 +49,53 @@ describe("validateEnv", () => {
     expect(() => validateEnv({ JWT_SECRET: base.JWT_SECRET })).toThrow(/DATABASE_URL/)
     expect(() => validateEnv({ ...base, JWT_SECRET: "short" })).toThrow(/JWT_SECRET/)
   })
+
+  describe("limits, grace period and proxy settings", () => {
+    const valid = {
+      ...base,
+      AUTH_THROTTLE_LIMIT: "5",
+      REFRESH_THROTTLE_LIMIT: "30",
+      REFRESH_THROTTLE_TTL_SECONDS: "60",
+      REFRESH_REUSE_GRACE_SECONDS: "10",
+      PLAY_DEDUPE_MINUTES: "30",
+      PLAY_THROTTLE_LIMIT: "60",
+      PLAY_THROTTLE_TTL_SECONDS: "60",
+      TRUST_PROXY: "1",
+    }
+
+    it("accepts the documented defaults", () => {
+      expect(() => validateEnv(valid)).not.toThrow()
+    })
+
+    it("accepts 0 for the grace period (it turns the grace off) but not for the limits", () => {
+      expect(() => validateEnv({ ...valid, REFRESH_REUSE_GRACE_SECONDS: "0" })).not.toThrow()
+      expect(() => validateEnv({ ...valid, REFRESH_THROTTLE_LIMIT: "0" })).toThrow(
+        /REFRESH_THROTTLE_LIMIT/,
+      )
+      expect(() => validateEnv({ ...valid, PLAY_DEDUPE_MINUTES: "0" })).toThrow(
+        /PLAY_DEDUPE_MINUTES/,
+      )
+    })
+
+    it.each([
+      ["REFRESH_THROTTLE_LIMIT", "many"],
+      ["REFRESH_THROTTLE_TTL_SECONDS", "-5"],
+      ["REFRESH_REUSE_GRACE_SECONDS", "1.5"],
+      ["PLAY_THROTTLE_LIMIT", "x"],
+      ["PLAY_THROTTLE_TTL_SECONDS", "0"],
+    ])("rejects %s=%p and names the variable", (name, value) => {
+      expect(() => validateEnv({ ...valid, [name]: value })).toThrow(new RegExp(name))
+    })
+
+    it("accepts a hop count, a boolean or an address list for TRUST_PROXY", () => {
+      for (const value of ["0", "1", "2", "true", "false", "loopback, 10.0.0.0/8"]) {
+        expect(() => validateEnv({ ...valid, TRUST_PROXY: value })).not.toThrow()
+      }
+    })
+
+    it("rejects a TRUST_PROXY that cannot be an Express setting", () => {
+      expect(() => validateEnv({ ...valid, TRUST_PROXY: "" })).toThrow(/TRUST_PROXY/)
+      expect(() => validateEnv({ ...valid, TRUST_PROXY: "1; drop" })).toThrow(/TRUST_PROXY/)
+    })
+  })
 })

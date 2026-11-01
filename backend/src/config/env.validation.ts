@@ -11,6 +11,9 @@ import {
 } from "class-validator"
 
 const POSITIVE_INTEGER = /^[1-9]\d*$/
+const NON_NEGATIVE_INTEGER = /^\d+$/
+/** A number, true / false, or names and addresses such as `loopback, 10.0.0.0/8`. */
+const TRUST_PROXY_VALUE = /^(\d+|true|false|[A-Za-z0-9.:/, _-]+)$/
 
 /** Cloudflare R2 settings are mandatory in production and optional while developing. */
 const requiredInProduction = (env: EnvironmentVariables) => env.NODE_ENV === "production"
@@ -77,6 +80,40 @@ class EnvironmentVariables {
   @IsOptional()
   @Matches(POSITIVE_INTEGER, { message: "AUTH_THROTTLE_TTL_SECONDS must be a positive integer" })
   AUTH_THROTTLE_TTL_SECONDS?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "REFRESH_THROTTLE_LIMIT must be a positive integer" })
+  REFRESH_THROTTLE_LIMIT?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "REFRESH_THROTTLE_TTL_SECONDS must be a positive integer" })
+  REFRESH_THROTTLE_TTL_SECONDS?: string
+
+  /** 0 turns the grace period off. */
+  @IsOptional()
+  @Matches(NON_NEGATIVE_INTEGER, {
+    message: "REFRESH_REUSE_GRACE_SECONDS must be a non-negative integer",
+  })
+  REFRESH_REUSE_GRACE_SECONDS?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "PLAY_DEDUPE_MINUTES must be a positive integer" })
+  PLAY_DEDUPE_MINUTES?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "PLAY_THROTTLE_LIMIT must be a positive integer" })
+  PLAY_THROTTLE_LIMIT?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "PLAY_THROTTLE_TTL_SECONDS must be a positive integer" })
+  PLAY_THROTTLE_TTL_SECONDS?: string
+
+  /** Reverse proxies in front of the API: a hop count, true / false, or an address list. */
+  @IsOptional()
+  @Matches(TRUST_PROXY_VALUE, {
+    message: "TRUST_PROXY must be a hop count (1), true, false or a list of addresses",
+  })
+  TRUST_PROXY?: string
 }
 
 /** Fails fast at startup when a required variable is missing or malformed. */

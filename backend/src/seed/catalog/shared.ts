@@ -36,7 +36,8 @@ export interface SeedTrack {
   cover: MediaRef
   plays: number
   durationSec: number
-  audio: MediaRef
+  /** Audio file in the bucket; only the original demo tracks have one (the rest are commercial). */
+  audio?: MediaRef
   /** Id of the official YouTube video this track plays from (see youtube-ids.ts). */
   youtubeVideoId?: string
 }
@@ -64,7 +65,8 @@ export function createArtist(
 }
 
 /**
- * Id: `<artistId>-<slug>`. Cover: `covers/<region>/<id>.jpg`. Audio: `audio/<id>.mp3`.
+ * Id: `<artistId>-<slug>`. Cover: `covers/<region>/<id>.jpg`. No audio file: these are commercial
+ * recordings that play only through the official YouTube video.
  * The YouTube video comes from the verified list in youtube-ids.ts.
  */
 export function createTrack(
@@ -84,7 +86,6 @@ export function createTrack(
     cover: cover(`${region.toLowerCase()}/${id}.jpg`),
     plays,
     durationSec,
-    audio: audio(id),
     ...(youtubeVideoId ? { youtubeVideoId } : {}),
   }
 }

@@ -13,6 +13,7 @@ interface TokenRow {
   tokenHash: string
   familyId: string
   revokedAt: Date | null
+  replacedAt: Date | null
 }
 
 const ACCESS_TOKEN_SECONDS = 15 * 60
@@ -45,6 +46,13 @@ describe("Auth tokens (e2e)", () => {
   const refresh = (refreshToken: string) => http().post("/api/auth/refresh").send({ refreshToken })
   const me = (accessToken: string) =>
     http().get("/api/auth/me").set("Authorization", `Bearer ${accessToken}`)
+  /** Makes every replaced token of the user old enough that the grace period is over. */
+  const endGracePeriod = (userId: string) =>
+    server.db.run(
+      `UPDATE "RefreshToken" SET "replacedAt" = "replacedAt" - interval '1 minute'
+        WHERE "userId" = $1 AND "replacedAt" IS NOT NULL`,
+      [userId],
+    )
   const tokensOf = (userId: string) =>
     server.db.rows<TokenRow>(`SELECT * FROM "RefreshToken" WHERE "userId" = $1`, [userId])
   const decodePayload = (jwt: string) =>
@@ -115,6 +123,8 @@ describe("Auth tokens (e2e)", () => {
       expect(rows).toHaveLength(2)
       expect(new Set(rows.map((row) => row.familyId)).size).toBe(1)
       expect(rows.filter((row) => row.revokedAt === null)).toHaveLength(1)
+      // Only the token the refresh replaced is marked as replaced.
+      expect(rows.filter((row) => row.replacedAt !== null)).toHaveLength(1)
     })
 
     it("the new token can be rotated again", async () => {
@@ -123,9 +133,10 @@ describe("Auth tokens (e2e)", () => {
       await refresh(first.refreshToken).expect(200)
     })
 
-    it("reusing an old token is 401 and revokes the whole family", async () => {
+    it("reusing an old token after the grace period is 401 and revokes the whole family", async () => {
       const { session } = await register()
       const rotated = (await refresh(session.refreshToken).expect(200)).body as Session
+      await endGracePeriod(session.user.id)
 
       await refresh(session.refreshToken).expect(401) // replay of the revoked token
       await refresh(rotated.refreshToken).expect(401) // its successor died with the family
@@ -138,22 +149,121 @@ describe("Auth tokens (e2e)", () => {
       const { email, password, session } = await register()
       const otherDevice = await login(email, password)
       const rotated = (await refresh(session.refreshToken).expect(200)).body as Session
+      await endGracePeriod(session.user.id)
 
       await refresh(session.refreshToken).expect(401)
       await refresh(rotated.refreshToken).expect(401)
       await refresh(otherDevice.refreshToken).expect(200)
     })
 
-    it("two simultaneous refreshes with the same token: one wins, then the family is revoked", async () => {
+    it("two simultaneous refreshes with the same token both succeed, inside one family", async () => {
       const { session } = await register()
-      const [a, b] = await Promise.all([
+      const [first, second] = await Promise.all([
         refresh(session.refreshToken),
         refresh(session.refreshToken),
       ])
 
-      expect([a.status, b.status].sort()).toEqual([200, 401])
-      const winner = (a.status === 200 ? a : b).body as Session
-      await refresh(winner.refreshToken).expect(401)
+      // One rotates the token, the other arrives a moment later and is inside the grace period.
+      expect([first.status, second.status]).toEqual([200, 200])
+      const tokens = [first, second].map((response) => (response.body as Session).refreshToken)
+      expect(new Set(tokens).size).toBe(2)
+      expect(new Set((await tokensOf(session.user.id)).map((row) => row.familyId)).size).toBe(1)
+      for (const token of tokens) await refresh(token).expect(200)
+    })
+
+    describe("grace period", () => {
+      it("a token replaced a moment ago gets a new token of the same family", async () => {
+        const { session } = await register()
+        const first = (await refresh(session.refreshToken).expect(200)).body as Session
+        // The app was killed before it saved `first`, so it comes back with the old token.
+        const second = (await refresh(session.refreshToken).expect(200)).body as Session
+
+        expect(second.refreshToken).not.toBe(first.refreshToken)
+        await me(second.accessToken).expect(200)
+        const rows = await tokensOf(session.user.id)
+        expect(new Set(rows.map((row) => row.familyId)).size).toBe(1)
+        expect(rows).toHaveLength(3)
+        // Nothing was revoked by the second call, and the old token keeps its single replacement.
+        expect(rows.filter((row) => row.revokedAt === null)).toHaveLength(2)
+        expect(rows.filter((row) => row.replacedAt !== null)).toHaveLength(1)
+      })
+
+      it("both new tokens keep working, and the login keeps rotating", async () => {
+        const { session } = await register()
+        const first = (await refresh(session.refreshToken).expect(200)).body as Session
+        const second = (await refresh(session.refreshToken).expect(200)).body as Session
+
+        const next = (await refresh(second.refreshToken).expect(200)).body as Session
+        await refresh(first.refreshToken).expect(200)
+        await refresh(next.refreshToken).expect(200)
+      })
+
+      it("once the grace period is over the same replay revokes the whole login", async () => {
+        const { session } = await register()
+        const first = (await refresh(session.refreshToken).expect(200)).body as Session
+        await refresh(session.refreshToken).expect(200) // still inside the grace period
+        await endGracePeriod(session.user.id)
+
+        await refresh(session.refreshToken).expect(401)
+        await refresh(first.refreshToken).expect(401)
+        const rows = await tokensOf(session.user.id)
+        expect(rows.every((row) => row.revokedAt !== null)).toBe(true)
+      })
+
+      it("does not apply to a token that logout revoked", async () => {
+        const { session } = await register()
+        await http()
+          .post("/api/auth/logout")
+          .send({ refreshToken: session.refreshToken })
+          .expect(204)
+
+        await refresh(session.refreshToken).expect(401)
+      })
+
+      it("does not apply once the login was logged out after the replacement", async () => {
+        const { session } = await register()
+        const rotated = (await refresh(session.refreshToken).expect(200)).body as Session
+        await http()
+          .post("/api/auth/logout")
+          .send({ refreshToken: rotated.refreshToken })
+          .expect(204)
+
+        await refresh(session.refreshToken).expect(401) // replaced just now, but the login is over
+        await refresh(rotated.refreshToken).expect(401)
+      })
+
+      it("does not apply to an expired token", async () => {
+        const { session } = await register()
+        const rotated = (await refresh(session.refreshToken).expect(200)).body as Session
+        await server.db.run(
+          `UPDATE "RefreshToken" SET "expiresAt" = (now() AT TIME ZONE 'utc') - interval '1 second'
+            WHERE "userId" = $1`,
+          [session.user.id],
+        )
+
+        await refresh(session.refreshToken).expect(401)
+        await refresh(rotated.refreshToken).expect(401)
+      })
+
+      it("REFRESH_REUSE_GRACE_SECONDS=0 turns it off", async () => {
+        const strict = await startTestServer({ REFRESH_REUSE_GRACE_SECONDS: "0" })
+        try {
+          const body = { email: uniqueEmail(), name: "Strict User", password: "password123" }
+          const registered = await request(strict.url)
+            .post("/api/auth/register")
+            .send(body)
+            .expect(201)
+          const session = registered.body as Session
+          const again = (token: string) =>
+            request(strict.url).post("/api/auth/refresh").send({ refreshToken: token })
+
+          const rotated = (await again(session.refreshToken).expect(200)).body as Session
+          await again(session.refreshToken).expect(401)
+          await again(rotated.refreshToken).expect(401)
+        } finally {
+          await strict.stop()
+        }
+      })
     })
 
     it("an expired token is 401", async () => {

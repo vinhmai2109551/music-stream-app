@@ -47,20 +47,24 @@ model User {
   commentLikes  CommentLike[]
   postLikes     FeedPostLike[]
   refreshTokens RefreshToken[]
+  playEvents    PlayEvent[]
 }
 
 // ---------------------------------------------------------------- owner: auth
 /// Only the SHA-256 hash of a refresh token is stored, never the token itself.
 /// Tokens rotate on every refresh; all tokens of one login share a familyId so that reuse of an
-/// already-revoked token can revoke the whole family.
+/// already-revoked token can revoke the whole family. `replacedAt` is set only when a refresh
+/// replaced the token (not on logout or family revocation); it opens a short grace window for a
+/// client that never received the new token.
 model RefreshToken {
-  id        String    @id @default(cuid())
-  userId    String
-  tokenHash String    @unique
-  familyId  String
-  expiresAt DateTime
-  revokedAt DateTime?
-  createdAt DateTime  @default(now())
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  familyId   String
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  replacedAt DateTime?
+  createdAt  DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -94,22 +98,38 @@ model Track {
   title          String
   artistId       String
   coverUrl       String
-  audioUrl       String
+  /// Audio file in our storage. Null for commercial tracks, which only play through YouTube.
+  audioUrl       String?
   plays          Int      @default(0)
   durationSec    Int
   /// Id of the official YouTube video the app plays this track from; null = play `audioUrl`.
   youtubeVideoId String?
   createdAt      DateTime @default(now())
 
-  artist    Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
-  albums    AlbumTrack[]
-  playlists PlaylistTrack[]
-  likes     TrackLike[]
-  comments  Comment[]
-  feedPosts FeedPost[]
+  artist     Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  albums     AlbumTrack[]
+  playlists  PlaylistTrack[]
+  likes      TrackLike[]
+  comments   Comment[]
+  feedPosts  FeedPost[]
+  playEvents PlayEvent[]
 
   @@index([artistId])
   @@index([title])
+}
+
+/// One counted listen. Lets the API ignore a repeat listen of the same track by the same user
+/// within a short window, and is the base for a "recently played" list.
+model PlayEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  trackId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@index([userId, trackId, createdAt])
 }
 
 // --------------------------------------------------------------- owner: albums
@@ -151,7 +171,7 @@ model Playlist {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner  User?            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner  User?           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   tracks PlaylistTrack[]
   likes  PlaylistLike[]
 
@@ -241,6 +261,7 @@ model Comment {
 
   @@index([trackId, createdAt])
   @@index([postId, createdAt])
+  @@index([parentId, createdAt])
 }
 
 model CommentLike {

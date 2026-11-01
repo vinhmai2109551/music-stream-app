@@ -18,6 +18,7 @@ interface ArtistBody {
 }
 
 interface TrackBody {
+  audioUrl: string | null
   youtubeVideoId: string | null
 }
 
@@ -51,6 +52,8 @@ describe("Seed on start (e2e)", () => {
     const env = { ...SEED_ENV, R2_PUBLIC_URL: "https://media.e2e.test" }
     const regionOf = async (server: TestServer, id: string) =>
       ((await request(server.url).get(`/api/artists/${id}`).expect(200)).body as ArtistBody).region
+    const audioOf = async (server: TestServer, id: string) =>
+      ((await request(server.url).get(`/api/tracks/${id}`).expect(200)).body as TrackBody).audioUrl
     const videoOf = async (server: TestServer, id: string) =>
       ((await request(server.url).get(`/api/tracks/${id}`).expect(200)).body as TrackBody)
         .youtubeVideoId
@@ -63,6 +66,9 @@ describe("Seed on start (e2e)", () => {
       expect(await regionOf(server, "ryan")).toBe("GLOBAL")
       expect(await videoOf(server, "bts-dynamite")).toMatch(/^[A-Za-z0-9_-]{11}$/)
       expect(await videoOf(server, "flower")).toBeNull()
+      // Only the original demo tracks have a file on R2; commercial tracks play from YouTube.
+      expect(await audioOf(server, "flower")).toBe("https://media.e2e.test/audio/flower.mp3")
+      expect(await audioOf(server, "bts-dynamite")).toBeNull()
 
       const korea = await request(server.url).get("/api/artists?region=KOREA").expect(200)
       const total = await request(server.url).get("/api/artists?limit=1").expect(200)
@@ -73,12 +79,17 @@ describe("Seed on start (e2e)", () => {
       const dynamite = await videoOf(server, "bts-dynamite")
       await server.db.run(`UPDATE "Artist" SET region = 'GLOBAL' WHERE id = 'bts'`)
       await server.db.run(`UPDATE "Track" SET "youtubeVideoId" = NULL WHERE id = 'bts-dynamite'`)
+      await server.db.run(
+        `UPDATE "Track" SET "audioUrl" = 'https://media.e2e.test/audio/bts-dynamite.mp3' WHERE id = 'bts-dynamite'`,
+      )
 
       // Second start: the seed runs again and must put both values back (the update path).
       const again = await startTestServer(env)
       try {
         expect(await regionOf(again, "bts")).toBe("KOREA")
         expect(await videoOf(again, "bts-dynamite")).toBe(dynamite)
+        // A file link left by the older seed is removed again.
+        expect(await audioOf(again, "bts-dynamite")).toBeNull()
       } finally {
         await again.stop()
       }

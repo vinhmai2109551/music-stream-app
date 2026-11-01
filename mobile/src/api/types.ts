@@ -78,8 +78,8 @@ export interface ApiTrack {
   artistId: string
   /** Cover image URL. */
   cover: string
-  /** File in our storage (R2). Tracks of real artists have none: they play from YouTube. */
-  audioUrl: string
+  /** File in our storage (R2). Tracks of real artists have none (null): they play from YouTube. */
+  audioUrl: string | null
   /** Official YouTube video to play from; null when the track plays `audioUrl` instead. */
   youtubeVideoId: string | null
   plays: number
@@ -175,6 +175,32 @@ export interface ApiComment {
   parentId: string | null
   trackId: string | null
   postId: string | null
+}
+
+/** A top-level comment with its newest replies; the rest are loaded on request. */
+export interface ApiCommentThread extends ApiComment {
+  /** Up to 3 newest replies, oldest first. */
+  replies: ApiComment[]
+  /** All replies, also those not in `replies`. */
+  repliesCount: number
+}
+
+/** One page of a list read with a cursor. */
+export interface CursorPage<T> {
+  items: T[]
+  /** Pass it as `cursor` to get the next page; null on the last page. */
+  nextCursor: string | null
+}
+
+export interface CursorQuery {
+  cursor?: string
+  limit?: number
+}
+
+/** A page of top-level comments, newest first. */
+export interface ApiCommentPage extends CursorPage<ApiCommentThread> {
+  /** Every comment on the target, replies included (not only this page). */
+  total: number
 }
 
 /** Comments belong to exactly one target. */

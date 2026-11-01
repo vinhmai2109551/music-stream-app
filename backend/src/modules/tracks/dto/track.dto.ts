@@ -28,8 +28,11 @@ export class CreateTrackDto {
   @IsUrl()
   coverUrl!: string
 
+  /** Audio file in our storage. Leave it out (or null) for a track that only plays on YouTube. */
+  @ApiPropertyOptional({ nullable: true, type: String })
+  @IsOptional()
   @IsUrl()
-  audioUrl!: string
+  audioUrl?: string | null
 
   /** Length in seconds. */
   @IsInt()
