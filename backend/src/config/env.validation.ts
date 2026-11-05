@@ -15,7 +15,7 @@ const NON_NEGATIVE_INTEGER = /^\d+$/
 /** A number, true / false, or names and addresses such as `loopback, 10.0.0.0/8`. */
 const TRUST_PROXY_VALUE = /^(\d+|true|false|[A-Za-z0-9.:/, _-]+)$/
 
-/** Cloudflare R2 settings are mandatory in production and optional while developing. */
+/** Cloudflare R2 and Turnstile settings are mandatory in production and optional while developing. */
 const requiredInProduction = (env: EnvironmentVariables) => env.NODE_ENV === "production"
 
 class EnvironmentVariables {
@@ -107,6 +107,22 @@ class EnvironmentVariables {
   @IsOptional()
   @Matches(POSITIVE_INTEGER, { message: "PLAY_THROTTLE_TTL_SECONDS must be a positive integer" })
   PLAY_THROTTLE_TTL_SECONDS?: string
+
+  /** Cloudflare Turnstile secret key (bot check on login). Required in production. */
+  @ValidateIf(requiredInProduction)
+  @IsString()
+  @IsNotEmpty({ message: "TURNSTILE_SECRET_KEY is required in production" })
+  TURNSTILE_SECRET_KEY?: string
+
+  /**
+   * Comma-separated hostnames a Turnstile token may come from, e.g. `musicstream.app,localhost`.
+   * Left blank (as in .env.example) it means "any hostname", so only a filled value is checked.
+   */
+  @ValidateIf((env: EnvironmentVariables) => Boolean(env.TURNSTILE_ALLOWED_HOSTNAMES?.trim()))
+  @Matches(/^[A-Za-z0-9.-]+(\s*,\s*[A-Za-z0-9.-]+)*$/, {
+    message: "TURNSTILE_ALLOWED_HOSTNAMES must be a comma-separated list of hostnames",
+  })
+  TURNSTILE_ALLOWED_HOSTNAMES?: string
 
   /** Reverse proxies in front of the API: a hop count, true / false, or an address list. */
   @IsOptional()

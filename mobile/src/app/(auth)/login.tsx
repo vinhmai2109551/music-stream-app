@@ -5,8 +5,10 @@ import { AuthScreenLayout } from "@/components/ui/AuthScreenLayout"
 import { Button } from "@/components/ui/Button"
 import { FormError } from "@/components/ui/FormError"
 import { TextField } from "@/components/ui/TextField"
+import { TurnstileWidget } from "@/components/ui/TurnstileWidget"
 import { AUTH_LIMITS } from "@/constants/auth"
 import { copy } from "@/constants/copy"
+import { TURNSTILE } from "@/constants/turnstile"
 import { images } from "@/data/images"
 import { useAsyncSubmit } from "@/hooks/useAsyncSubmit"
 import { useAuthStore } from "@/store/authStore"
@@ -27,6 +29,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [errors, setErrors] = useState<FieldErrors<LoginField>>({})
+  // Cloudflare Turnstile: each token is single-use, so the widget is remounted after every attempt.
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileKey, setTurnstileKey] = useState(0)
+  const [turnstileMissing, setTurnstileMissing] = useState(false)
   const emailRef = useRef<TextInputInstance>(null)
   const passwordRef = useRef<TextInputInstance>(null)
 
@@ -38,10 +44,30 @@ export default function LoginScreen() {
       first.current?.focus()
       return
     }
+    if (TURNSTILE.enabled && !turnstileToken) {
+      setTurnstileMissing(true)
+      return
+    }
     void run(
-      () => login({ email: normalizeEmail(email), password }),
+      async () => {
+        try {
+          await login({
+            email: normalizeEmail(email),
+            password,
+            ...(turnstileToken ? { turnstileToken } : {}),
+          })
+        } finally {
+          setTurnstileToken(null)
+          setTurnstileKey((key) => key + 1)
+        }
+      },
       (caught) => describeAuthError(caught, "login"),
     )
+  }
+
+  const handleTurnstileToken = (token: string | null) => {
+    setTurnstileToken(token)
+    if (token) setTurnstileMissing(false)
   }
 
   return (
@@ -95,6 +121,8 @@ export default function LoginScreen() {
         onSubmitEditing={submit}
         maxLength={AUTH_LIMITS.passwordMax}
       />
+      <TurnstileWidget key={turnstileKey} action="login" onToken={handleTurnstileToken} />
+      {turnstileMissing ? <FormError message={text.turnstile.required} /> : null}
       {error ? <FormError message={error} /> : null}
       <Button label={text.login.submit} loading={submitting} onPress={submit} />
     </AuthScreenLayout>

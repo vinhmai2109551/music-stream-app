@@ -14,6 +14,8 @@ const r2 = {
   R2_PUBLIC_URL: "https://pub-abc.r2.dev",
 }
 
+const turnstile = { TURNSTILE_SECRET_KEY: "0x4AAAAAAA-secret" }
+
 describe("validateEnv", () => {
   it("accepts a minimal development environment without any R2 setting", () => {
     expect(() => validateEnv({ ...base, NODE_ENV: "development" })).not.toThrow()
@@ -37,7 +39,44 @@ describe("validateEnv", () => {
   })
 
   it("accepts a complete production environment", () => {
-    expect(() => validateEnv({ ...base, NODE_ENV: "production", ...r2 })).not.toThrow()
+    expect(() =>
+      validateEnv({ ...base, NODE_ENV: "production", ...r2, ...turnstile }),
+    ).not.toThrow()
+  })
+
+  it("requires TURNSTILE_SECRET_KEY in production only", () => {
+    expect(() => validateEnv({ ...base, NODE_ENV: "production", ...r2 })).toThrow(
+      /TURNSTILE_SECRET_KEY/,
+    )
+    expect(() =>
+      validateEnv({ ...base, NODE_ENV: "development", TURNSTILE_SECRET_KEY: "" }),
+    ).not.toThrow()
+  })
+
+  it("treats a blank TURNSTILE_ALLOWED_HOSTNAMES as unset, as .env.example ships it", () => {
+    for (const value of ["", "   "]) {
+      expect(() => validateEnv({ ...base, TURNSTILE_ALLOWED_HOSTNAMES: value })).not.toThrow()
+      expect(() =>
+        validateEnv({
+          ...base,
+          NODE_ENV: "production",
+          ...r2,
+          ...turnstile,
+          TURNSTILE_ALLOWED_HOSTNAMES: value,
+        }),
+      ).not.toThrow()
+    }
+  })
+
+  it("accepts a hostname list for TURNSTILE_ALLOWED_HOSTNAMES and rejects anything else", () => {
+    for (const value of ["localhost", "musicstream.app, localhost", "a.b.c,d"]) {
+      expect(() => validateEnv({ ...base, TURNSTILE_ALLOWED_HOSTNAMES: value })).not.toThrow()
+    }
+    for (const value of ["https://musicstream.app", "a,,b", "a b"]) {
+      expect(() => validateEnv({ ...base, TURNSTILE_ALLOWED_HOSTNAMES: value })).toThrow(
+        /TURNSTILE_ALLOWED_HOSTNAMES/,
+      )
+    }
   })
 
   it("checks R2_PUBLIC_URL whenever it is set, even in development", () => {

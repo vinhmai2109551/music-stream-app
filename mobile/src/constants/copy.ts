@@ -162,6 +162,13 @@ export const copy = {
     errors: {
       invalidCredentials: "Email hoặc mật khẩu không đúng",
       emailTaken: "Email đã được đăng ký",
+      turnstileFailed: "Xác minh bảo mật thất bại. Vui lòng xác minh lại.",
+      turnstileUnavailable: "Dịch vụ xác minh tạm thời không khả dụng. Vui lòng thử lại.",
+    },
+    turnstile: {
+      label: "Xác minh bảo mật Cloudflare",
+      required: "Vui lòng hoàn tất xác minh bảo mật trước khi đăng nhập",
+      failed: "Không tải được xác minh bảo mật. Chạm để thử lại.",
     },
   },
 } as const

@@ -26,6 +26,8 @@ export interface AuthResponse extends TokenPair {
 export interface LoginInput {
   email: string
   password: string
+  /** Cloudflare Turnstile token; required when the backend has TURNSTILE_SECRET_KEY set. */
+  turnstileToken?: string
 }
 
 export interface RegisterInput extends LoginInput {

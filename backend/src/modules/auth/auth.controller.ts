@@ -1,9 +1,11 @@
-import { Body, Controller, Get, HttpCode, Post } from "@nestjs/common"
+import { Body, Controller, Get, HttpCode, Ip, Post } from "@nestjs/common"
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiServiceUnavailableResponse,
   ApiTags,
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
@@ -14,6 +16,7 @@ import { CREDENTIALS_THROTTLE, REFRESH_THROTTLE } from "./auth.config.js"
 import { AuthResult, AuthService, TokenPair } from "./auth.service.js"
 import { AuthResponseDto, AuthUserDto, TokenPairDto } from "./dto/auth-response.dto.js"
 import { LoginDto, RefreshTokenDto, RegisterDto } from "./dto/auth.dto.js"
+import { TurnstileService } from "./turnstile.service.js"
 
 @ApiTags("auth")
 @Controller("auth")
@@ -21,6 +24,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly users: UsersService,
+    private readonly turnstile: TurnstileService,
   ) {}
 
   // register, login and refresh are rate limited per IP, each group on its own (see auth.config);
@@ -40,9 +44,13 @@ export class AuthController {
   @ThrottleGroup(CREDENTIALS_THROTTLE)
   @ApiOperation({ summary: "Log in and get an access + refresh token" })
   @ApiOkResponse({ type: AuthResponseDto })
+  @ApiBadRequestResponse({ description: "Missing or failed Cloudflare Turnstile check" })
   @ApiUnauthorizedResponse({ description: "Wrong email or password" })
   @ApiTooManyRequestsResponse({ description: "Too many attempts from this IP" })
-  login(@Body() dto: LoginDto): Promise<AuthResult> {
+  @ApiServiceUnavailableResponse({ description: "Cloudflare Turnstile could not be reached" })
+  async login(@Body() dto: LoginDto, @Ip() ip: string): Promise<AuthResult> {
+    // The bot check runs before the password is compared, so a bot learns nothing about accounts.
+    await this.turnstile.verify(dto.turnstileToken, "login", ip)
     return this.auth.login(dto)
   }
 
