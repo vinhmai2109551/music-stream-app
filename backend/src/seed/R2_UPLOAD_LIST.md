@@ -221,6 +221,17 @@ covers/playlists/top-cpop.jpg
 covers/playlists/asia-mix.jpg
 ```
 
+## Background playlist (Creative Commons)
+
+The playlist **Phát nền – Background** has 8 tracks by Kevin MacLeod (CC BY) that are the only new-catalog tracks hosted in R2: 8 MP3 files, 8 covers, 1 artist picture and 1 playlist cover (18 files). The exact names, the sources and the licence of each track are in [LICENSED_AUDIO.md](./LICENSED_AUDIO.md); check the licence on the source page before uploading.
+
+| Folder               | Files | Type |
+| -------------------- | ----: | ---- |
+| `audio/`             |     8 | MP3  |
+| `covers/background/` |     8 | JPG  |
+| `artists/`           |     1 | JPG  |
+| `covers/playlists/`  |     1 | JPG  |
+
 ## Original mock media (unchanged)
 
 Already referenced by the first seed (Ryan Young, Jessica Gonzalez, ...), including the 7 demo mp3 files. Listed so one document covers the whole bucket. The artwork source files are in `mobile/assets/images`.

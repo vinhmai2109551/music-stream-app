@@ -120,7 +120,7 @@ function AuthFooterLink({ prompt, action, disabled = false, onPress }: AuthFoote
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.text },
+  screen: { flex: 1, backgroundColor: colors.ink },
   flex: { flex: 1 },
   content: { flexGrow: 1, paddingHorizontal: spacing.screen },
   body: { flexGrow: 1, justifyContent: "space-between" },

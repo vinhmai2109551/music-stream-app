@@ -2,7 +2,7 @@ import { router } from "expo-router"
 import { ChevronRight } from "lucide-react-native"
 import { memo } from "react"
 import type { ApiAlbum } from "@/api/types"
-import { colors, sizes } from "@/theme"
+import { sizes, useColors } from "@/theme"
 import { MediaRow } from "./MediaRow"
 
 type AlbumRowProps = {
@@ -12,6 +12,8 @@ type AlbumRowProps = {
 const openAlbum = (id: string) => router.push({ pathname: "/album/[id]", params: { id } })
 
 function AlbumRowBase({ album }: AlbumRowProps) {
+  const colors = useColors()
+
   return (
     <MediaRow
       image={album.cover}

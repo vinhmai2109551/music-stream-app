@@ -1,6 +1,6 @@
 import { router } from "expo-router"
 import { Shuffle, User } from "lucide-react-native"
-import { ScrollView, StyleSheet, View } from "react-native"
+import { ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { listAlbums } from "@/api/albums"
 import { getArtist, listArtists } from "@/api/artists"
@@ -20,7 +20,7 @@ import { useResource } from "@/hooks/useResource"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { showToast } from "@/store/toastStore"
-import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { makeStyles, radius, shadows, sizes, spacing } from "@/theme"
 import { formatCount } from "@/utils/formatCount"
 import { plural } from "@/utils/plural"
 import { AlbumCard } from "./AlbumCard"
@@ -64,6 +64,8 @@ type ArtistViewProps = {
 }
 
 export function ArtistView({ id }: ArtistViewProps) {
+  const styles = useStyles()
+
   const { state, reload } = useResource(() => loadArtistPage(id), id)
   const followed = useLibraryStore((library) => library.followedArtistIds.includes(id))
   const toggleFollow = useLibraryStore((library) => library.toggleFollow)
@@ -114,6 +116,8 @@ function ArtistContent({
   onToggleShuffle,
   onPlay,
 }: ArtistContentProps) {
+  const styles = useStyles()
+
   const insets = useSafeAreaInsets()
   const { artist, popular, albums, fansAlsoLike } = page
   // The count from the server includes the user's follow as it was when the page loaded.
@@ -207,6 +211,8 @@ function ArtistContent({
 }
 
 function ArtistSkeleton() {
+  const styles = useStyles()
+
   return (
     <View style={styles.screen}>
       <TopBar />
@@ -224,7 +230,7 @@ function ArtistSkeleton() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   padded: { paddingHorizontal: spacing.screen },
   hero: { alignItems: "center", gap: spacing.xs },
@@ -245,4 +251,4 @@ const styles = StyleSheet.create({
   spacer: { flex: 1 },
   section: { marginTop: spacing.xxl },
   skeleton: { alignItems: "center", gap: spacing.lg, paddingHorizontal: spacing.screen },
-})
+}))

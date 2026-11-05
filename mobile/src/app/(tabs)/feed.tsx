@@ -1,6 +1,6 @@
 import { Rss } from "lucide-react-native"
 import { useState } from "react"
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from "react-native"
+import { ActivityIndicator, FlatList, RefreshControl, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import type { ApiFeedPost } from "@/api/types"
 import { CommentsSheet } from "@/components/media/CommentsSheet"
@@ -11,12 +11,15 @@ import { ErrorState } from "@/components/ui/ErrorState"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { copy } from "@/constants/copy"
 import { useFeed } from "@/hooks/useFeed"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 
 const SKELETON_POSTS = 2
 const END_REACHED_THRESHOLD = 0.6
 
 export default function FeedScreen() {
+  const styles = useStyles()
+  const colors = useColors()
+
   const insets = useSafeAreaInsets()
   const feed = useFeed()
   const [openPost, setOpenPost] = useState<ApiFeedPost | null>(null)
@@ -100,6 +103,8 @@ export default function FeedScreen() {
 }
 
 function FeedSkeleton() {
+  const styles = useStyles()
+
   return (
     <View style={styles.skeleton}>
       <View style={styles.skeletonAuthor}>
@@ -112,10 +117,12 @@ function FeedSkeleton() {
 }
 
 function Separator() {
+  const styles = useStyles()
+
   return <View style={styles.separator} />
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   padded: { paddingHorizontal: spacing.screen },
   title: { marginBottom: spacing.lg },
@@ -124,4 +131,4 @@ const styles = StyleSheet.create({
   footer: { paddingVertical: spacing.xl },
   skeleton: { gap: spacing.md, marginBottom: spacing.xxl },
   skeletonAuthor: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-})
+}))

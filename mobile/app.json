@@ -1,13 +1,18 @@
 {
   "expo": {
-    "name": "music-stream-app",
+    "name": "Music Stream",
     "slug": "music-stream-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "musicstreamapp",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.vinhmai.musicstream"
+    },
     "android": {
+      "package": "com.vinhmai.musicstream",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -27,7 +32,11 @@
         {
           "backgroundColor": "#1FB8E0",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 76,
+          "dark": {
+            "backgroundColor": "#0B0F17",
+            "image": "./assets/images/splash-icon.png"
+          }
         }
       ],
       [

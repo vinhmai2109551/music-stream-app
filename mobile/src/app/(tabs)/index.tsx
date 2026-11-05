@@ -1,7 +1,7 @@
 import { router } from "expo-router"
 import { Search } from "lucide-react-native"
 import { useState } from "react"
-import { Pressable, ScrollView, StyleSheet, View } from "react-native"
+import { Pressable, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import type { Region } from "@/api/types"
 import { AccountSheet } from "@/components/media/AccountSheet"
@@ -16,13 +16,16 @@ import { copy } from "@/constants/copy"
 import { useHomeData } from "@/hooks/useHomeData"
 import { useAuthStore } from "@/store/authStore"
 import { showToast } from "@/store/toastStore"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 
 const COMING_SOON = "Coming soon"
 
 const openSearch = () => router.navigate({ pathname: "/search", params: { focus: "1" } })
 
 export default function HomeScreen() {
+  const styles = useStyles()
+  const colors = useColors()
+
   const insets = useSafeAreaInsets()
   const [region, setRegion] = useState<Region | null>(null)
   const { state, reload } = useHomeData(region)
@@ -73,7 +76,7 @@ export default function HomeScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   padded: { paddingHorizontal: spacing.screen },
   search: {
@@ -87,4 +90,4 @@ const styles = StyleSheet.create({
     borderWidth: sizes.borderThin,
     borderColor: colors.divider,
   },
-})
+}))

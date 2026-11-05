@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     width: YOUTUBE_MIN_SIZE,
     overflow: "hidden",
     borderRadius: radius.card,
-    backgroundColor: colors.text,
+    backgroundColor: colors.ink,
     ...shadows.card,
   },
   header: { height: sizes.minTouch, flexDirection: "row", alignItems: "center" },

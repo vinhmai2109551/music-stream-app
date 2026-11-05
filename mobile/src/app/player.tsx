@@ -109,6 +109,7 @@ export default function PlayerScreen() {
           <PlayerTrackInfo
             title={track.title}
             artist={track.artist}
+            track={track}
             liked={liked}
             onToggleLike={() => toggleLike(track.id)}
           />
@@ -160,7 +161,7 @@ export default function PlayerScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.text },
+  screen: { flex: 1, backgroundColor: colors.ink },
   content: { flex: 1, paddingHorizontal: spacing.xxl },
   artwork: { flex: 1, justifyContent: "center", marginVertical: spacing.lg },
   video: { minHeight: YOUTUBE_MIN_SIZE },
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.xl,
-    backgroundColor: colors.text,
+    backgroundColor: colors.ink,
   },
   emptyButton: { minWidth: 160 },
 })

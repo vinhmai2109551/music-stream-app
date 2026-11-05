@@ -1,18 +1,20 @@
 import { router } from "expo-router"
 import { Heart, Pause, Play } from "lucide-react-native"
 import { memo, useEffect } from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import { Pressable, View } from "react-native"
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
 import { AppText } from "@/components/ui/AppText"
 import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
-import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { makeStyles, radius, shadows, sizes, spacing } from "@/theme"
 
 const PROGRESS_ANIMATION_MS = 500
 
 function MiniPlayerBase() {
+  const styles = useStyles()
+
   const track = usePlayerStore((state) => state.currentTrack)
   const isPlaying = usePlayerStore((state) => state.isPlaying)
   const progress = usePlayerStore((state) => state.progress)
@@ -78,13 +80,13 @@ function MiniPlayerBase() {
 
 export const MiniPlayer = memo(MiniPlayerBase)
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
     marginHorizontal: spacing.sm,
     marginBottom: spacing.sm,
     overflow: "hidden",
     borderRadius: radius.card,
-    backgroundColor: colors.text,
+    backgroundColor: colors.elevated,
     ...shadows.card,
   },
   track: { height: sizes.progressBar, backgroundColor: colors.onDarkFaint },
@@ -99,4 +101,4 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.8 },
   cover: { width: sizes.cover, height: sizes.cover, borderRadius: radius.cover },
   text: { flex: 1, minWidth: 0 },
-})
+}))

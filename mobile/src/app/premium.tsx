@@ -19,7 +19,7 @@ import { copy } from "@/constants/copy"
 import { PREMIUM_PLANS, type PremiumPlan } from "@/constants/premium"
 import { useAuthStore } from "@/store/authStore"
 import { showToast } from "@/store/toastStore"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 import { describeApiError } from "@/utils/apiErrors"
 
 const CARD_WIDTH_RATIO = 0.8
@@ -27,6 +27,9 @@ const DOT_SIZE = 8
 
 /** "Subscription Plans": swipe through the plans and start Premium (there is no payment). */
 export default function PremiumScreen() {
+  const styles = useStyles()
+  const colors = useColors()
+
   const insets = useSafeAreaInsets()
   const { width } = useWindowDimensions()
   const isPremium = useAuthStore((state) => state.user?.isPremium ?? false)
@@ -111,7 +114,7 @@ export default function PremiumScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.premiumStart },
   content: { flex: 1, justifyContent: "space-between" },
   title: { textAlign: "center", paddingHorizontal: spacing.screen },
@@ -125,4 +128,4 @@ const styles = StyleSheet.create({
   },
   dotActive: { backgroundColor: colors.white },
   back: { minHeight: sizes.minTouch, alignItems: "center", justifyContent: "center" },
-})
+}))

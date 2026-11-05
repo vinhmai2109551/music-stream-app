@@ -85,9 +85,15 @@ export class PlaybackController {
     this.stopActive()
   }
 
-  /** The app left the screen: a YouTube video cannot keep playing, so the player pauses. */
-  handleBackground(): void {
-    if (this.active?.kind === "youtube") this.deps.store.getState().pause()
+  /**
+   * The app left the screen: a YouTube video cannot keep playing, so the player pauses.
+   * Answers true when that stopped a YouTube track that was playing.
+   */
+  handleBackground(): boolean {
+    if (this.active?.kind !== "youtube") return false
+    const wasPlaying = this.deps.store.getState().isPlaying
+    this.deps.store.getState().pause()
+    return wasPlaying
   }
 
   // ------------------------------------------------------------ store changes

@@ -1,12 +1,11 @@
 import {
   ActivityIndicator,
   Pressable,
-  StyleSheet,
   type PressableProps,
   type StyleProp,
   type ViewStyle,
 } from "react-native"
-import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { makeStyles, radius, shadows, sizes, spacing, useColors } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
 
@@ -40,6 +39,9 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   const inactive = disabled || loading
   return (
     <Pressable
@@ -74,7 +76,7 @@ export function Button({
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   base: {
     minHeight: sizes.minTouch,
     paddingHorizontal: spacing.xl,
@@ -104,6 +106,6 @@ const styles = StyleSheet.create({
     borderColor: colors.accentText,
   },
   tonal: { backgroundColor: colors.accentSoft },
-  dark: { backgroundColor: colors.text },
+  dark: { backgroundColor: colors.elevated },
   disabled: { opacity: 0.5 },
-})
+}))

@@ -73,7 +73,7 @@ export default function LaunchScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.text },
+  container: { flex: 1, backgroundColor: colors.ink },
   content: {
     flex: 1,
     justifyContent: "space-between",

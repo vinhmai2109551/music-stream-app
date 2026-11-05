@@ -3,7 +3,7 @@ import { Home, Library, Rss, Search } from "lucide-react-native"
 import type { Tabs } from "expo-router"
 import type { ComponentProps } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
-import { colors, sizes, spacing } from "@/theme"
+import { makeStyles, sizes, spacing, useColors } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
 
@@ -22,6 +22,9 @@ const TABS: Record<string, TabConfig> = {
 const PARENT_TAB: Record<string, string> = { playlists: "library" }
 
 export function TabBar({ state, emitter, navigateToTab, insets }: TabBarProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   const openName = state.routes[state.index]?.name ?? ""
   const activeName = PARENT_TAB[openName] ?? openName
   return (
@@ -67,7 +70,7 @@ export function TabBar({ state, emitter, navigateToTab, insets }: TabBarProps) {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
     flexDirection: "row",
     backgroundColor: colors.tabBar,
@@ -82,4 +85,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: spacing.xs,
   },
-})
+}))

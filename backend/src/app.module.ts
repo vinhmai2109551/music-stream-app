@@ -7,8 +7,10 @@ import { AlbumsModule } from "./modules/albums/index.js"
 import { ArtistsModule } from "./modules/artists/index.js"
 import { AuthModule, authThrottlers } from "./modules/auth/index.js"
 import { CommentsModule } from "./modules/comments/index.js"
+import { EmbedModule } from "./modules/embed/index.js"
 import { FeedModule } from "./modules/feed/index.js"
 import { FollowsModule } from "./modules/follows/index.js"
+import { HealthModule } from "./modules/health/index.js"
 import { LikesModule } from "./modules/likes/index.js"
 import { PlaylistsModule } from "./modules/playlists/index.js"
 import { playThrottler, TracksModule } from "./modules/tracks/index.js"
@@ -35,11 +37,13 @@ import { UsersModule } from "./modules/users/index.js"
     AuthModule,
     ArtistsModule,
     FollowsModule,
+    HealthModule,
     LikesModule,
     TracksModule,
     AlbumsModule,
     PlaylistsModule,
     CommentsModule,
+    EmbedModule,
     FeedModule,
     UploadsModule,
   ],

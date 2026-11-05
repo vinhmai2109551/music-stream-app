@@ -98,4 +98,41 @@ describe("Seed on start (e2e)", () => {
       await server.stop()
     }
   })
+
+  it("the Background playlist holds 8 Creative Commons tracks that play from R2, never from YouTube", async () => {
+    const env = { ...SEED_ENV, R2_PUBLIC_URL: "https://media.e2e.test" }
+    await withServer(env, async (server) => {
+      const response = await request(server.url).get("/api/playlists/background-play").expect(200)
+      const playlist = response.body as {
+        name: string
+        isOfficial: boolean
+        tracks: {
+          id: string
+          artistId: string
+          audioUrl: string | null
+          youtubeVideoId: string | null
+        }[]
+      }
+
+      expect(playlist.name).toBe("Phát nền – Background")
+      expect(playlist.isOfficial).toBe(true)
+      expect(playlist.tracks).toHaveLength(8)
+      for (const track of playlist.tracks) {
+        expect(track.artistId).toBe("kevin-macleod")
+        expect(track.youtubeVideoId).toBeNull()
+        expect(track.audioUrl).toBe(`https://media.e2e.test/audio/${track.id}.mp3`)
+      }
+      // Same slugs as LICENSED_AUDIO.md, in playlist order.
+      expect(playlist.tracks.map((track) => track.id)).toEqual([
+        "kevin-macleod-stratosphere",
+        "kevin-macleod-ghost-dance",
+        "kevin-macleod-strength-of-the-titans",
+        "kevin-macleod-sugar-plum-dark-mix",
+        "kevin-macleod-fork-and-spoon",
+        "kevin-macleod-tea-roots",
+        "kevin-macleod-dream-catcher",
+        "kevin-macleod-severe-tire-damage",
+      ])
+    })
+  })
 })

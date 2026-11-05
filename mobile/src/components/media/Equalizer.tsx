@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { StyleSheet, View } from "react-native"
+import { View } from "react-native"
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -8,13 +8,15 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing } from "@/theme"
 
 const BAR_DELAYS_MS = [0, 120, 240]
 const BAR_DURATION_MS = 700
 const MIN_SCALE = 0.35
 
 function Bar({ delay }: { delay: number }) {
+  const styles = useStyles()
+
   const scale = useSharedValue(MIN_SCALE)
 
   useEffect(() => {
@@ -34,6 +36,8 @@ function Bar({ delay }: { delay: number }) {
 
 /** Animated "now playing" bars. */
 export function Equalizer() {
+  const styles = useStyles()
+
   return (
     <View accessibilityLabel="Playing" style={styles.container}>
       {BAR_DELAYS_MS.map((delay) => (
@@ -43,7 +47,7 @@ export function Equalizer() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
     height: sizes.equalizerHeight,
     flexDirection: "row",
@@ -57,4 +61,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentText,
     transformOrigin: "bottom",
   },
-})
+}))

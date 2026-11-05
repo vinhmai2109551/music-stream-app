@@ -1,11 +1,11 @@
 import { Send, X } from "lucide-react-native"
 import { useState } from "react"
-import { StyleSheet, TextInput, View } from "react-native"
+import { TextInput, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { IconButton } from "@/components/ui/IconButton"
 import { copy } from "@/constants/copy"
 import { useAuthStore } from "@/store/authStore"
-import { colors, radius, sizes, spacing, typography } from "@/theme"
+import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
 
 const MAX_LENGTH = 500
 
@@ -19,6 +19,9 @@ type CommentComposerProps = {
 
 /** The box at the bottom of the comments: avatar initial, text field and send button. */
 export function CommentComposer({ replyingTo, onCancelReply, onSend }: CommentComposerProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   const userName = useAuthStore((state) => state.user?.name ?? "")
   const [text, setText] = useState("")
   const [sending, setSending] = useState(false)
@@ -81,7 +84,7 @@ export function CommentComposer({ replyingTo, onCancelReply, onSend }: CommentCo
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   flex: { flex: 1 },
   replying: { flexDirection: "row", alignItems: "center", paddingLeft: sizes.userAvatar },
   row: { flexDirection: "row", alignItems: "center", gap: spacing.md },
@@ -112,4 +115,4 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     outlineWidth: 0,
   },
-})
+}))

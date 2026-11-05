@@ -1,7 +1,7 @@
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router"
 import { Search } from "lucide-react-native"
 import { useCallback, useRef, useState } from "react"
-import { Keyboard, StyleSheet, View, type TextInputInstance } from "react-native"
+import { Keyboard, View, type TextInputInstance } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { RecentSearches } from "@/components/media/RecentSearches"
 import { SearchResults } from "@/components/media/SearchResults"
@@ -11,11 +11,13 @@ import { SearchBar } from "@/components/ui/SearchBar"
 import { copy } from "@/constants/copy"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { useSearchHistoryStore } from "@/store/searchHistoryStore"
-import { colors, spacing } from "@/theme"
+import { makeStyles, spacing } from "@/theme"
 
 const SUGGESTION_DELAY_MS = 250
 
 export default function SearchScreen() {
+  const styles = useStyles()
+
   const insets = useSafeAreaInsets()
   const { focus } = useLocalSearchParams<{ focus?: string }>()
   const inputRef = useRef<TextInputInstance>(null)
@@ -92,8 +94,8 @@ export default function SearchScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   padded: { paddingHorizontal: spacing.screen },
   content: { flex: 1, marginTop: spacing.lg },
-})
+}))

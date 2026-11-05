@@ -1,7 +1,7 @@
 import { router } from "expo-router"
 import { Heart, Music, Shuffle } from "lucide-react-native"
 import { useEffect, useRef } from "react"
-import { FlatList, StyleSheet, View } from "react-native"
+import { FlatList, View } from "react-native"
 import { getAlbum } from "@/api/albums"
 import { getPlaylist } from "@/api/playlists"
 import type { ApiAlbumDetail, ApiPlaylistDetail } from "@/api/types"
@@ -17,7 +17,7 @@ import { useResource } from "@/hooks/useResource"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { showToast } from "@/store/toastStore"
-import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { makeStyles, radius, shadows, sizes, spacing } from "@/theme"
 import type { ImageSource, Track } from "@/types"
 import { formatNumber } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
@@ -68,6 +68,8 @@ type CollectionViewProps = {
 
 /** Playlist and album details share one layout; the id decides which data is loaded. */
 export function CollectionView({ kind, id }: CollectionViewProps) {
+  const styles = useStyles()
+
   const { state, reload, refresh } = useResource<Collection>(
     async () =>
       kind === "playlist" ? fromPlaylist(await getPlaylist(id)) : fromAlbum(await getAlbum(id)),
@@ -199,6 +201,8 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
 }
 
 function CollectionSkeleton() {
+  const styles = useStyles()
+
   return (
     <View style={styles.screen}>
       <TopBar />
@@ -217,7 +221,7 @@ function CollectionSkeleton() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   list: { paddingHorizontal: spacing.screen, paddingBottom: spacing.xxxl },
   hero: { alignItems: "center", gap: spacing.sm },
@@ -237,4 +241,4 @@ const styles = StyleSheet.create({
   },
   spacer: { flex: 1 },
   skeleton: { alignItems: "center", gap: spacing.lg, paddingHorizontal: spacing.screen },
-})
+}))

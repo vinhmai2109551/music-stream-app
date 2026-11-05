@@ -2,7 +2,7 @@ import { router } from "expo-router"
 import { ChevronRight } from "lucide-react-native"
 import { memo } from "react"
 import type { ApiPlaylist } from "@/api/types"
-import { colors, sizes } from "@/theme"
+import { sizes, useColors } from "@/theme"
 import { plural } from "@/utils/plural"
 import { MediaRow } from "./MediaRow"
 
@@ -13,6 +13,8 @@ type PlaylistRowProps = {
 const openPlaylist = (id: string) => router.push({ pathname: "/playlist/[id]", params: { id } })
 
 function PlaylistRowBase({ playlist }: PlaylistRowProps) {
+  const colors = useColors()
+
   const count = playlist.trackIds.length
   return (
     <MediaRow

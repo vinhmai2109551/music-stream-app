@@ -2,7 +2,7 @@ import { Stack, type Href } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import { StatusBar } from "expo-status-bar"
 import { useEffect } from "react"
-import { StyleSheet } from "react-native"
+
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { AudioEngine } from "@/components/media/AudioEngine"
@@ -12,11 +12,14 @@ import { useAppFonts } from "@/hooks/useAppFonts"
 import { useAppStore } from "@/store/appStore"
 import { useAuthStore } from "@/store/authStore"
 import { useLibraryStore } from "@/store/libraryStore"
-import { colors } from "@/theme"
+import { makeStyles, useColors } from "@/theme"
 
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
+  const styles = useStyles()
+  const colors = useColors()
+
   const fontsReady = useAppFonts()
   const status = useAuthStore((state) => state.status)
   const hasStarted = useAppStore((state) => state.hasStarted)
@@ -45,7 +48,8 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar style={isAuthenticated ? "dark" : "light"} />
+        {/* Signed out, the auth screens are dark photos; signed in, the system theme decides. */}
+        <StatusBar style={isAuthenticated ? "auto" : "light"} />
         <AudioEngine />
         <Stack
           screenOptions={{
@@ -99,6 +103,6 @@ export default function RootLayout() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   root: { flex: 1, backgroundColor: colors.background },
-})
+}))

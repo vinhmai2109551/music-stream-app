@@ -11,7 +11,7 @@ import {
 } from "react-native"
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 import { IconButton } from "./IconButton"
 
@@ -27,6 +27,8 @@ type BottomSheetProps = {
 }
 
 export function BottomSheet({ visible, onClose, title, height, children }: BottomSheetProps) {
+  const styles = useStyles()
+
   const insets = useSafeAreaInsets()
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -71,7 +73,7 @@ export function BottomSheet({ visible, onClose, title, height, children }: Botto
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   fill: { ...StyleSheet.absoluteFill },
   backdrop: { backgroundColor: colors.backdrop },
   anchor: { flex: 1, justifyContent: "flex-end" },
@@ -97,4 +99,4 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: { flex: 1 },
-})
+}))

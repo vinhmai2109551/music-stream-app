@@ -53,6 +53,9 @@ export const copy = {
     noSource: "Bài này chưa có nguồn phát",
     networkError: "Không phát được bài này. Kiểm tra kết nối rồi thử lại.",
     openPlayerToListen: "Mở trình phát để nghe bài này",
+    backgroundHint:
+      "YouTube tạm dừng khi bạn rời app. Thử playlist “Phát nền” để nghe cả khi tắt màn hình.",
+    backgroundBadge: "Phát được khi tắt màn hình",
     skipPrefix: "Tự chuyển bài sau",
     secondsSuffix: "giây",
   },

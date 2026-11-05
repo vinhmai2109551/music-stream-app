@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from "expo-router"
 import { Library, Search } from "lucide-react-native"
 import { useCallback, useRef, useState } from "react"
-import { FlatList, ScrollView, StyleSheet, View } from "react-native"
+import { FlatList, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import type { ApiAlbum, ApiArtist, ApiPlaylist, ApiTrack } from "@/api/types"
 import { AlbumRow } from "@/components/media/AlbumRow"
@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/Skeleton"
 import { copy } from "@/constants/copy"
 import { useLibraryLists, type LibraryLists } from "@/hooks/useLibraryLists"
 import { useLibraryStore } from "@/store/libraryStore"
-import { colors, sizes, spacing } from "@/theme"
+import { makeStyles, sizes, spacing } from "@/theme"
 
 type Filter = "songs" | "albums" | "artists"
 
@@ -70,6 +70,8 @@ function buildItems(
 }
 
 export default function LibraryScreen() {
+  const styles = useStyles()
+
   const insets = useSafeAreaInsets()
   const { state, reload, refresh } = useLibraryLists()
   const ownPlaylists = useLibraryStore((library) => library.playlists)
@@ -156,7 +158,7 @@ export default function LibraryScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   padded: { paddingHorizontal: spacing.screen },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -165,4 +167,4 @@ const styles = StyleSheet.create({
   chips: { paddingHorizontal: spacing.screen, gap: spacing.sm },
   skeleton: { gap: spacing.md },
   list: { paddingHorizontal: spacing.screen, paddingBottom: spacing.xxxl },
-})
+}))

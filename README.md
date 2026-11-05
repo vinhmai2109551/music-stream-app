@@ -10,6 +10,7 @@ Final project for the **Mobile Programming** course — Industrial University of
 ![React Native](https://img.shields.io/badge/React%20Native-0.88-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-lightgrey)
+[![CI](https://github.com/vinhmai2109551/music-stream-app/actions/workflows/ci.yml/badge.svg)](https://github.com/vinhmai2109551/music-stream-app/actions/workflows/ci.yml)
 
 </div>
 
@@ -30,7 +31,9 @@ Final project for the **Mobile Programming** course — Industrial University of
     - [Run on a device](#run-on-a-device)
   - [Backend](#backend)
   - [Playback architecture](#playback-architecture)
+  - [Release builds (EAS)](#release-builds-eas)
   - [Known limitations](#known-limitations)
+  - [Testing and CI](#testing-and-ci)
   - [Available Scripts](#available-scripts)
   - [Branching Workflow](#branching-workflow)
   - [Project Management](#project-management)
@@ -43,23 +46,23 @@ Final project for the **Mobile Programming** course — Industrial University of
 
 ## Screens & Features
 
-The app consists of 13 screens:
+The app consists of the 13 screens of the design:
 
-| #   | Screen              | Key features                                                                     |
-| --- | ------------------- | -------------------------------------------------------------------------------- |
-| 1   | **Launch**          | Branded welcome screen with the app tagline and call-to-action                   |
-| 2   | **Premium**         | Subscription offer; unlocks premium state (persisted locally)                    |
-| 3   | **Home**            | Greeting, search entry, suggestions, popular artists, albums and playlists       |
-| 4   | **Search**          | Search tracks/artists, recent searches (add / remove / clear), browse categories |
-| 5   | **Feed**            | Social feed of tracks shared by artists, with likes and comment counts           |
-| 6   | **Comments**        | Threaded comments and replies on a feed post                                     |
-| 7   | **Library**         | Liked tracks, liked albums/playlists, followed artists, user-created playlists   |
-| 8   | **Playlist Detail** | Track list, like/unlike playlist, play/shuffle, rename and delete                |
-| 9   | **Album Detail**    | Album tracks, like/unlike album, play all                                        |
-| 10  | **Artist Profile**  | Bio, follower count, top tracks, albums, follow/unfollow                         |
-| 11  | **Player**          | Play/pause, seek, next/previous, shuffle, repeat (off / all / one), like         |
-| 12  | **Create Playlist** | Create a new playlist and add or remove tracks                                   |
-| 13  | **Add to Playlist** | Bottom sheet to save a track into one of the user's playlists                    |
+| #   | Screen                 | Key features                                                                                                                 |
+| --- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Launch**             | Branded welcome screen with the app tagline; leads to login or register (login has a Cloudflare check)                       |
+| 2   | **Home**               | Greeting, search entry, region filter, suggestions, charts, trending albums, popular artists                                 |
+| 3   | **Playlist Details**   | Track list, like / unlike, play, add a track to one of your playlists (the album and artist pages work the same way)         |
+| 4   | **Play an Audio**      | Play / pause, seek, next / previous, shuffle, repeat (off / all / one), like, comments; official YouTube video or audio file |
+| 5   | **Artist Profile**     | Bio, follower count, top tracks, albums, follow / unfollow                                                                   |
+| 6   | **Search**             | Suggestions while typing, recent searches (add / remove / clear)                                                             |
+| 7   | **Search Results**     | Tabs All / Tracks / Albums / Artists                                                                                         |
+| 8   | **Feed**               | Posts of tracks shared by artists, endless scrolling, pull to refresh, likes and comment counts                              |
+| 9   | **Comments**           | Comments of a track or a post: newest first, endless scrolling, replies (one level), likes, writing                          |
+| 10  | **My Library**         | Liked songs, albums, followed artists and a way into the user's playlists                                                    |
+| 11  | **My Playlists**       | The user's playlists and a button to create one                                                                              |
+| 12  | **Premium Launch**     | Premium offer reached from a banner on Home (hidden once Premium)                                                            |
+| 13  | **Subscription Plans** | Three plans and a welcome screen; the purchase is simulated (see [Known limitations](#known-limitations))                    |
 
 **Cross-cutting features**
 
@@ -69,35 +72,51 @@ The app consists of 13 screens:
 - Reusable UI kit: `AppText`, `Button`, `Chip`, `IconButton`, `SearchBar`, `BottomSheet`, `Toast`, `Skeleton`, `EmptyState`
 - Centralised design tokens (colors, typography, spacing, radius, shadows)
 - File-based navigation with Expo Router and typed routes
+- Light and dark theme that follows the phone's setting; every text colour reaches WCAG AA contrast in both (checked by a test)
+- Sign-in protected by Cloudflare Turnstile, rate limits per endpoint group, and refresh tokens that rotate with a short grace period (see [Behaviour worth knowing](#behaviour-worth-knowing))
+- Plays are counted once per user and track in a time window; comments are read page by page
+- Tested: Jest unit and component tests for the app, Jest end-to-end tests for the API against a real PostgreSQL, and a GitHub Actions workflow that runs them (see [Testing and CI](#testing-and-ci))
 
 > **Note:** The 13 screens are in place (Launch, Home, Playlist / Album / Artist details, Player, Search with results, Feed with comments, Library, My Playlists, Premium launch and plans). Remaining work is tracked in [Project Management](#project-management).
 
 ## Screenshots
 
-> Screenshots will be added as screens are completed. Place images in `docs/screenshots/` and update the table below.
+The images are screenshots of the running app. The files to capture, what each one must show and the size to use are listed in [`docs/screenshots/README.md`](docs/screenshots/README.md); put them in `docs/screenshots/` with exactly these names.
 
-|                 Launch                 |                Home                |                 Search                 |
-| :------------------------------------: | :--------------------------------: | :------------------------------------: |
-| ![Launch](docs/screenshots/launch.png) | ![Home](docs/screenshots/home.png) | ![Search](docs/screenshots/search.png) |
+|                 Launch                 |                Login                 |                Home                |                     Home (dark)                      |
+| :------------------------------------: | :----------------------------------: | :--------------------------------: | :--------------------------------------------------: |
+| ![Launch](docs/screenshots/launch.png) | ![Login](docs/screenshots/login.png) | ![Home](docs/screenshots/home.png) | ![Home in dark mode](docs/screenshots/home-dark.png) |
 
-|                 Player                 |                 Library                  |                 Artist                 |
-| :------------------------------------: | :--------------------------------------: | :------------------------------------: |
-| ![Player](docs/screenshots/player.png) | ![Library](docs/screenshots/library.png) | ![Artist](docs/screenshots/artist.png) |
+|                  Playlist                  |                 Player                 |                 Artist                 |                 Search                 |
+| :----------------------------------------: | :------------------------------------: | :------------------------------------: | :------------------------------------: |
+| ![Playlist](docs/screenshots/playlist.png) | ![Player](docs/screenshots/player.png) | ![Artist](docs/screenshots/artist.png) | ![Search](docs/screenshots/search.png) |
+
+|                     Search results                     |                Feed                |                  Comments                  |                 Library                  |
+| :----------------------------------------------------: | :--------------------------------: | :----------------------------------------: | :--------------------------------------: |
+| ![Search results](docs/screenshots/search-results.png) | ![Feed](docs/screenshots/feed.png) | ![Comments](docs/screenshots/comments.png) | ![Library](docs/screenshots/library.png) |
+
+|                    My playlists                    |                 Premium                  |                     Welcome to Premium                      |
+| :------------------------------------------------: | :--------------------------------------: | :---------------------------------------------------------: |
+| ![My playlists](docs/screenshots/my-playlists.png) | ![Premium](docs/screenshots/premium.png) | ![Welcome to Premium](docs/screenshots/premium-welcome.png) |
 
 ## Tech Stack
 
-| Area         | Technology                                                                                     |
-| ------------ | ---------------------------------------------------------------------------------------------- |
-| Framework    | [Expo](https://expo.dev) SDK 58, React Native 0.88, React 19                                   |
-| Language     | TypeScript                                                                                     |
-| Navigation   | Expo Router (file-based, typed routes)                                                         |
-| State        | Zustand with `persist` middleware                                                              |
-| Storage      | `@react-native-async-storage/async-storage`                                                    |
-| Audio        | `expo-audio` (files from R2), `react-native-youtube-iframe` + `react-native-webview` (YouTube) |
-| Animation    | React Native Reanimated, Gesture Handler, Worklets                                             |
-| UI & visuals | `expo-image`, `expo-linear-gradient`, `expo-blur`, `lucide-react-native`, `react-native-svg`   |
-| Typography   | Inter via `@expo-google-fonts/inter`                                                           |
-| Code quality | ESLint (`eslint-config-expo`), Prettier, `tsc`                                                 |
+| Area         | Technology                                                                                           |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
+| Framework    | [Expo](https://expo.dev) SDK 58, React Native 0.88, React 19                                         |
+| Language     | TypeScript                                                                                           |
+| Navigation   | Expo Router (file-based, typed routes)                                                               |
+| State        | Zustand with `persist` middleware                                                                    |
+| Storage      | `@react-native-async-storage/async-storage`                                                          |
+| Audio        | `expo-audio` (files from R2), `react-native-youtube-iframe` + `react-native-webview` (YouTube)       |
+| Animation    | React Native Reanimated, Gesture Handler, Worklets                                                   |
+| UI & visuals | `expo-image`, `expo-linear-gradient`, `expo-blur`, `lucide-react-native`, `react-native-svg`         |
+| Typography   | Inter via `@expo-google-fonts/inter`                                                                 |
+| Code quality | ESLint (`eslint-config-expo`), Prettier, `tsc`                                                       |
+| Testing      | Jest (`jest-expo`) and React Native Testing Library for the app; Jest and supertest for the API      |
+| Backend      | NestJS 12 (ESM), Prisma 7, PostgreSQL 16, Cloudflare R2 for files                                    |
+| Security     | Cloudflare Turnstile on login, `@nestjs/throttler` rate limits, JWT access + rotating refresh tokens |
+| Build & CI   | GitHub Actions (`.github/workflows/ci.yml`), EAS Build (`mobile/eas.json`)                           |
 
 ## Project Structure
 
@@ -111,15 +130,19 @@ music-stream-app/
 │   │   ├── constants/       # App-wide constants and copy
 │   │   ├── data/            # Catalog, images and mock data
 │   │   ├── hooks/           # Custom hooks (fonts, toast, audio engine, ...)
+│   │   ├── __tests__/       # Jest tests, mocks and helpers (not part of the routes)
 │   │   ├── store/           # Zustand stores (player, library)
 │   │   ├── theme/           # Design tokens
 │   │   ├── types/           # Shared TypeScript types
 │   │   └── utils/           # Helpers (formatTime, formatCount, ...)
 │   ├── .env.example         # Copy to .env and fill in
-│   ├── app.json             # Expo configuration
+│   ├── app.json             # Expo configuration (name, ids, version, theme)
+│   ├── eas.json             # EAS Build profiles: development, preview, production
 │   └── package.json
 ├── backend/                 # NestJS API: modular monolith + Prisma + PostgreSQL
-├── docker-compose.yml       # PostgreSQL + API
+├── docker-compose.yml       # PostgreSQL + API (with a healthcheck)
+├── docs/screenshots/        # Screenshots used by this README
+├── .github/workflows/       # CI
 ├── frontend/                # Admin web app (planned)
 └── README.md
 ```
@@ -196,15 +219,18 @@ flowchart LR
 
 - An arrow means "uses the public API of" (`modules/<name>/index.ts`). The graph has no cycles.
 - ESLint rejects imports that reach into another module's internals.
-- Run it with Docker (applies migrations and seeds the demo data on start):
+- Run it with Docker (applies the migrations on start; loads the demo data when `SEED_ON_START=true`, see below):
 
 ```bash
 cp backend/.env.example backend/.env   # then edit the secrets
 docker compose up -d --build
 ```
 
-API: `http://localhost:3000/api` · Swagger: `http://localhost:3000/api/docs`.
-The seeded admin account is `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `backend/.env`.
+API: `http://localhost:3000/api` · Swagger: `http://localhost:3000/api/docs` · health: `http://localhost:3000/api/health`.
+
+`backend/.env.example` ships `SEED_ON_START=false`, which is what production wants: with `true` every start overwrites the demo artists, tracks and playlists with the versions in the code and recreates the admin account. For a first run (or development) set it to `true`: the demo catalog and the admin account (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `backend/.env`) are created, then set it back to `false`.
+
+`GET /api/health` answers `200 { status: "ok", database: "up" }` when the API reaches its database and `503 { status: "error", database: "down" }` otherwise (no login, not rate limited). The `api` service of `docker-compose.yml` uses it as its healthcheck (`docker compose ps` shows `healthy`); on a hosting platform point the health check path at it.
 
 Without Docker for the API (database still in Docker): `docker compose up -d db`, then in `backend/`:
 `npm install`, `npm run prisma:migrate`, `npm run prisma:seed`, `npm run start:dev`.
@@ -252,35 +278,87 @@ flowchart TD
 
 **Why two sources.** Music we do not own is never downloaded, extracted or re-streamed: it is played only through YouTube's official embedded player, which keeps the ads, attribution and rights-holder control that YouTube's terms require (so the player must stay visible and unobscured). The R2 bucket holds only audio we have the right to host (original or licensed demo tracks), which is what allows background playback and lock screen controls.
 
+**Why YouTube tracks stop in the background.** YouTube's terms allow a video to be played only in its official embedded player, which must stay visible (at least 200 × 200, not covered, no audio-only mode, no hidden player), and the app may not extract the audio. That player is a web page inside a WebView, and iOS and Android suspend a WebView when the app leaves the screen, so the video cannot keep playing; the app pauses it and, once per session, says so when the user comes back. Audio files from R2 are played by `expo-audio`, which is allowed to run in the background and shows lock screen controls.
+
+**Music that does play in the background.** The playlist **Phát nền – Background** has 8 tracks by Kevin MacLeod (CC BY) hosted in R2, without a YouTube video. Tracks like these are marked with a headphones badge in lists and on the player. Their sources, licences and the files to upload are in [`backend/src/seed/LICENSED_AUDIO.md`](backend/src/seed/LICENSED_AUDIO.md).
+
+**The YouTube player page is ours.** The WebView loads `GET /api/embed/youtube-player` from the backend (the app passes it as `baseUrlOverride`), not a page from the library author's GitHub Pages. It speaks the protocol of `react-native-youtube-iframe` (play, pause, mute, volume, rate, `player.getCurrentTime()`, `seekTo`, state and error events), fills the square frame, and is served with a Content-Security-Policy that allows only `youtube.com` and `ytimg.com` and names its own script by hash. YouTube refuses embeds that send no referrer, so the page keeps `Referrer-Policy: strict-origin-when-cross-origin`. Use an **https** API address in release builds.
+
+## Release builds (EAS)
+
+The app id is `com.vinhmai.musicstream` on both platforms (`app.json`); `version` is the number users see, `android.versionCode` / the iOS build number are raised by EAS on every production build (`autoIncrement`). The app follows the phone's light / dark setting (`userInterfaceStyle: "automatic"`).
+
+`mobile/eas.json` has three profiles; all of them read the API address and the other `EXPO_PUBLIC_*` values from the `env` of `eas.json`, because `mobile/.env` is not part of a cloud build:
+
+| Profile       | What it builds                                                       | API address (`EXPO_PUBLIC_API_URL`)                              |
+| ------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `development` | A development client for your own phone (internal distribution)      | your computer, `http://192.168.1.x:3000/api`                     |
+| `preview`     | An **APK** you can install on any Android phone and send to testers  | the deployed backend, `https://music-stream-api.example.com/api` |
+| `production`  | A store build (AAB on Android, IPA on iOS), build number auto-raised | the deployed backend (same placeholder)                          |
+
+**Before the first build, fill in `eas.json`:**
+
+1. `EXPO_PUBLIC_API_URL`: the address of your deployed backend, **https**, ending in `/api` (a release build refuses plain `http`; the player page and every request go through it).
+2. `EXPO_PUBLIC_MEDIA_BASE_URL`: the public address of the R2 bucket.
+3. `EXPO_PUBLIC_TURNSTILE_SITE_KEY` and `EXPO_PUBLIC_TURNSTILE_HOSTNAME`: your Cloudflare Turnstile widget (the placeholder test key only works with the test secret key). Add the hostname to the widget on Cloudflare and, if you set it, to `TURNSTILE_ALLOWED_HOSTNAMES` of the backend.
+4. The `development` profile needs `expo-dev-client` (`npx expo install expo-dev-client`), which is not installed yet.
+
+**Build** (needs an Expo account; nothing here is done for you):
+
+```bash
+npm install --global eas-cli
+cd mobile
+eas login
+eas init                                        # links the project, writes extra.eas.projectId into app.json
+eas build --platform android --profile preview  # APK, the link appears when the build ends
+eas build --platform all --profile production   # store builds (asks for Apple / Google credentials)
+```
+
+The backend must be deployed first (any host that runs the Docker image or `npm run build && npm run start` and has a PostgreSQL database). Set its environment as in `backend/.env.example`: with `NODE_ENV=production` it refuses to start without the R2 settings and `TURNSTILE_SECRET_KEY`, and set `TRUST_PROXY` to the number of proxies in front of it.
+
 ## Known limitations
 
-- **YouTube tracks do not play with the screen off.** The embedded player has to stay visible, so closing the Player screen does not stop the video: it moves into a floating 200 × 200 card above the mini player (YouTube's minimum size; its × stops playback). The track pauses when the app goes to the background. Audio files from R2 keep playing with the screen off.
+- **YouTube tracks do not play with the screen off.** The embedded player has to stay visible, so closing the Player screen does not stop the video: it moves into a floating 200 × 200 card above the mini player (YouTube's minimum size; its × stops playback). The track pauses when the app goes to the background. Audio files from R2 keep playing with the screen off (see the playlist **Phát nền – Background**).
+- **Premium is simulated.** "Subscribe now" only sets the account's `isPremium` flag on the server (`POST /users/me/subscribe`); there is no payment, no billing period and no way to cancel.
+- **Commercial music plays only through YouTube's official embed.** The app never downloads, extracts or re-streams it, so those tracks have no `audioUrl`; the only audio hosted by us is music we may host (the original demo tracks and the Creative Commons playlist).
 - **No lock screen / notification controls for YouTube tracks** (the video is not an audio session of the app).
 - **Ads can appear** on YouTube tracks; they are shown by YouTube and cannot be skipped by the app.
 - **The floating card covers part of the screen** while a YouTube track is current. The player lives above all screens (`YouTubeHost`), so the Player screen is a normal pushed screen, not a native modal (a native modal would hide the video on iOS).
 - **Lock screen buttons of R2 tracks:** play / pause and ±15 s. Next / previous are not offered because `expo-audio` only provides them for its native playlist, not for a single player.
 - **Expo Go:** background audio on iOS is part of Expo Go; on Android, the foreground service and lock screen controls come from the `expo-audio` config plugin in `app.json`, which Expo Go does not apply. If they do not show up on an Android phone, use a development build (`npx expo run:android` or EAS Build).
-- **The YouTube player page is hosted by the author of `react-native-youtube-iframe`** (GitHub Pages). Its play / pause handler is out of date (it expects plain text while the library sends JSON), so the app injects a small script that fixes it and makes the video fill the square. For production, host your own copy of the page and pass its address as `baseUrlOverride`.
 - **Pictures:** the covers, artist photos and album covers of the new catalog are not in R2 yet (see `backend/src/seed/R2_UPLOAD_LIST.md`; ready-made pictures are in `backend/local-images/`, not committed). Until they are uploaded, the app shows a track's video picture and, for everything else, a coloured tile with the initials.
 - **Search ignores accents only one way:** typing `son` does not find `Sơn Tùng`; the server compares the exact letters.
 - Some videos forbid embedding; they fall back to the R2 file or are reported as above.
+
+## Testing and CI
+
+| Where      | Command                  | What it runs                                                                                                                                                                      |
+| ---------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mobile/`  | `npm test`               | Jest unit and component tests (the player, the API client, the stores, helpers, the track row, the login screen, the theme)                                                       |
+| `mobile/`  | `npm test -- --coverage` | The same with a coverage table for `src/utils` and `src/store` (the build fails under 80%; it is about 96% today)                                                                 |
+| `backend/` | `npm test`               | Unit tests of the configuration, pagination, Turnstile, health and the other small pieces                                                                                         |
+| `backend/` | `npm run test:e2e`       | Builds the API, then runs end-to-end specs against a real PostgreSQL (needs `docker compose up -d db`; it creates its own `*_e2e` database and never touches the development one) |
+
+Every push and pull request into `main` and `dev` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml): two jobs in parallel, **Backend** (Prisma generate and migrate on a PostgreSQL service, lint, types, unit and e2e tests) and **Mobile** (lint, types, tests with coverage). npm downloads are cached per `package-lock.json`.
 
 ## Available Scripts
 
 Run these from the `mobile/` folder.
 
-| Script              | Command                | Description                    |
-| ------------------- | ---------------------- | ------------------------------ |
-| `npm start`         | `expo start`           | Start the development server   |
-| `npm run android`   | `expo start --android` | Start and open on Android      |
-| `npm run ios`       | `expo start --ios`     | Start and open on iOS          |
-| `npm run web`       | `expo start --web`     | Start and open in the browser  |
-| `npm run typecheck` | `tsc --noEmit`         | Type-check the project         |
-| `npm run lint`      | `expo lint`            | Lint the source code           |
-| `npm run lint:fix`  | `expo lint --fix`      | Lint and auto-fix issues       |
-| `npm run format`    | `prettier --write .`   | Format all files with Prettier |
+| Script               | Command                | Description                         |
+| -------------------- | ---------------------- | ----------------------------------- |
+| `npm start`          | `expo start`           | Start the development server        |
+| `npm run android`    | `expo start --android` | Start and open on Android           |
+| `npm run ios`        | `expo start --ios`     | Start and open on iOS               |
+| `npm run web`        | `expo start --web`     | Start and open in the browser       |
+| `npm run typecheck`  | `tsc --noEmit`         | Type-check the project              |
+| `npm run lint`       | `expo lint`            | Lint the source code                |
+| `npm run lint:fix`   | `expo lint --fix`      | Lint and auto-fix issues            |
+| `npm run format`     | `prettier --write .`   | Format all files with Prettier      |
+| `npm test`           | `jest`                 | Run the tests                       |
+| `npm run test:watch` | `jest --watch`         | Run the tests again on every change |
 
-Run `npm run typecheck` and `npm run lint` before opening a pull request.
+Run `npm run typecheck`, `npm run lint` and `npm test` before opening a pull request. The scripts of `backend/` (`start:dev`, `typecheck`, `lint`, `test`, `test:e2e`, `prisma:migrate`, `prisma:seed`) are listed in [Backend](#backend).
 
 ## Branching Workflow
 

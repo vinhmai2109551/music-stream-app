@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/Skeleton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
-import { colors, radius, sizes, spacing, typography } from "@/theme"
+import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
 import type { Track } from "@/types"
 import { plural } from "@/utils/plural"
 
@@ -22,6 +22,9 @@ type TrackMenuSheetProps = {
 }
 
 export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   const liked = useLibraryStore((state) => state.likedTrackIds.includes(track.id))
   const playlists = useLibraryStore((state) => state.playlists)
   const libraryStatus = useLibraryStore((state) => state.status)
@@ -186,7 +189,7 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -227,4 +230,4 @@ const styles = StyleSheet.create({
     color: colors.text,
     ...typography.body,
   },
-})
+}))

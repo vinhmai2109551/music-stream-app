@@ -3,7 +3,7 @@ import { AppText } from "@/components/ui/AppText"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { useSearchSuggestions } from "@/hooks/useSearch"
-import { colors, sizes, spacing } from "@/theme"
+import { makeStyles, sizes, spacing } from "@/theme"
 
 const SKELETON_ROWS = 4
 
@@ -15,6 +15,8 @@ type SearchSuggestionsProps = {
 
 /** Words that match what is being typed, one per line. */
 export function SearchSuggestions({ query, onPick }: SearchSuggestionsProps) {
+  const styles = useStyles()
+
   const { state } = useSearchSuggestions(query)
 
   if (state.status === "loading") {
@@ -47,7 +49,7 @@ export function SearchSuggestions({ query, onPick }: SearchSuggestionsProps) {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   row: {
     minHeight: sizes.minTouch + spacing.sm,
     justifyContent: "center",
@@ -55,4 +57,4 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.divider,
   },
   skeleton: { gap: spacing.xl, paddingTop: spacing.lg },
-})
+}))

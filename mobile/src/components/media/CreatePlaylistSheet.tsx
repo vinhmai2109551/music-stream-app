@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { StyleSheet, TextInput, View } from "react-native"
+import { TextInput, View } from "react-native"
 import { BottomSheet } from "@/components/ui/BottomSheet"
 import { Button } from "@/components/ui/Button"
 import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
 import { showToast } from "@/store/toastStore"
-import { colors, radius, sizes, spacing, typography } from "@/theme"
+import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
 
 const MAX_PLAYLIST_NAME = 100
 
@@ -15,6 +15,9 @@ type CreatePlaylistSheetProps = {
 
 /** Asks for a name and creates an empty playlist of the user. */
 export function CreatePlaylistSheet({ onClose }: CreatePlaylistSheetProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   const createPlaylist = useLibraryStore((state) => state.createPlaylist)
   const [name, setName] = useState("")
   const [saving, setSaving] = useState(false)
@@ -57,7 +60,7 @@ export function CreatePlaylistSheet({ onClose }: CreatePlaylistSheetProps) {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   form: { gap: spacing.lg, paddingBottom: spacing.md },
   input: {
     height: sizes.searchBarHeight,
@@ -68,4 +71,4 @@ const styles = StyleSheet.create({
     color: colors.text,
     ...typography.body,
   },
-})
+}))

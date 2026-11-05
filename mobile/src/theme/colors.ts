@@ -1,4 +1,14 @@
-export const colors = {
+/**
+ * Colour tokens in two palettes. Components read the one that fits the device with `useColors()`
+ * (see ./useTheme); the plain `colors` below is the LIGHT palette, for the few module-level
+ * constants that never change with the theme (gradients, placeholders).
+ *
+ * Tokens that mean the same on every screen of both themes are identical in both palettes (the
+ * accent fill, white / black, the glass and scrim overlays used on photos). The others flip:
+ * surfaces, text, dividers and the accent colour used for text. Every text / background pair that
+ * the app uses reaches WCAG AA (4.5:1) in both; `__tests__/theme/colors.test.ts` checks it.
+ */
+const lightTokens = {
   accent: "#1FB8E0",
   /** Accent for text and icons on light backgrounds (5.1:1 on white, 4.8:1 on surface); `accent` itself is for fills. */
   accentText: "#0A7799",
@@ -12,6 +22,10 @@ export const colors = {
   secondary: "#6B7280",
   tertiary: "#8A93A3",
   divider: "#E5E7EB",
+  /** Near-black that stays near-black in both themes: screens that are dark by design, shadows. */
+  ink: "#111827",
+  /** A card that stands out from the page (mini player, toast): dark on light, lighter on dark. */
+  elevated: "#111827",
   success: "#22C55E",
   like: "#EF4444",
   /** Error red for dark, photo-backed screens (5.7:1 and up on the form panel). */
@@ -38,6 +52,12 @@ export const colors = {
   playerScrim: "rgba(0, 0, 0, 0.6)",
   cardScrim: "rgba(0, 0, 0, 0.8)",
   transparent: "transparent",
+} as const
+
+export type ColorToken = keyof typeof lightTokens
+
+/** Gradients are the same in both themes (white text reads on all of them). */
+const gradients = {
   chartGradients: {
     violet: ["#6D28D9", "#D946EF"],
     cyan: ["#22D3EE", "#4F46E5"],
@@ -62,7 +82,30 @@ export const colors = {
   },
 } as const
 
-export type ColorToken = Exclude<
-  keyof typeof colors,
-  "categoryGradients" | "chartGradients" | "coverGradients"
->
+/** One palette: every token is a colour string, plus the shared gradients. */
+export type Palette = { readonly [Token in ColorToken]: string } & typeof gradients
+
+export const lightColors: Palette = { ...lightTokens, ...gradients }
+
+/** Only the tokens that differ from the light palette are written out. */
+export const darkColors: Palette = {
+  ...lightColors,
+  accentText: "#4CCBEC",
+  accentSoft: "rgba(31, 184, 224, 0.2)",
+  accentFaint: "rgba(31, 184, 224, 0.14)",
+  background: "#0B0F17",
+  surface: "#151B27",
+  text: "#F3F4F6",
+  secondary: "#A1AAB8",
+  tertiary: "#7C8698",
+  divider: "#252D3C",
+  elevated: "#1F2937",
+  like: "#F87171",
+  tabBar: "rgba(11, 15, 23, 0.95)",
+  premiumTint: "#1D1838",
+  premiumText: "#C4B5FD",
+  premiumCheck: "#A78BFA",
+}
+
+/** The light palette. Use `useColors()` in components so they follow the device's theme. */
+export const colors = lightColors

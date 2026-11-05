@@ -4,6 +4,7 @@
  * Media is referenced as { folder, file } and turned into `${R2_PUBLIC_URL}/folder/file` by the seeder.
  */
 import {
+  background,
   CATALOG_ALBUMS,
   CATALOG_ARTISTS,
   CATALOG_TRACKS,
@@ -289,6 +290,15 @@ export const PLAYLISTS = [
     cover: cover("playlists/asia-mix.jpg"),
     description: "Tuyển chọn những bài hát nổi bật từ Việt Nam, Hàn Quốc, Nhật Bản và Trung Quốc.",
     trackIds: ASIA_MIX_IDS,
+  },
+  {
+    id: background.PLAYLIST_ID,
+    name: "Phát nền – Background",
+    official: true,
+    cover: cover("playlists/background-play.jpg"),
+    description:
+      "Nhạc của Kevin MacLeod (incompetech.com), giấy phép Creative Commons: By Attribution 3.0 / 4.0. Phát được cả khi tắt màn hình. Music by Kevin MacLeod, CC BY 3.0 / 4.0.",
+    trackIds: background.TRACKS.map((track) => track.id),
   },
   {
     id: "favorites",

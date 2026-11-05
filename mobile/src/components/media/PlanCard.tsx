@@ -1,11 +1,11 @@
 import { Check } from "lucide-react-native"
 import { memo } from "react"
-import { StyleSheet, View } from "react-native"
+import { View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
 import { copy } from "@/constants/copy"
 import type { PremiumPlan } from "@/constants/premium"
-import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { makeStyles, radius, shadows, sizes, spacing, useColors } from "@/theme"
 
 type PlanCardProps = {
   plan: PremiumPlan
@@ -19,6 +19,9 @@ type PlanCardProps = {
 
 /** One subscription plan: name, price, what it includes and the button to start it. */
 function PlanCardBase({ plan, width, subscribed, loading, onSubscribe }: PlanCardProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   return (
     <View style={[styles.card, { width }]}>
       <AppText variant="h2" numberOfLines={1} ellipsizeMode="tail">
@@ -57,7 +60,7 @@ function PlanCardBase({ plan, width, subscribed, loading, onSubscribe }: PlanCar
 
 export const PlanCard = memo(PlanCardBase)
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   card: {
     gap: spacing.lg,
     padding: spacing.xxl,
@@ -76,4 +79,4 @@ const styles = StyleSheet.create({
   features: { gap: spacing.md, marginVertical: spacing.sm },
   feature: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   featureText: { flex: 1 },
-})
+}))

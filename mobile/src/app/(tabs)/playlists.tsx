@@ -1,6 +1,6 @@
 import { ListMusic, Plus } from "lucide-react-native"
 import { useState } from "react"
-import { FlatList, Pressable, StyleSheet, View } from "react-native"
+import { FlatList, Pressable, View } from "react-native"
 import { CreatePlaylistSheet } from "@/components/media/CreatePlaylistSheet"
 import { PlaylistRow } from "@/components/media/PlaylistRow"
 import { AppText } from "@/components/ui/AppText"
@@ -11,12 +11,15 @@ import { TopBar } from "@/components/ui/TopBar"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
-import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { makeStyles, radius, shadows, sizes, spacing, useColors } from "@/theme"
 
 const SKELETON_ROWS = 3
 
 /** "My Playlists": the playlists the user made, and a button to make another. */
 export default function PlaylistsScreen() {
+  const styles = useStyles()
+  const colors = useColors()
+
   const playlists = useLibraryStore((state) => state.playlists)
   const status = useLibraryStore((state) => state.status)
   const load = useLibraryStore((state) => state.load)
@@ -71,7 +74,7 @@ export default function PlaylistsScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   list: { paddingHorizontal: spacing.screen, paddingBottom: sizes.playButtonLg * 2 },
   heading: { marginVertical: spacing.lg },
@@ -85,7 +88,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.text,
+    backgroundColor: colors.elevated,
     ...shadows.card,
   },
-})
+}))

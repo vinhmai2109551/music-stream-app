@@ -1,8 +1,8 @@
 import { router } from "expo-router"
 import { ChevronLeft } from "lucide-react-native"
-import { StyleSheet, View } from "react-native"
+import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { colors, sizes, spacing } from "@/theme"
+import { makeStyles, sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 import { IconButton } from "./IconButton"
 
@@ -12,6 +12,8 @@ type TopBarProps = {
 
 /** Back button + optional title for pushed screens. Respects the top safe area. */
 export function TopBar({ title }: TopBarProps) {
+  const styles = useStyles()
+
   const insets = useSafeAreaInsets()
   return (
     <View style={[styles.bar, { paddingTop: insets.top, height: insets.top + sizes.topBarHeight }]}>
@@ -25,7 +27,7 @@ export function TopBar({ title }: TopBarProps) {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   bar: {
     flexDirection: "row",
     alignItems: "center",
@@ -33,4 +35,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   title: { flex: 1, marginLeft: spacing.xs },
-})
+}))

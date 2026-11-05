@@ -3,6 +3,9 @@ import { copy } from "@/constants/copy"
 const REQUEST_TIMEOUT_MS = 15_000
 const BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/+$/, "")
 
+/** The API address without a trailing slash; empty when it is not configured. */
+export const API_BASE_URL = BASE_URL
+
 export type ApiErrorKind = "http" | "network" | "timeout"
 
 /** Every failure of an API call. `status` is 0 when the server could not be reached. */

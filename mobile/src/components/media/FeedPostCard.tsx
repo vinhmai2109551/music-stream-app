@@ -9,7 +9,7 @@ import {
   User,
 } from "lucide-react-native"
 import { memo, useState } from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import { Pressable, View } from "react-native"
 import { likeFeedPost, unlikeFeedPost } from "@/api/feed"
 import type { ApiFeedPost } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
@@ -20,7 +20,7 @@ import { copy } from "@/constants/copy"
 import { usePlayerStore } from "@/store/playerStore"
 import { showToast } from "@/store/toastStore"
 import { describeApiError } from "@/utils/apiErrors"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 import { formatCount } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
 import { formatTimeAgo } from "@/utils/formatTimeAgo"
@@ -38,6 +38,9 @@ type FeedPostCardProps = {
 
 /** One post of the feed: who posted it, the artwork with its track, and the like / comment row. */
 function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   const [liked, setLiked] = useState(post.liked)
   const [likes, setLikes] = useState(post.likesCount)
   const playFromList = usePlayerStore((state) => state.playFromList)
@@ -164,6 +167,9 @@ type ActionProps = {
 }
 
 function Action({ icon: Icon, label, count, active = false, onPress }: ActionProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   const tint = active ? colors.like : colors.secondary
   return (
     <Pressable
@@ -183,7 +189,7 @@ function Action({ icon: Icon, label, count, active = false, onPress }: ActionPro
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   card: { gap: spacing.md },
   author: {
     minHeight: sizes.minTouch,
@@ -219,4 +225,4 @@ const styles = StyleSheet.create({
     paddingRight: spacing.md,
   },
   spacer: { flex: 1 },
-})
+}))

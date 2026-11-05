@@ -4,7 +4,7 @@ import { AppText } from "@/components/ui/AppText"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
-import { colors, sizes, spacing } from "@/theme"
+import { sizes, spacing, useColors } from "@/theme"
 
 type RecentSearchesProps = {
   searches: readonly string[]
@@ -15,6 +15,8 @@ type RecentSearchesProps = {
 
 /** What was searched before, newest first. */
 export function RecentSearches({ searches, onPick, onRemove, onClear }: RecentSearchesProps) {
+  const colors = useColors()
+
   return (
     <View>
       <View style={styles.header}>

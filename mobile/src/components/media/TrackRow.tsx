@@ -1,6 +1,6 @@
 import { Ellipsis, Heart } from "lucide-react-native"
 import { memo, useState } from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import { Pressable, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
@@ -8,10 +8,11 @@ import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing } from "@/theme"
 import type { Track } from "@/types"
 import { formatCount } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
+import { BackgroundBadge } from "./BackgroundBadge"
 import { Equalizer } from "./Equalizer"
 import { TrackMenuSheet } from "./TrackMenuSheet"
 
@@ -34,6 +35,8 @@ function TrackRowBase({
   source = copy.defaultSource,
   trailing = "menu",
 }: TrackRowProps) {
+  const styles = useStyles()
+
   const active = usePlayerStore((state) => state.currentTrack?.id === track.id)
   const playing = usePlayerStore((state) => state.currentTrack?.id === track.id && state.isPlaying)
   const playFromList = usePlayerStore((state) => state.playFromList)
@@ -68,14 +71,18 @@ function TrackRowBase({
           style={styles.cover}
         />
         <View style={styles.text}>
-          <AppText
-            variant="subtitle"
-            color={active ? "accentText" : "text"}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {track.title}
-          </AppText>
+          <View style={styles.titleRow}>
+            <AppText
+              variant="subtitle"
+              color={active ? "accentText" : "text"}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={styles.title}
+            >
+              {track.title}
+            </AppText>
+            <BackgroundBadge track={track} />
+          </View>
           <AppText variant="caption" color="secondary" numberOfLines={1} ellipsizeMode="tail">
             {track.artist} · {formatCount(track.plays)} · {formatTime(track.duration)}
           </AppText>
@@ -103,7 +110,7 @@ function TrackRowBase({
 
 export const TrackRow = memo(TrackRowBase)
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   row: {
     minHeight: sizes.trackRowHeight,
     flexDirection: "row",
@@ -123,4 +130,6 @@ const styles = StyleSheet.create({
   number: { width: sizes.trackNumberWidth, alignItems: "center" },
   cover: { width: sizes.cover, height: sizes.cover, borderRadius: radius.cover },
   text: { flex: 1, minWidth: 0 },
-})
+  titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
+  title: { flexShrink: 1 },
+}))
