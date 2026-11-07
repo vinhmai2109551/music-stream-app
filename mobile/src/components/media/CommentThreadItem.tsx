@@ -15,6 +15,7 @@ type CommentThreadItemProps = {
   onLoadMoreReplies: (thread: CommentThread) => void
   onReply: (comment: ApiComment) => void
   onToggleLike: (comment: ApiComment) => void
+  onDelete: (comment: ApiComment) => void
 }
 
 /** A comment with its replies; older replies that are not on screen yet load on request. */
@@ -24,12 +25,18 @@ function CommentThreadItemBase({
   onLoadMoreReplies,
   onReply,
   onToggleLike,
+  onDelete,
 }: CommentThreadItemProps) {
   const { comment, replies, hiddenReplies } = thread
 
   return (
     <View style={styles.thread}>
-      <CommentItem comment={comment} onReply={onReply} onToggleLike={onToggleLike} />
+      <CommentItem
+        comment={comment}
+        onReply={onReply}
+        onToggleLike={onToggleLike}
+        onDelete={onDelete}
+      />
       {hiddenReplies > 0 && (
         <Pressable
           accessibilityRole="button"
@@ -51,6 +58,7 @@ function CommentThreadItemBase({
           isReply
           onReply={onReply}
           onToggleLike={onToggleLike}
+          onDelete={onDelete}
         />
       ))}
     </View>

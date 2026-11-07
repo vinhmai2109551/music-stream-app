@@ -7,6 +7,7 @@ import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
+import { useAuthStore } from "@/store/authStore"
 import { radius, sizes, spacing } from "@/theme"
 import { formatTimeAgo } from "@/utils/formatTimeAgo"
 import { plural } from "@/utils/plural"
@@ -19,12 +20,21 @@ type CommentItemProps = {
   isReply?: boolean
   onReply: (comment: ApiComment) => void
   onToggleLike: (comment: ApiComment) => void
+  /** Asks to delete the comment; the button only shows on the signed-in user's own comments. */
+  onDelete: (comment: ApiComment) => void
 }
 
-/** One comment: who, what, when, likes and a reply button. */
-function CommentItemBase({ comment, isReply = false, onReply, onToggleLike }: CommentItemProps) {
+/** One comment: who, what, when, likes, and buttons to reply (and to delete one's own). */
+function CommentItemBase({
+  comment,
+  isReply = false,
+  onReply,
+  onToggleLike,
+  onDelete,
+}: CommentItemProps) {
   const name = comment.user?.name ?? "Deleted user"
   const avatar = isReply ? REPLY_AVATAR : sizes.userAvatar
+  const mine = useAuthStore((state) => state.user?.id === comment.user?.id && !!comment.user)
 
   return (
     <View style={[styles.row, isReply && styles.reply]}>
@@ -58,6 +68,19 @@ function CommentItemBase({ comment, isReply = false, onReply, onToggleLike }: Co
               {copy.comments.reply}
             </AppText>
           </Pressable>
+          {mine && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={copy.comments.deleteComment}
+              onPress={() => onDelete(comment)}
+              hitSlop={10}
+              style={({ pressed }) => [styles.replyButton, pressedStyle(pressed)]}
+            >
+              <AppText variant="small" color="secondary">
+                {copy.comments.delete}
+              </AppText>
+            </Pressable>
+          )}
         </View>
       </View>
       <IconButton

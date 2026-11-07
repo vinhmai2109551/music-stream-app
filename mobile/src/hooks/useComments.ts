@@ -1,47 +1,31 @@
 import { useRef, useState } from "react"
 import {
   createComment,
+  deleteComment,
   likeComment,
   listComments,
   listReplies,
   unlikeComment,
 } from "@/api/comments"
-import type { ApiComment, ApiCommentPage, ApiCommentThread, CommentTarget } from "@/api/types"
+import type { ApiComment, ApiCommentPage, CommentTarget } from "@/api/types"
 import { showToast } from "@/store/toastStore"
-import { describeApiError } from "@/utils/apiErrors"
-import { buildThread, mergeReplies, uniqueById, type CommentThread } from "@/utils/commentThreads"
+import { describeApiError, isNotFound } from "@/utils/apiErrors"
+import {
+  buildThread,
+  mergeReplies,
+  removedFromThread,
+  removedWeight,
+  startOverlay,
+  uniqueById,
+  withoutRemoved,
+  type CommentThread,
+  type Overlay,
+  type Removal,
+} from "@/utils/commentThreads"
 import { useResource } from "./useResource"
 
 const targetKey = (target: CommentTarget): string =>
   "trackId" in target ? `track:${target.trackId}` : `post:${target.postId}`
-
-/** What was loaded or written on this screen on top of the first page. */
-type Overlay = {
-  /** The first page these belong to; reloading it starts them again. */
-  base: ApiCommentPage
-  /** Top-level comments from later pages. */
-  later: ApiCommentThread[]
-  /** Where the next page starts; null when there is none. */
-  nextCursor: string | null
-  /** Top-level comments written here, newest first. */
-  written: ApiCommentThread[]
-  /** Older replies fetched, and replies written here, by thread id. */
-  replies: Record<string, ApiComment[]>
-  /** How many replies were written here, by thread id. */
-  writtenReplies: Record<string, number>
-  /** Threads whose older replies have all been fetched. */
-  exhausted: ReadonlySet<string>
-}
-
-const startOverlay = (base: ApiCommentPage): Overlay => ({
-  base,
-  later: [],
-  nextCursor: base.nextCursor,
-  written: [],
-  replies: {},
-  writtenReplies: {},
-  exhausted: new Set(),
-})
 
 /**
  * Comments of a track or a feed post, newest first, loaded a page at a time, with replies,
@@ -72,24 +56,34 @@ export function useComments(target: CommentTarget) {
     return { ...comment, liked, likesCount: comment.likesCount + (liked ? 1 : -1) }
   }
 
+  const removed = view?.removed ?? {}
   const threads: CommentThread[] = view
-    ? uniqueById([...view.written, ...view.base.items, ...view.later]).map((root) => {
-        const thread = buildThread(
-          root,
-          view.replies[root.id] ?? [],
-          view.writtenReplies[root.id] ?? 0,
-          view.exhausted.has(root.id),
-        )
-        return {
-          ...thread,
-          comment: withLikes(thread.comment),
-          replies: thread.replies.map(withLikes),
-        }
-      })
+    ? withoutRemoved(uniqueById([...view.written, ...view.base.items, ...view.later]), removed).map(
+        (root) => {
+          const thread = buildThread(
+            {
+              ...root,
+              replies: withoutRemoved(root.replies, removed),
+              repliesCount: root.repliesCount - removedFromThread(removed, root.id),
+            },
+            withoutRemoved(view.replies[root.id] ?? [], removed),
+            view.writtenReplies[root.id] ?? 0,
+            view.exhausted.has(root.id),
+          )
+          return {
+            ...thread,
+            comment: withLikes(thread.comment),
+            replies: thread.replies.map(withLikes),
+          }
+        },
+      )
     : []
 
+  // What was written here and deleted here cancels out, and so does what went with a deleted one.
   const written = view
-    ? view.written.length + Object.values(view.writtenReplies).reduce((sum, n) => sum + n, 0)
+    ? view.written.length +
+      Object.values(view.writtenReplies).reduce((sum, n) => sum + n, 0) -
+      removedWeight(removed)
     : 0
 
   /** Loads the next page of top-level comments. */
@@ -186,6 +180,37 @@ export function useComments(target: CommentTarget) {
     }
   }
 
+  /**
+   * Deletes a comment of the user. It disappears at once (a top-level comment takes its replies
+   * with it); if the server refuses it comes back with a message.
+   */
+  const remove = async (comment: ApiComment) => {
+    const lock = `delete:${comment.id}`
+    if (!base || inFlight.current.has(lock)) return
+    inFlight.current.add(lock)
+
+    const thread = threads.find((item) => item.comment.id === comment.id)
+    const weight = thread ? 1 + thread.replies.length + thread.hiddenReplies : 1
+    const removal: Removal = { threadId: comment.parentId, weight }
+    change(base, (current) => ({
+      ...current,
+      removed: { ...current.removed, [comment.id]: removal },
+    }))
+    try {
+      await deleteComment(comment.id)
+    } catch (error) {
+      // Already gone on the server: what the user wanted is done.
+      if (isNotFound(error)) return
+      change(base, (current) => {
+        const { [comment.id]: _undone, ...rest } = current.removed
+        return { ...current, removed: rest }
+      })
+      showToast(describeApiError(error))
+    } finally {
+      inFlight.current.delete(lock)
+    }
+  }
+
   return {
     state: base
       ? {
@@ -209,5 +234,6 @@ export function useComments(target: CommentTarget) {
     loadMoreReplies,
     post,
     toggleLike,
+    remove,
   }
 }

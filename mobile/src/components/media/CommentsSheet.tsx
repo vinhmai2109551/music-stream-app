@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from "react-
 import type { ApiComment, CommentTarget } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
 import { BottomSheet } from "@/components/ui/BottomSheet"
+import { ConfirmSheet } from "@/components/ui/ConfirmSheet"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { Skeleton } from "@/components/ui/Skeleton"
@@ -30,8 +31,27 @@ type CommentsSheetProps = {
 
 /** The comments of a track or post in a bottom sheet, with replies and a box to write one. */
 export function CommentsSheet({ target, onClose, onCountChange }: CommentsSheetProps) {
-  const { state, reload, loadMore, loadMoreReplies, post, toggleLike } = useComments(target)
+  const { state, reload, loadMore, loadMoreReplies, post, toggleLike, remove } = useComments(target)
   const [replyTo, setReplyTo] = useState<ApiComment | null>(null)
+  /** The comment the user is being asked to confirm the deletion of. */
+  const [deleting, setDeleting] = useState<ApiComment | null>(null)
+
+  const hasReplies =
+    state.status === "ready" &&
+    state.threads.some(
+      (thread) =>
+        thread.comment.id === deleting?.id && thread.replies.length + thread.hiddenReplies > 0,
+    )
+
+  const confirmDelete = () => {
+    if (!deleting) return
+    // An answer being written to a comment that is about to disappear has nothing to answer.
+    if (replyTo && (replyTo.id === deleting.id || replyTo.parentId === deleting.id)) {
+      setReplyTo(null)
+    }
+    void remove(deleting)
+    setDeleting(null)
+  }
 
   const total = state.status === "ready" ? state.total : null
   useEffect(() => {
@@ -99,10 +119,25 @@ export function CommentsSheet({ target, onClose, onCountChange }: CommentsSheetP
                 onLoadMoreReplies={loadMoreReplies}
                 onReply={setReplyTo}
                 onToggleLike={toggleLike}
+                onDelete={setDeleting}
               />
             )}
           />
         )}
+        {deleting ? (
+          <ConfirmSheet
+            title={copy.comments.deleteConfirmTitle}
+            message={
+              hasReplies
+                ? copy.comments.deleteThreadConfirmMessage
+                : copy.comments.deleteConfirmMessage
+            }
+            confirmLabel={copy.comments.confirmDelete}
+            cancelLabel={copy.comments.cancel}
+            onConfirm={confirmDelete}
+            onCancel={() => setDeleting(null)}
+          />
+        ) : null}
         <View style={styles.composer}>
           <CommentComposer
             replyingTo={replyTo?.user?.name ?? (replyTo ? "Deleted user" : null)}

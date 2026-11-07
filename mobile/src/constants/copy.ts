@@ -102,6 +102,13 @@ export const copy = {
     emptyDescription: "Be the first to say something.",
     likeComment: "Like comment",
     unlikeComment: "Unlike comment",
+    delete: "Delete",
+    deleteComment: "Delete comment",
+    confirmDelete: "Delete",
+    cancel: "Cancel",
+    deleteConfirmTitle: "Delete this comment?",
+    deleteConfirmMessage: "This can't be undone.",
+    deleteThreadConfirmMessage: "This can't be undone. Its replies are deleted too.",
   },
 
   libraryScreen: {
