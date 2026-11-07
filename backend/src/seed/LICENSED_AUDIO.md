@@ -60,7 +60,7 @@ audio/kevin-macleod-dream-catcher.mp3
 audio/kevin-macleod-severe-tire-damage.mp3
 ```
 
-Pictures (optional: without them the app shows a coloured tile with initials; `backend/local-images/` has generated ones):
+Pictures (optional: without them the app shows a coloured tile with initials):
 
 ```text
 artists/kevin-macleod.jpg

@@ -94,6 +94,40 @@ describe("TurnstileService", () => {
     })
   })
 
+  describe("when Cloudflare rejects the request itself", () => {
+    const service = () => makeService({ TURNSTILE_SECRET_KEY: SECRET })
+
+    it("answers 503 and logs the reason, pointing at the secret key when that is the cause", async () => {
+      const logged = jest.spyOn(Logger.prototype, "error")
+      logged.mockClear()
+      answer({ success: false, "error-codes": ["invalid-input-secret"] }, 400)
+
+      await expect(service().verify("token", "login")).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      )
+
+      const text = logged.mock.calls.map((call) => String(call[0])).join(" | ")
+      expect(text).toContain("400")
+      expect(text).toContain("invalid-input-secret")
+      expect(text).toContain("TURNSTILE_SECRET_KEY")
+      expect(text).not.toContain(SECRET)
+    })
+
+    it("still logs the status when the body cannot be read", async () => {
+      const logged = jest.spyOn(Logger.prototype, "error")
+      logged.mockClear()
+      jest
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(new Response("<html>bad gateway</html>", { status: 502 }))
+
+      await expect(service().verify("token", "login")).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      )
+
+      expect(logged.mock.calls.map((call) => String(call[0])).join(" | ")).toContain("502")
+    })
+  })
+
   describe("with allowed hostnames", () => {
     const service = () =>
       makeService({

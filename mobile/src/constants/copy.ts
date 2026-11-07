@@ -172,6 +172,7 @@ export const copy = {
       label: "Xác minh bảo mật Cloudflare",
       required: "Vui lòng hoàn tất xác minh bảo mật trước khi đăng nhập",
       failed: "Không tải được xác minh bảo mật. Chạm để thử lại.",
+      errorCode: "Mã lỗi",
     },
   },
 } as const

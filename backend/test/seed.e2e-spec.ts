@@ -99,6 +99,33 @@ describe("Seed on start (e2e)", () => {
     }
   })
 
+  it("gives artists, albums, playlists and songs the pictures of their official videos", async () => {
+    const env = { ...SEED_ENV, R2_PUBLIC_URL: "https://media.e2e.test" }
+    const picture = /^https:\/\/i\.ytimg\.com\/vi\/[\w-]{11}\/(hq720|mqdefault)\.jpg$/
+    await withServer(env, async (server) => {
+      const get = async <T>(path: string) =>
+        (await request(server.url).get(path).expect(200)).body as T
+
+      const artist = await get<{ image: string }>("/api/artists/bts")
+      const album = await get<{ cover: string }>("/api/albums/bts-hits")
+      const song = await get<{ cover: string; youtubeVideoId: string }>("/api/tracks/bts-dynamite")
+      const playlist = await get<{ cover: string | null }>("/api/playlists/top-kpop")
+
+      for (const url of [artist.image, album.cover, song.cover, playlist.cover ?? ""]) {
+        expect(url).toMatch(picture)
+      }
+      expect(song.cover).toContain(song.youtubeVideoId)
+      // The album shows another picture than the artist, so the two tiles are not twins.
+      expect(album.cover).not.toBe(artist.image)
+
+      // Artists without a video (the demo data, Kevin MacLeod) keep the files of the bucket.
+      const demo = await get<{ image: string }>("/api/artists/ryan")
+      const macleod = await get<{ image: string }>("/api/artists/kevin-macleod")
+      expect(demo.image).toBe("https://media.e2e.test/artists/ryan-young.png")
+      expect(macleod.image).toBe("https://media.e2e.test/artists/kevin-macleod.jpg")
+    })
+  })
+
   it("the Background playlist holds 8 Creative Commons tracks that play from R2, never from YouTube", async () => {
     const env = { ...SEED_ENV, R2_PUBLIC_URL: "https://media.e2e.test" }
     await withServer(env, async (server) => {

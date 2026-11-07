@@ -18,6 +18,8 @@ export const TURNSTILE = {
   scriptUrl: "https://challenges.cloudflare.com/turnstile/v0/api.js",
   /** Height of the "normal" / "flexible" widget is 65px; a little room avoids clipping. */
   height: 70,
+  /** A check that has not finished after this long (and waits for no tap) is offered a retry. */
+  stallMs: 25_000,
 } as const
 
 export type TurnstileAction = "login" | "register"

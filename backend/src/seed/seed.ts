@@ -41,7 +41,8 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
   if (!adminEmail || !adminPassword) {
     throw new Error("Seed needs SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD")
   }
-  const media = (ref: MediaRef) => `${mediaBaseUrl.replace(/\/$/, "")}/${ref.folder}/${ref.file}`
+  const media = (ref: MediaRef) =>
+    "url" in ref ? ref.url : `${mediaBaseUrl.replace(/\/$/, "")}/${ref.folder}/${ref.file}`
 
   // Users
   const admin = await prisma.user.upsert({

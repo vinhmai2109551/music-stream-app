@@ -54,6 +54,26 @@ export class TurnstileService {
     return this.secretKey !== null
   }
 
+  /**
+   * Cloudflare answers a token it dislikes with 200 and `success: false`; an HTTP error means the
+   * request itself was wrong, most often a secret key it does not accept. The reason goes to the
+   * log (never the key), so the cause is not a mystery behind a bare 503.
+   */
+  private async describeFailure(response: Response): Promise<string> {
+    let codes: string[] = []
+    try {
+      codes = ((await response.json()) as SiteverifyResponse)["error-codes"] ?? []
+    } catch {
+      // No readable body: the status alone has to do.
+    }
+    const reported = codes.length > 0 ? ` (${codes.join(", ")})` : ""
+    const badSecret = codes.some((code) => /secret/.test(code))
+    const hint = badSecret
+      ? ": TURNSTILE_SECRET_KEY is not accepted. Use the Secret Key of the widget (not its Site Key), alone on its line, and restart the API"
+      : ""
+    return `Siteverify answered ${response.status}${reported}${hint}`
+  }
+
   async verify(token: string | undefined, expectedAction: TurnstileAction, remoteIp?: string) {
     if (!this.secretKey) return
     if (typeof token !== "string" || !token.trim() || token.length > TURNSTILE_TOKEN_MAX) {
@@ -72,7 +92,7 @@ export class TurnstileService {
         }),
         signal: AbortSignal.timeout(SITEVERIFY_TIMEOUT_MS),
       })
-      if (!response.ok) throw new Error(`Siteverify answered ${response.status}`)
+      if (!response.ok) throw new Error(await this.describeFailure(response))
       result = (await response.json()) as SiteverifyResponse
     } catch (error) {
       this.logger.error(`Turnstile Siteverify failed: ${(error as Error).message}`)

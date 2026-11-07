@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
 import { copy } from "@/constants/copy"
 import { TURNSTILE } from "@/constants/turnstile"
-import { spacing } from "@/theme"
+import { sizes } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
 import type { TurnstileWidgetProps } from "./TurnstileWidget.types"
@@ -131,5 +131,5 @@ export function TurnstileWidget({ action, onToken }: TurnstileWidgetProps) {
 }
 
 const styles = StyleSheet.create({
-  retry: { paddingVertical: spacing.xs },
+  retry: { minHeight: sizes.minTouch, justifyContent: "center" },
 })
