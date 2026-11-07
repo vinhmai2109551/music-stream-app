@@ -81,6 +81,8 @@ model Artist {
   /// Followers that exist outside this app; real follows (Follow rows) are added on top.
   baseFollowers Int      @default(0)
   region        Region   @default(GLOBAL)
+  /// Music genres ("v-pop", "ballad"...), at most 10; used to describe the artist for semantic search.
+  genres        String[] @default([])
   createdAt     DateTime @default(now())
 
   tracks    Track[]
@@ -104,6 +106,15 @@ model Track {
   durationSec    Int
   /// Id of the official YouTube video the app plays this track from; null = play `audioUrl`.
   youtubeVideoId String?
+  /// What the song is, never its lyrics: genres, moods, tags (situations, instruments, themes) and a
+  /// short description. At most 10 entries per list. They feed the text that is embedded for
+  /// semantic search and recommendations.
+  genres         String[] @default([])
+  mood           String[] @default([])
+  tags           String[] @default([])
+  description    String   @default("")
+  /// Language of the vocals as an ISO 639 code ("vi", "ko", "ja", "zh", "en"); null = instrumental or unknown.
+  language       String?
   createdAt      DateTime @default(now())
 
   artist     Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)

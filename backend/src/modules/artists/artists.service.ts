@@ -13,6 +13,7 @@ export interface ArtistView {
   bio: string
   image: string
   region: Region
+  genres: string[]
   followers: number
   followed: boolean
 }
@@ -94,6 +95,7 @@ export class ArtistsService {
       bio: row.bio,
       image: row.imageUrl,
       region: row.region,
+      genres: row.genres,
       followers: row.baseFollowers + (counts.get(row.id) ?? 0),
       followed: followed.has(row.id),
     }))

@@ -37,6 +37,7 @@ const TEST_ENV = {
   R2_BUCKET: "",
   R2_PUBLIC_URL: "",
   // Blank, so no real key reaches a test server; a spec that needs vectors sets the fake provider.
+  ANTHROPIC_API_KEY: "",
   EMBEDDING_PROVIDER: "",
   EMBEDDING_MODEL: "",
   EMBEDDING_API_KEY: "",

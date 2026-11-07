@@ -134,6 +134,16 @@ class EnvironmentVariables {
   @Matches(POSITIVE_INTEGER, { message: "AVATAR_THROTTLE_TTL_SECONDS must be a positive integer" })
   AVATAR_THROTTLE_TTL_SECONDS?: string
 
+  /** Key of the Claude API (the assistant and `npm run ai:enrich`). Blank = AI features are off. */
+  @IsOptional()
+  @IsString()
+  ANTHROPIC_API_KEY?: string
+
+  /** Claude model for the assistant and for `ai:enrich`; defaults to claude-haiku-5-5. */
+  @IsOptional()
+  @IsString()
+  AI_MODEL?: string
+
   /**
    * Which service makes the text embeddings for semantic search. Blank = semantic features are
    * off (their endpoints answer 503). Without EMBEDDING_API_KEY the `gemini` provider is off too.

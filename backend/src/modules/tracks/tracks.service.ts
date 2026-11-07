@@ -22,6 +22,13 @@ export interface TrackView {
   duration: number
   /** Official YouTube video to play from; null when the track plays `audioUrl` instead. */
   youtubeVideoId: string | null
+  genres: string[]
+  mood: string[]
+  tags: string[]
+  /** A sentence or two about the style and mood of the song; never its lyrics. */
+  description: string
+  /** Language of the vocals (ISO 639 code); null = instrumental or unknown. */
+  language: string | null
   likesCount: number
   liked: boolean
 }
@@ -173,6 +180,11 @@ export class TracksService {
       plays: row.plays,
       duration: row.durationSec,
       youtubeVideoId: row.youtubeVideoId,
+      genres: row.genres,
+      mood: row.mood,
+      tags: row.tags,
+      description: row.description,
+      language: row.language,
       likesCount: counts.get(row.id) ?? 0,
       liked: liked.has(row.id),
     }))

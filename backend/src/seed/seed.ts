@@ -13,6 +13,7 @@ import {
   TRACKS,
   type MediaRef,
 } from "./seed-data.js"
+import { CATALOG_METADATA } from "./catalog/load-metadata.js"
 
 const BCRYPT_ROUNDS = 10
 const MINUTE_MS = 60_000
@@ -78,6 +79,8 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
       imageUrl: media(artist.image),
       baseFollowers: artist.baseFollowers,
       region: artist.region,
+      // Only what the reviewed metadata file has: an artist missing from it keeps its genres.
+      ...(CATALOG_METADATA.artists[artist.id] ?? {}),
     }
     await prisma.artist.upsert({
       where: { id: artist.id },
@@ -93,6 +96,7 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
       audioUrl: track.audio ? media(track.audio) : null,
       durationSec: track.durationSec,
       youtubeVideoId: track.youtubeVideoId ?? null,
+      ...(CATALOG_METADATA.tracks[track.id] ?? {}),
     }
     await prisma.track.upsert({
       where: { id: track.id },
