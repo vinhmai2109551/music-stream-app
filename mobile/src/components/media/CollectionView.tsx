@@ -22,6 +22,7 @@ import type { ImageSource, Track } from "@/types"
 import { formatNumber } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
 import { plural } from "@/utils/plural"
+import { PlaylistOwnerControls } from "./PlaylistOwnerControls"
 import { TrackRow } from "./TrackRow"
 
 const NOTHING_TO_PLAY = "Add some songs first"
@@ -89,6 +90,10 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
     kind === "playlist"
       ? library.likedPlaylistIds.includes(id)
       : library.likedAlbumIds.includes(id),
+  )
+  // Only playlists the user made are listed in `playlists`: official and other people's are not.
+  const mine = useLibraryStore(
+    (library) => kind === "playlist" && library.playlists.some((playlist) => playlist.id === id),
   )
   const togglePlaylistLike = useLibraryStore((library) => library.togglePlaylistLike)
   const toggleAlbumLike = useLibraryStore((library) => library.toggleAlbumLike)
@@ -163,6 +168,7 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
           activeColor="like"
           onPress={onToggleLike}
         />
+        {mine ? <PlaylistOwnerControls playlistId={id} name={collection.name} /> : null}
         <View style={styles.spacer} />
         <IconButton icon={Shuffle} label="Shuffle" active={shuffle} onPress={toggleShuffle} />
         <PlayButton playing={playingFromHere} onPress={onPlay} />
@@ -191,6 +197,7 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
             list={collection.tracks}
             source={collection.name}
             numbered
+            playlistId={mine ? id : undefined}
           />
         )}
         contentContainerStyle={styles.list}

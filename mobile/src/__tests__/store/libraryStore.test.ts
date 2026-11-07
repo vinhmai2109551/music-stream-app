@@ -15,6 +15,9 @@ jest.mock("@/api/playlists", () => ({
   listMyPlaylists: jest.fn(),
   addTrackToPlaylist: jest.fn(),
   createPlaylist: jest.fn(),
+  updatePlaylist: jest.fn(),
+  deletePlaylist: jest.fn(),
+  removeTrackFromPlaylist: jest.fn(),
 }))
 
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -240,5 +243,196 @@ describe("createPlaylist", () => {
     expect(await state().createPlaylist("x")).toBeNull()
     expect(state().playlists).toEqual([])
     expect(toast()).toBe("Not allowed")
+  })
+})
+
+describe("removeTrackFromPlaylist", () => {
+  beforeEach(() => {
+    useLibraryStore.setState({
+      playlists: [playlist("p1", ["a", "b", "c"]), playlist("p2", ["b"])],
+    })
+  })
+
+  it("takes the track out at once, tells the server, and keeps the other playlists", async () => {
+    const request = deferred()
+    playlistsApi.removeTrackFromPlaylist.mockReturnValue(request.promise as never)
+
+    const done = state().removeTrackFromPlaylist("p1", "b")
+
+    expect(state().playlists[0].trackIds).toEqual(["a", "c"]) // before the server answered
+    expect(state().playlists[1].trackIds).toEqual(["b"])
+    expect(state().playlistRevision).toBe(1)
+    expect(toast()).toBe(`${copy.library.removedFrom} List p1`)
+    request.resolve()
+    await done
+    expect(playlistsApi.removeTrackFromPlaylist).toHaveBeenCalledWith("p1", "b")
+    expect(state().playlists[0].trackIds).toEqual(["a", "c"])
+  })
+
+  it("puts the track back in its place, and says why, when the server refuses", async () => {
+    playlistsApi.removeTrackFromPlaylist.mockRejectedValue(refused)
+
+    await state().removeTrackFromPlaylist("p1", "b")
+
+    expect(state().playlists[0].trackIds).toEqual(["a", "b", "c"])
+    expect(state().playlistRevision).toBe(2) // an open playlist screen reloads after both changes
+    expect(toast()).toBe("Not allowed")
+  })
+
+  it("does not put it back twice when the playlist was reloaded in the meantime", async () => {
+    const request = deferred()
+    playlistsApi.removeTrackFromPlaylist.mockReturnValue(request.promise as never)
+    const done = state().removeTrackFromPlaylist("p1", "b")
+    useLibraryStore.setState({ playlists: [playlist("p1", ["a", "b", "c"])] })
+
+    request.reject(refused)
+    await done
+
+    expect(state().playlists[0].trackIds).toEqual(["a", "b", "c"])
+  })
+
+  it.each([
+    ["a playlist that is not the user's", "other", "b"],
+    ["a track that is not in the playlist", "p1", "zzz"],
+  ])("does nothing for %s", async (_name, playlistId, trackId) => {
+    await state().removeTrackFromPlaylist(playlistId, trackId)
+
+    expect(playlistsApi.removeTrackFromPlaylist).not.toHaveBeenCalled()
+    expect(state().playlistRevision).toBe(0)
+  })
+
+  it("a double tap sends only one request", async () => {
+    const request = deferred()
+    playlistsApi.removeTrackFromPlaylist.mockReturnValue(request.promise as never)
+
+    const first = state().removeTrackFromPlaylist("p1", "b")
+    await state().removeTrackFromPlaylist("p1", "b")
+    request.resolve()
+    await first
+
+    expect(playlistsApi.removeTrackFromPlaylist).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("renamePlaylist", () => {
+  beforeEach(() => {
+    useLibraryStore.setState({ playlists: [playlist("p1", ["a"]), playlist("p2")] })
+  })
+
+  it("shows the new name at once and sends it trimmed", async () => {
+    const request = deferred()
+    playlistsApi.updatePlaylist.mockReturnValue(request.promise as never)
+
+    const done = state().renamePlaylist("p1", "  Road trip ")
+
+    expect(state().playlists[0].name).toBe("Road trip") // before the server answered
+    expect(state().playlistRevision).toBe(1)
+    request.resolve()
+    expect(await done).toBe(true)
+    expect(playlistsApi.updatePlaylist).toHaveBeenCalledWith("p1", { name: "Road trip" })
+    expect(state().playlists[1].name).toBe("List p2")
+  })
+
+  it("brings the old name back, and says why, when the server refuses", async () => {
+    playlistsApi.updatePlaylist.mockRejectedValue(refused)
+
+    expect(await state().renamePlaylist("p1", "New")).toBe(false)
+
+    expect(state().playlists[0].name).toBe("List p1")
+    expect(state().playlistRevision).toBe(2)
+    expect(toast()).toBe("Not allowed")
+  })
+
+  it.each([
+    ["a blank name", "p1", "   "],
+    ["the name it already has", "p1", " List p1 "],
+    ["a playlist that is not the user's", "other", "New"],
+  ])("does nothing for %s", async (_name, playlistId, name) => {
+    expect(await state().renamePlaylist(playlistId, name)).toBe(false)
+
+    expect(playlistsApi.updatePlaylist).not.toHaveBeenCalled()
+    expect(state().playlistRevision).toBe(0)
+    expect(toast()).toBeNull()
+  })
+
+  it("ignores a second rename while the first is on its way", async () => {
+    const request = deferred()
+    playlistsApi.updatePlaylist.mockReturnValue(request.promise as never)
+
+    const first = state().renamePlaylist("p1", "One")
+    expect(await state().renamePlaylist("p1", "Two")).toBe(false)
+    request.resolve()
+    await first
+
+    expect(playlistsApi.updatePlaylist).toHaveBeenCalledTimes(1)
+    expect(state().playlists[0].name).toBe("One")
+  })
+})
+
+describe("deletePlaylist", () => {
+  beforeEach(() => {
+    useLibraryStore.setState({
+      playlists: [playlist("p1"), playlist("p2"), playlist("p3")],
+      likedPlaylistIds: ["p2", "x"],
+    })
+  })
+
+  it("removes the playlist (and its like) at once, then tells the server", async () => {
+    const request = deferred()
+    playlistsApi.deletePlaylist.mockReturnValue(request.promise as never)
+
+    const done = state().deletePlaylist("p2")
+
+    expect(state().playlists.map((item) => item.id)).toEqual(["p1", "p3"]) // before the answer
+    expect(state().likedPlaylistIds).toEqual(["x"])
+    expect(state().playlistRevision).toBe(1)
+    request.resolve()
+    expect(await done).toBe(true)
+    expect(playlistsApi.deletePlaylist).toHaveBeenCalledWith("p2")
+    expect(toast()).toBeNull()
+  })
+
+  it("brings the playlist back where it was, with its like, when the server refuses", async () => {
+    playlistsApi.deletePlaylist.mockRejectedValue(refused)
+
+    expect(await state().deletePlaylist("p2")).toBe(false)
+
+    expect(state().playlists.map((item) => item.id)).toEqual(["p1", "p2", "p3"])
+    expect(state().likedPlaylistIds).toEqual(["p2", "x"])
+    expect(state().playlistRevision).toBe(2)
+    expect(toast()).toBe("Not allowed")
+  })
+
+  it("does not add the playlist twice when the library was reloaded in the meantime", async () => {
+    const request = deferred()
+    playlistsApi.deletePlaylist.mockReturnValue(request.promise as never)
+    const done = state().deletePlaylist("p1")
+    useLibraryStore.setState({ playlists: [playlist("p1"), playlist("p2")] })
+
+    request.reject(refused)
+    await done
+
+    expect(state().playlists.map((item) => item.id)).toEqual(["p1", "p2"])
+  })
+
+  it("does not invent a like that was not there", async () => {
+    playlistsApi.deletePlaylist.mockRejectedValue(refused)
+
+    await state().deletePlaylist("p1")
+
+    expect(state().likedPlaylistIds).toEqual(["p2", "x"])
+  })
+
+  it("does nothing for a playlist that is not the user's, and for a double tap", async () => {
+    expect(await state().deletePlaylist("other")).toBe(false)
+    expect(playlistsApi.deletePlaylist).not.toHaveBeenCalled()
+
+    const request = deferred()
+    playlistsApi.deletePlaylist.mockReturnValue(request.promise as never)
+    const first = state().deletePlaylist("p1")
+    expect(await state().deletePlaylist("p1")).toBe(false)
+    request.resolve()
+    await first
+    expect(playlistsApi.deletePlaylist).toHaveBeenCalledTimes(1)
   })
 })

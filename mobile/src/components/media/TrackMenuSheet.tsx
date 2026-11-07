@@ -1,4 +1,4 @@
-import { Heart, ListPlus, Plus } from "lucide-react-native"
+import { Heart, ListMinus, ListPlus, Plus } from "lucide-react-native"
 import { useState } from "react"
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
@@ -8,20 +8,21 @@ import { Button } from "@/components/ui/Button"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
+import { MAX_PLAYLIST_NAME } from "@/constants/playlist"
 import { useLibraryStore } from "@/store/libraryStore"
 import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
 import type { Track } from "@/types"
 import { plural } from "@/utils/plural"
 
-const MAX_PLAYLIST_NAME = 100
-
 type TrackMenuSheetProps = {
   track: Track
   visible: boolean
   onClose: () => void
+  /** The playlist of the user this track is listed in: adds "Remove from this playlist". */
+  playlistId?: string
 }
 
-export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps) {
+export function TrackMenuSheet({ track, visible, onClose, playlistId }: TrackMenuSheetProps) {
   const styles = useStyles()
   const colors = useColors()
 
@@ -32,6 +33,7 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
   const toggleLike = useLibraryStore((state) => state.toggleLike)
   const addTrackToPlaylist = useLibraryStore((state) => state.addTrackToPlaylist)
   const createPlaylist = useLibraryStore((state) => state.createPlaylist)
+  const removeTrackFromPlaylist = useLibraryStore((state) => state.removeTrackFromPlaylist)
 
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState("")
@@ -92,6 +94,21 @@ export function TrackMenuSheet({ track, visible, onClose }: TrackMenuSheetProps)
           {liked ? "Remove from liked songs" : "Add to liked songs"}
         </AppText>
       </Pressable>
+      {playlistId !== undefined && (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            void removeTrackFromPlaylist(playlistId, track.id)
+            onClose()
+          }}
+          style={({ pressed }) => [styles.row, styles.divided, pressedStyle(pressed)]}
+        >
+          <ListMinus size={sizes.icon} color={colors.secondary} />
+          <AppText variant="bodyMedium" style={styles.flex}>
+            {copy.library.removeFromPlaylist}
+          </AppText>
+        </Pressable>
+      )}
       <AppText variant="caption" color="secondary" style={styles.sectionTitle}>
         {copy.library.addToPlaylist}
       </AppText>

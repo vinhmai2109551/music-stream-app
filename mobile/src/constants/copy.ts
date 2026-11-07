@@ -139,6 +139,17 @@ export const copy = {
     newPlaylist: "New playlist",
     playlistNamePlaceholder: "Playlist name",
     createPlaylist: "Create",
+    removeFromPlaylist: "Remove from this playlist",
+    removedFrom: "Removed from",
+    rename: "Rename playlist",
+    renamed: "Playlist renamed",
+    save: "Save",
+    delete: "Delete playlist",
+    deleted: "Playlist deleted",
+    confirmDelete: "Delete",
+    deleteConfirmTitle: "Delete playlist?",
+    deleteConfirmMessage: "The playlist is removed from your library. The songs stay available.",
+    cancel: "Cancel",
   },
 
   auth: {

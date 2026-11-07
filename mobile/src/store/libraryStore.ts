@@ -38,6 +38,11 @@ type LibraryActions = {
   addTrackToPlaylist: (playlistId: string, trackId: string) => Promise<void>
   /** Returns the new playlist, or null when it could not be created. */
   createPlaylist: (name: string) => Promise<ApiPlaylist | null>
+  /** Renames one of the user's playlists. False when the name was not changed or the server refused. */
+  renamePlaylist: (playlistId: string, name: string) => Promise<boolean>
+  /** Deletes one of the user's playlists. True once the server confirmed it. */
+  deletePlaylist: (playlistId: string) => Promise<boolean>
+  removeTrackFromPlaylist: (playlistId: string, trackId: string) => Promise<void>
 }
 
 export type LibraryStore = LibraryState & LibraryActions
@@ -55,6 +60,13 @@ const initialState: LibraryState = {
 /** The same ids with `id` added (newest first) or removed. */
 const withId = (ids: string[], id: string, present: boolean): string[] =>
   present ? (ids.includes(id) ? ids : [id, ...ids]) : ids.filter((item) => item !== id)
+
+/** The same list with `item` put back at `index` (or at the end when the list got shorter). */
+const insertAt = <T>(list: T[], item: T, index: number): T[] => [
+  ...list.slice(0, index),
+  item,
+  ...list.slice(index),
+]
 
 /** Requests in progress, so a double tap cannot send two opposite requests for one item. */
 const inFlight = new Set<string>()
@@ -83,6 +95,16 @@ export const useLibraryStore = create<LibraryStore>()((set, get) => {
       inFlight.delete(lock)
     }
   }
+
+  /** Changes one of the user's playlists and tells open playlist screens to reload. */
+  const editPlaylist = (playlistId: string, edit: (playlist: ApiPlaylist) => ApiPlaylist) =>
+    set((state) => ({
+      playlists: state.playlists.map((item) => (item.id === playlistId ? edit(item) : item)),
+      playlistRevision: state.playlistRevision + 1,
+    }))
+
+  const editTrackIds = (playlistId: string, edit: (trackIds: string[]) => string[]) =>
+    editPlaylist(playlistId, (item) => ({ ...item, trackIds: edit(item.trackIds) }))
 
   const toggleLikeOf = (kind: LikeKind, field: IdField) => (id: string) =>
     toggle(field, id, (on) => likesApi.setLiked(kind, id, on))
@@ -131,28 +153,90 @@ export const useLibraryStore = create<LibraryStore>()((set, get) => {
       }
 
       // Playlists keep their order: a new track goes to the end.
-      const change = (add: boolean) =>
-        set((state) => ({
-          playlists: state.playlists.map((item) =>
-            item.id === playlistId
-              ? {
-                  ...item,
-                  trackIds: add
-                    ? [...item.trackIds, trackId]
-                    : item.trackIds.filter((id) => id !== trackId),
-                }
-              : item,
-          ),
-          playlistRevision: state.playlistRevision + 1,
-        }))
-
-      change(true)
+      editTrackIds(playlistId, (ids) => [...ids, trackId])
       showToast(`${copy.library.addedTo} ${playlist.name}`)
       try {
         await playlistsApi.addTrackToPlaylist(playlistId, trackId)
       } catch (error) {
-        change(false)
+        editTrackIds(playlistId, (ids) => ids.filter((id) => id !== trackId))
         showToast(describeApiError(error))
+      }
+    },
+
+    removeTrackFromPlaylist: async (playlistId, trackId) => {
+      const playlist = get().playlists.find((item) => item.id === playlistId)
+      const index = playlist?.trackIds.indexOf(trackId) ?? -1
+      const lock = `remove:${playlistId}:${trackId}`
+      if (!playlist || index === -1 || inFlight.has(lock)) return
+      inFlight.add(lock)
+
+      editTrackIds(playlistId, (ids) => ids.filter((id) => id !== trackId))
+      showToast(`${copy.library.removedFrom} ${playlist.name}`)
+      try {
+        await playlistsApi.removeTrackFromPlaylist(playlistId, trackId)
+      } catch (error) {
+        // Back where it was, so the order of the playlist is the one the server still has.
+        editTrackIds(playlistId, (ids) =>
+          ids.includes(trackId) ? ids : insertAt(ids, trackId, index),
+        )
+        showToast(describeApiError(error))
+      } finally {
+        inFlight.delete(lock)
+      }
+    },
+
+    renamePlaylist: async (playlistId, name) => {
+      const playlist = get().playlists.find((item) => item.id === playlistId)
+      const next = name.trim()
+      const lock = `rename:${playlistId}`
+      if (!playlist || !next || next === playlist.name || inFlight.has(lock)) return false
+      inFlight.add(lock)
+
+      const previous = playlist.name
+      editPlaylist(playlistId, (item) => ({ ...item, name: next }))
+      try {
+        await playlistsApi.updatePlaylist(playlistId, { name: next })
+        return true
+      } catch (error) {
+        editPlaylist(playlistId, (item) => ({ ...item, name: previous }))
+        showToast(describeApiError(error))
+        return false
+      } finally {
+        inFlight.delete(lock)
+      }
+    },
+
+    deletePlaylist: async (playlistId) => {
+      const { playlists, likedPlaylistIds } = get()
+      const index = playlists.findIndex((item) => item.id === playlistId)
+      const lock = `delete:${playlistId}`
+      if (index === -1 || inFlight.has(lock)) return false
+      inFlight.add(lock)
+
+      const removed = playlists[index]
+      const wasLiked = likedPlaylistIds.includes(playlistId)
+      set((state) => ({
+        playlists: state.playlists.filter((item) => item.id !== playlistId),
+        likedPlaylistIds: withId(state.likedPlaylistIds, playlistId, false),
+        playlistRevision: state.playlistRevision + 1,
+      }))
+      try {
+        await playlistsApi.deletePlaylist(playlistId)
+        return true
+      } catch (error) {
+        set((state) => ({
+          playlists: state.playlists.some((item) => item.id === playlistId)
+            ? state.playlists
+            : insertAt(state.playlists, removed, index),
+          likedPlaylistIds: wasLiked
+            ? withId(state.likedPlaylistIds, playlistId, true)
+            : state.likedPlaylistIds,
+          playlistRevision: state.playlistRevision + 1,
+        }))
+        showToast(describeApiError(error))
+        return false
+      } finally {
+        inFlight.delete(lock)
       }
     },
 

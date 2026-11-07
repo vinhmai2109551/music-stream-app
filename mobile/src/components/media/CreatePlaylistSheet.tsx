@@ -3,11 +3,10 @@ import { TextInput, View } from "react-native"
 import { BottomSheet } from "@/components/ui/BottomSheet"
 import { Button } from "@/components/ui/Button"
 import { copy } from "@/constants/copy"
+import { MAX_PLAYLIST_NAME } from "@/constants/playlist"
 import { useLibraryStore } from "@/store/libraryStore"
 import { showToast } from "@/store/toastStore"
 import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
-
-const MAX_PLAYLIST_NAME = 100
 
 type CreatePlaylistSheetProps = {
   onClose: () => void

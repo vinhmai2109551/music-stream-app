@@ -25,6 +25,8 @@ type TrackRowProps = {
   source?: string
   /** What sits at the end of the row: the "more" menu, or a heart that un-likes the track. */
   trailing?: "menu" | "like"
+  /** Set when this list is a playlist of the user: the menu then offers to remove the track. */
+  playlistId?: string
 }
 
 function TrackRowBase({
@@ -34,6 +36,7 @@ function TrackRowBase({
   numbered = false,
   source = copy.defaultSource,
   trailing = "menu",
+  playlistId,
 }: TrackRowProps) {
   const styles = useStyles()
 
@@ -100,7 +103,12 @@ function TrackRowBase({
         <>
           <IconButton icon={Ellipsis} label="More options" onPress={() => setMenuOpen(true)} />
           {menuOpen && (
-            <TrackMenuSheet track={track} visible={menuOpen} onClose={() => setMenuOpen(false)} />
+            <TrackMenuSheet
+              track={track}
+              visible={menuOpen}
+              onClose={() => setMenuOpen(false)}
+              playlistId={playlistId}
+            />
           )}
         </>
       )}
