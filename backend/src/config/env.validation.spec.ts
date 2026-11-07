@@ -84,6 +84,54 @@ describe("validateEnv", () => {
     expect(() => validateEnv({ ...base, R2_PUBLIC_URL: "https://media.example.com" })).not.toThrow()
   })
 
+  describe("EMBEDDING_PROVIDER", () => {
+    it("is optional: blank or missing switches semantic features off", () => {
+      expect(() => validateEnv(base)).not.toThrow()
+      expect(() => validateEnv({ ...base, EMBEDDING_PROVIDER: "" })).not.toThrow()
+      expect(() => validateEnv({ ...base, EMBEDDING_PROVIDER: "  " })).not.toThrow()
+    })
+
+    it("accepts gemini with or without a key and a model", () => {
+      expect(() => validateEnv({ ...base, EMBEDDING_PROVIDER: "gemini" })).not.toThrow()
+      expect(() =>
+        validateEnv({
+          ...base,
+          EMBEDDING_PROVIDER: "Gemini",
+          EMBEDDING_MODEL: "gemini-embedding-2",
+          EMBEDDING_API_KEY: "key",
+        }),
+      ).not.toThrow()
+    })
+
+    it("accepts the fake provider outside production only", () => {
+      expect(() => validateEnv({ ...base, EMBEDDING_PROVIDER: "fake" })).not.toThrow()
+      expect(() =>
+        validateEnv({
+          ...base,
+          ...r2,
+          ...turnstile,
+          NODE_ENV: "production",
+          EMBEDDING_PROVIDER: "fake",
+        }),
+      ).toThrow(/EMBEDDING_PROVIDER/)
+      expect(() =>
+        validateEnv({
+          ...base,
+          ...r2,
+          ...turnstile,
+          NODE_ENV: "production",
+          EMBEDDING_PROVIDER: "gemini",
+        }),
+      ).not.toThrow()
+    })
+
+    it("rejects a provider it does not know", () => {
+      expect(() => validateEnv({ ...base, EMBEDDING_PROVIDER: "openai" })).toThrow(
+        /EMBEDDING_PROVIDER/,
+      )
+    })
+  })
+
   it("still requires the basics", () => {
     expect(() => validateEnv({ JWT_SECRET: base.JWT_SECRET })).toThrow(/DATABASE_URL/)
     expect(() => validateEnv({ ...base, JWT_SECRET: "short" })).toThrow(/JWT_SECRET/)

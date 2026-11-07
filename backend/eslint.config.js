@@ -14,6 +14,7 @@ const MODULES = [
   "auth",
   "comments",
   "embed",
+  "embeddings",
   "feed",
   "follows",
   "health",

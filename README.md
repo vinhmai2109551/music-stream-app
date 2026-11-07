@@ -236,6 +236,18 @@ API: `http://localhost:3000/api` · Swagger: `http://localhost:3000/api/docs` ·
 Without Docker for the API (database still in Docker): `docker compose up -d db`, then in `backend/`:
 `npm install`, `npm run prisma:migrate`, `npm run prisma:seed`, `npm run start:dev`.
 
+**The database image is `pgvector/pgvector:pg16`** (PostgreSQL 16 plus the `vector` extension that semantic search uses; CI uses the same image). The first migration of this feature runs `CREATE EXTENSION vector`, so a host that does not ship pgvector cannot run it. If you already have a volume made by the older `postgres:16-alpine` image, the data is kept (same major version, same volume), but that image was Alpine and this one is Debian, whose text sorting differs, so rebuild the indexes once after switching:
+
+```bash
+docker compose pull db && docker compose up -d db
+docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "REINDEX DATABASE $POSTGRES_DB"'
+cd backend && npm run prisma:deploy     # applies the pgvector migration
+```
+
+(Back up first if the data matters: `docker compose exec db sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' > backup.dump`.) A fresh volume needs none of this.
+
+**Text embeddings** (used by the semantic features that follow) need `EMBEDDING_PROVIDER=gemini` and an `EMBEDDING_API_KEY` in `backend/.env` (a key from [Google AI Studio](https://aistudio.google.com/apikey); the model is `gemini-embedding-2`, 768-number vectors). Without them those features answer `503` and are hidden in the app; everything else works. `EMBEDDING_PROVIDER=fake` is a deterministic offline stand-in for development and tests, refused in production. Content sent through Google's free tier may be used by Google to improve its products.
+
 ### Behaviour worth knowing
 
 All settings below are optional environment variables with the defaults shown (see `backend/.env.example`).

@@ -8,6 +8,7 @@ import { ArtistsModule } from "./modules/artists/index.js"
 import { AuthModule, authThrottlers } from "./modules/auth/index.js"
 import { CommentsModule } from "./modules/comments/index.js"
 import { EmbedModule } from "./modules/embed/index.js"
+import { EmbeddingsModule } from "./modules/embeddings/index.js"
 import { FeedModule } from "./modules/feed/index.js"
 import { FollowsModule } from "./modules/follows/index.js"
 import { HealthModule } from "./modules/health/index.js"
@@ -44,6 +45,7 @@ import { avatarThrottler, UsersModule } from "./modules/users/index.js"
     PlaylistsModule,
     CommentsModule,
     EmbedModule,
+    EmbeddingsModule,
     FeedModule,
     UploadsModule,
   ],

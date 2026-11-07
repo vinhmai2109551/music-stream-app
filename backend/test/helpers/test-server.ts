@@ -36,6 +36,10 @@ const TEST_ENV = {
   R2_SECRET_ACCESS_KEY: "",
   R2_BUCKET: "",
   R2_PUBLIC_URL: "",
+  // Blank, so no real key reaches a test server; a spec that needs vectors sets the fake provider.
+  EMBEDDING_PROVIDER: "",
+  EMBEDDING_MODEL: "",
+  EMBEDDING_API_KEY: "",
   // Blank, so login specs do not need a Turnstile token (the service is unit tested on its own).
   TURNSTILE_SECRET_KEY: "",
   TURNSTILE_ALLOWED_HOSTNAMES: "",

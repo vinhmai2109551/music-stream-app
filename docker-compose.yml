@@ -1,6 +1,9 @@
 services:
   db:
-    image: postgres:16-alpine
+    # PostgreSQL 16 with the pgvector extension (semantic search and recommendations). Same major
+    # version and same volume as before, so the data stays. This image is Debian based, the old one
+    # was Alpine: after switching an existing volume run REINDEX once (see the README).
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     # POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB come from backend/.env
     env_file: backend/.env

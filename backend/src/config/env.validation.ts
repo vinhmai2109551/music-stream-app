@@ -6,8 +6,12 @@ import {
   IsUrl,
   Matches,
   MinLength,
+  Validate,
   ValidateIf,
+  ValidatorConstraint,
   validateSync,
+  type ValidationArguments,
+  type ValidatorConstraintInterface,
 } from "class-validator"
 
 const POSITIVE_INTEGER = /^[1-9]\d*$/
@@ -17,6 +21,20 @@ const TRUST_PROXY_VALUE = /^(\d+|true|false|[A-Za-z0-9.:/, _-]+)$/
 
 /** Cloudflare R2 and Turnstile settings are mandatory in production and optional while developing. */
 const requiredInProduction = (env: EnvironmentVariables) => env.NODE_ENV === "production"
+
+/** `gemini`, or `fake` (a deterministic stand-in that is only for tests and offline development). */
+@ValidatorConstraint({ name: "embeddingProvider" })
+class EmbeddingProviderConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown, args: ValidationArguments): boolean {
+    const name = typeof value === "string" ? value.trim().toLowerCase() : ""
+    if (name === "gemini") return true
+    return name === "fake" && (args.object as EnvironmentVariables).NODE_ENV !== "production"
+  }
+
+  defaultMessage(): string {
+    return "EMBEDDING_PROVIDER must be gemini (fake is only allowed outside production)"
+  }
+}
 
 class EnvironmentVariables {
   @IsString()
@@ -115,6 +133,22 @@ class EnvironmentVariables {
   @IsOptional()
   @Matches(POSITIVE_INTEGER, { message: "AVATAR_THROTTLE_TTL_SECONDS must be a positive integer" })
   AVATAR_THROTTLE_TTL_SECONDS?: string
+
+  /**
+   * Which service makes the text embeddings for semantic search. Blank = semantic features are
+   * off (their endpoints answer 503). Without EMBEDDING_API_KEY the `gemini` provider is off too.
+   */
+  @ValidateIf((env: EnvironmentVariables) => Boolean(env.EMBEDDING_PROVIDER?.trim()))
+  @Validate(EmbeddingProviderConstraint)
+  EMBEDDING_PROVIDER?: string
+
+  @IsOptional()
+  @IsString()
+  EMBEDDING_MODEL?: string
+
+  @IsOptional()
+  @IsString()
+  EMBEDDING_API_KEY?: string
 
   /** Cloudflare Turnstile secret key (bot check on login). Required in production. */
   @ValidateIf(requiredInProduction)
