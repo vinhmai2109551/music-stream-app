@@ -108,6 +108,14 @@ class EnvironmentVariables {
   @Matches(POSITIVE_INTEGER, { message: "PLAY_THROTTLE_TTL_SECONDS must be a positive integer" })
   PLAY_THROTTLE_TTL_SECONDS?: string
 
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "AVATAR_THROTTLE_LIMIT must be a positive integer" })
+  AVATAR_THROTTLE_LIMIT?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "AVATAR_THROTTLE_TTL_SECONDS must be a positive integer" })
+  AVATAR_THROTTLE_TTL_SECONDS?: string
+
   /** Cloudflare Turnstile secret key (bot check on login). Required in production. */
   @ValidateIf(requiredInProduction)
   @IsString()

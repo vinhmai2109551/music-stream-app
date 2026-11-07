@@ -27,6 +27,18 @@ export const copy = {
 
   account: {
     title: "Account",
+    editProfile: "Chỉnh sửa hồ sơ",
+    edit: {
+      title: "Chỉnh sửa hồ sơ",
+      nameLabel: "Tên hiển thị",
+      changePhoto: "Đổi ảnh đại diện",
+      save: "Lưu thay đổi",
+      saved: "Đã cập nhật hồ sơ",
+      back: "Quay lại",
+      pickFailed: "Không chọn được ảnh. Vui lòng thử lại.",
+      readFailed: "Không đọc được ảnh đã chọn. Vui lòng chọn ảnh khác.",
+      uploadFailed: "Không tải được ảnh lên. Vui lòng thử lại.",
+    },
   },
 
   common: {

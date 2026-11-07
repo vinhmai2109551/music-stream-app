@@ -15,7 +15,7 @@ import { LikesModule } from "./modules/likes/index.js"
 import { PlaylistsModule } from "./modules/playlists/index.js"
 import { playThrottler, TracksModule } from "./modules/tracks/index.js"
 import { UploadsModule } from "./modules/uploads/index.js"
-import { UsersModule } from "./modules/users/index.js"
+import { avatarThrottler, UsersModule } from "./modules/users/index.js"
 
 /**
  * Modular monolith: every domain is a self-contained module under `modules/`.
@@ -29,7 +29,7 @@ import { UsersModule } from "./modules/users/index.js"
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        throttlers: [...authThrottlers(config), playThrottler(config)],
+        throttlers: [...authThrottlers(config), playThrottler(config), avatarThrottler(config)],
       }),
     }),
     PrismaModule,

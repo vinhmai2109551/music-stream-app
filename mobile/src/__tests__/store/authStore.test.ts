@@ -10,6 +10,9 @@ jest.mock("@/api/auth", () => ({
   logout: jest.fn(),
 }))
 
+jest.mock("@/api/users", () => ({ updateProfile: jest.fn() }))
+jest.mock("@/api/uploads", () => ({ uploadAvatar: jest.fn() }))
+
 const USER: User = {
   id: "u1",
   email: "a@b.co",
@@ -29,6 +32,8 @@ function load() {
   jest.resetModules()
   /* eslint-disable @typescript-eslint/no-require-imports */
   const authApi = jest.mocked(require("@/api/auth") as typeof import("@/api/auth"))
+  const usersApi = jest.mocked(require("@/api/users") as typeof import("@/api/users"))
+  const uploadsApi = jest.mocked(require("@/api/uploads") as typeof import("@/api/uploads"))
   const { ApiError } = require("@/api/client") as typeof import("@/api/client")
   const { useAuthStore } = require("@/store/authStore") as typeof import("@/store/authStore")
   const { usePlayerStore } = require("@/store/playerStore") as typeof import("@/store/playerStore")
@@ -44,6 +49,8 @@ function load() {
   return {
     api,
     authApi,
+    usersApi,
+    uploadsApi,
     useAuthStore,
     usePlayerStore,
     useLibraryStore,
@@ -370,6 +377,95 @@ describe("refreshSession", () => {
     })
     await expect(t.useAuthStore.getState().refreshSession()).rejects.toMatchObject({ status: 500 })
     expect(t.useAuthStore.getState().status).toBe("authenticated")
+  })
+})
+
+describe("updateProfile", () => {
+  const PHOTO = { uri: "file:///cache/avatar.jpg", contentType: "image/jpeg" }
+  const NEW_URL = "https://media.test/avatars/u1/new.jpg"
+
+  /** A signed-in store; every API call is a mock. */
+  function signedIn() {
+    const t = load()
+    t.useAuthStore.setState({ status: "authenticated", user: USER })
+    return t
+  }
+
+  it("a new name goes to the server and replaces the profile everywhere, saved on the device", async () => {
+    const t = signedIn()
+    const saved = { ...USER, name: "New name" }
+    t.usersApi.updateProfile.mockResolvedValue(saved)
+
+    await t.useAuthStore.getState().updateProfile({ name: "New name" })
+
+    expect(t.usersApi.updateProfile).toHaveBeenCalledWith({ name: "New name" })
+    expect(t.uploadsApi.uploadAvatar).not.toHaveBeenCalled()
+    expect(t.useAuthStore.getState().user).toEqual(saved)
+    expect(JSON.parse((await t.stored("auth.user")) ?? "{}")).toEqual(saved)
+  })
+
+  it("a new picture is uploaded first, and the profile is updated with its address", async () => {
+    const t = signedIn()
+    const saved = { ...USER, avatarUrl: NEW_URL }
+    t.uploadsApi.uploadAvatar.mockResolvedValue(NEW_URL)
+    t.usersApi.updateProfile.mockResolvedValue(saved)
+
+    await t.useAuthStore.getState().updateProfile({ photo: PHOTO })
+
+    expect(t.uploadsApi.uploadAvatar).toHaveBeenCalledWith(PHOTO)
+    expect(t.usersApi.updateProfile).toHaveBeenCalledWith({ avatarUrl: NEW_URL })
+    expect(t.uploadsApi.uploadAvatar.mock.invocationCallOrder[0]).toBeLessThan(
+      t.usersApi.updateProfile.mock.invocationCallOrder[0],
+    )
+    expect(t.useAuthStore.getState().user?.avatarUrl).toBe(NEW_URL)
+  })
+
+  it("name and picture are saved with one update", async () => {
+    const t = signedIn()
+    const saved = { ...USER, name: "Both", avatarUrl: NEW_URL }
+    t.uploadsApi.uploadAvatar.mockResolvedValue(NEW_URL)
+    t.usersApi.updateProfile.mockResolvedValue(saved)
+
+    await t.useAuthStore.getState().updateProfile({ name: "Both", photo: PHOTO })
+
+    expect(t.usersApi.updateProfile).toHaveBeenCalledTimes(1)
+    expect(t.usersApi.updateProfile).toHaveBeenCalledWith({ name: "Both", avatarUrl: NEW_URL })
+    expect(t.useAuthStore.getState().user).toEqual(saved)
+  })
+
+  it("a failed upload changes nothing: the old avatar stays and the profile is not touched", async () => {
+    const t = signedIn()
+    t.uploadsApi.uploadAvatar.mockRejectedValue(t.offline())
+
+    await expect(
+      t.useAuthStore.getState().updateProfile({ name: "New name", photo: PHOTO }),
+    ).rejects.toMatchObject({ kind: "network" })
+
+    expect(t.usersApi.updateProfile).not.toHaveBeenCalled()
+    expect(t.useAuthStore.getState().user).toEqual(USER)
+    expect(await t.stored("auth.user")).toBeNull()
+  })
+
+  it("a profile update the server refuses keeps the old name and avatar", async () => {
+    const t = signedIn()
+    t.uploadsApi.uploadAvatar.mockResolvedValue(NEW_URL)
+    t.usersApi.updateProfile.mockRejectedValue(t.http(400))
+
+    await expect(t.useAuthStore.getState().updateProfile({ photo: PHOTO })).rejects.toMatchObject({
+      status: 400,
+    })
+
+    expect(t.useAuthStore.getState().user).toEqual(USER)
+  })
+
+  it("with nothing to change it makes no request", async () => {
+    const t = signedIn()
+
+    await t.useAuthStore.getState().updateProfile({})
+
+    expect(t.uploadsApi.uploadAvatar).not.toHaveBeenCalled()
+    expect(t.usersApi.updateProfile).not.toHaveBeenCalled()
+    expect(t.useAuthStore.getState().user).toEqual(USER)
   })
 })
 

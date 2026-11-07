@@ -1,8 +1,11 @@
 import { describe, expect, it } from "@jest/globals"
 import {
+  avatarKeyOf,
+  buildAvatarKey,
   buildObjectKey,
   checkUpload,
   isUnderPublicUrl,
+  UPLOAD_KINDS,
   UPLOAD_RULES,
   type UploadKind,
 } from "./upload-rules.js"
@@ -99,6 +102,103 @@ describe("checkUpload", () => {
   it("checks the type before the size", () => {
     const result = checkUpload("audio", "audio/wav", 999 * MEGABYTE)
     expect(result.ok === false && result.message).toContain("must be one of")
+  })
+})
+
+describe("the avatar rule", () => {
+  it.each([
+    ["image/jpeg", "jpg"],
+    ["image/png", "png"],
+    ["image/webp", "webp"],
+  ])("accepts %s as .%s", (contentType, extension) => {
+    expect(checkUpload("avatar", contentType, 1000)).toEqual({ ok: true, contentType, extension })
+  })
+
+  it.each(["image/gif", "image/svg+xml", "audio/mpeg", "application/pdf", "video/mp4", ""])(
+    "rejects %j",
+    (contentType) => {
+      expect(checkUpload("avatar", contentType, 1000).ok).toBe(false)
+    },
+  )
+
+  it("lists the allowed types in the error message", () => {
+    expect(checkUpload("avatar", "image/gif", 1000)).toEqual({
+      ok: false,
+      message: "avatar uploads must be one of: image/jpeg, image/png, image/webp",
+    })
+  })
+
+  it("allows up to exactly 2 MB and rejects one byte more", () => {
+    expect(UPLOAD_RULES.avatar.maxBytes).toBe(2 * MEGABYTE)
+    expect(checkUpload("avatar", "image/jpeg", 2 * MEGABYTE).ok).toBe(true)
+    expect(checkUpload("avatar", "image/jpeg", 2 * MEGABYTE + 1)).toEqual({
+      ok: false,
+      message: "avatar files can be at most 2 MB",
+    })
+  })
+
+  it("is stricter than a normal image, which may be 5 MB", () => {
+    expect(checkUpload("image", "image/jpeg", 3 * MEGABYTE).ok).toBe(true)
+    expect(checkUpload("avatar", "image/jpeg", 3 * MEGABYTE).ok).toBe(false)
+  })
+
+  it("is not something an admin can ask for through the general endpoint", () => {
+    expect(UPLOAD_KINDS).toEqual(["audio", "image"])
+  })
+})
+
+describe("buildAvatarKey", () => {
+  it("is avatars/{userId}/{id}.{ext}", () => {
+    expect(buildAvatarKey({ userId: "usr1", extension: "jpg", id: "clx1abc" })).toBe(
+      "avatars/usr1/clx1abc.jpg",
+    )
+  })
+
+  it("puts different users in different folders", () => {
+    const a = buildAvatarKey({ userId: "usr1", extension: "png", id: "x" })
+    const b = buildAvatarKey({ userId: "usr2", extension: "png", id: "x" })
+    expect(a.split("/")[1]).not.toBe(b.split("/")[1])
+  })
+})
+
+describe("avatarKeyOf", () => {
+  const base = "https://pub-abc.r2.dev"
+  const own = `${base}/avatars/usr1/clx1abc.jpg`
+
+  it("returns the key of the user's own avatar", () => {
+    expect(avatarKeyOf(own, base, "usr1")).toBe("avatars/usr1/clx1abc.jpg")
+    expect(avatarKeyOf(`${base}/avatars/usr1/a9.webp`, `${base}/`, "usr1")).toBe(
+      "avatars/usr1/a9.webp",
+    )
+  })
+
+  it("works with a path prefix on the public address", () => {
+    const prefixed = "https://cdn.example.com/media"
+    expect(avatarKeyOf(`${prefixed}/avatars/usr1/x.png`, prefixed, "usr1")).toBe(
+      "avatars/usr1/x.png",
+    )
+    expect(avatarKeyOf("https://cdn.example.com/avatars/usr1/x.png", prefixed, "usr1")).toBeNull()
+  })
+
+  it.each([
+    ["another user's avatar", `${base}/avatars/usr2/clx1abc.jpg`],
+    ["a folder that only starts like the user id", `${base}/avatars/usr10/clx1abc.jpg`],
+    ["an admin upload", `${base}/image/2026/10/clx1abc.jpg`],
+    ["audio", `${base}/audio/2026/10/clx1abc.mp3`],
+    ["an outside host", "https://example.com/avatars/usr1/clx1abc.jpg"],
+    ["a look-alike host", `${base}.evil.com/avatars/usr1/clx1abc.jpg`],
+    ["a path that climbs out of the folder", `${base}/avatars/usr1/../usr2/clx1abc.jpg`],
+    ["an encoded climb", `${base}/avatars/usr1/%2e%2e/usr2/clx1abc.jpg`],
+    ["a nested path", `${base}/avatars/usr1/sub/clx1abc.jpg`],
+    ["a file type that is not a picture", `${base}/avatars/usr1/clx1abc.mp3`],
+    ["a query string", `${own}?x=1`],
+    ["a fragment", `${own}#x`],
+    ["the folder itself", `${base}/avatars/usr1/`],
+    ["the bucket root", base],
+    ["not a url", "not a url"],
+    ["an empty string", ""],
+  ])("returns null for %s", (_name, url) => {
+    expect(avatarKeyOf(url, base, "usr1")).toBeNull()
   })
 })
 

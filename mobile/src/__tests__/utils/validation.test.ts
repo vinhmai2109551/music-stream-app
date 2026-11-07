@@ -1,9 +1,38 @@
 import { describe, expect, it } from "@jest/globals"
 import { AUTH_LIMITS } from "@/constants/auth"
 import { copy } from "@/constants/copy"
-import { hasErrors, normalizeEmail, validateLogin, validateRegister } from "@/utils/validation"
+import {
+  hasErrors,
+  normalizeEmail,
+  validateLogin,
+  validateProfile,
+  validateRegister,
+} from "@/utils/validation"
 
 const messages = copy.auth.validation
+
+describe("validateProfile", () => {
+  it("accepts a normal name", () => {
+    expect(validateProfile({ name: "Vinh" })).toEqual({ name: undefined })
+    expect(validateProfile({ name: "Nguyễn Văn Á" }).name).toBeUndefined()
+  })
+
+  it("asks for a name, and treats blanks as missing", () => {
+    expect(validateProfile({ name: "" }).name).toBe(messages.nameRequired)
+    expect(validateProfile({ name: "   " }).name).toBe(messages.nameRequired)
+  })
+
+  it("accepts exactly the longest name and rejects one character more", () => {
+    expect(validateProfile({ name: "a".repeat(AUTH_LIMITS.nameMax) }).name).toBeUndefined()
+    expect(validateProfile({ name: "a".repeat(AUTH_LIMITS.nameMax + 1) }).name).toBe(
+      messages.nameTooLong,
+    )
+  })
+
+  it("measures the name without the spaces around it, as the form saves it", () => {
+    expect(validateProfile({ name: ` ${"a".repeat(AUTH_LIMITS.nameMax)} ` }).name).toBeUndefined()
+  })
+})
 
 describe("normalizeEmail", () => {
   it("trims and lowercases", () => {

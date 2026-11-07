@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 export const PRESIGN_EXPIRES_SECONDS = 5 * 60
@@ -16,9 +16,8 @@ export interface PresignRequest {
   sizeBytes: number
 }
 
-/** Returns a function that signs short-lived PUT URLs for one R2 bucket. */
-export function createR2Presigner(r2: R2Credentials): (request: PresignRequest) => Promise<string> {
-  const client = new S3Client({
+function createClient(r2: R2Credentials): S3Client {
+  return new S3Client({
     region: "auto",
     endpoint: `https://${r2.accountId}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId: r2.accessKeyId, secretAccessKey: r2.secretAccessKey },
@@ -26,6 +25,19 @@ export function createR2Presigner(r2: R2Credentials): (request: PresignRequest) 
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
   })
+}
+
+/** Returns a function that deletes one object from the R2 bucket (a missing key is not an error). */
+export function createR2Deleter(r2: R2Credentials): (key: string) => Promise<void> {
+  const client = createClient(r2)
+  return async (key) => {
+    await client.send(new DeleteObjectCommand({ Bucket: r2.bucket, Key: key }))
+  }
+}
+
+/** Returns a function that signs short-lived PUT URLs for one R2 bucket. */
+export function createR2Presigner(r2: R2Credentials): (request: PresignRequest) => Promise<string> {
+  const client = createClient(r2)
 
   return ({ key, contentType, sizeBytes }) =>
     // Content-Type and Content-Length are part of the signature: the client must upload exactly

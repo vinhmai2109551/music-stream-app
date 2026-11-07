@@ -3,7 +3,7 @@ import { BadRequestException, Logger, ServiceUnavailableException } from "@nestj
 import type { ConfigService } from "@nestjs/config"
 import { TurnstileService } from "./turnstile.service.js"
 
-const SECRET = "0x4AAAAAAA-secret"
+const SECRET = "0x4AAAAAAF0pCDx-SgZEXiN7Y5lR8oAib0k"
 
 function makeService(env: Record<string, string | undefined>) {
   const config = { get: (key: string) => env[key] } as unknown as ConfigService

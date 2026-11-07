@@ -33,6 +33,12 @@ function passwordError(password: string, checkMinimum: boolean): string | undefi
   return undefined
 }
 
+export type ProfileField = "name"
+
+export function validateProfile(input: { name: string }): FieldErrors<ProfileField> {
+  return { name: nameError(input.name) }
+}
+
 export type LoginField = "email" | "password"
 export type RegisterField = "email" | "name" | "password"
 

@@ -209,6 +209,7 @@ flowchart LR
     playlists --> likes
     playlists --> users
     comments --> users
+    users --> uploads
     feed --> tracks
     feed --> artists
     feed --> comments
