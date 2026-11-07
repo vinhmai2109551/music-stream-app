@@ -1,20 +1,11 @@
 import { router } from "expo-router"
-import {
-  BadgeCheck,
-  Ellipsis,
-  Heart,
-  MessageSquare,
-  Play,
-  Repeat2,
-  User,
-} from "lucide-react-native"
+import { BadgeCheck, Heart, MessageSquare, Play, User } from "lucide-react-native"
 import { memo, useState } from "react"
 import { Pressable, View } from "react-native"
 import { likeFeedPost, unlikeFeedPost } from "@/api/feed"
 import type { ApiFeedPost } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
 import { CoverImage } from "@/components/ui/CoverImage"
-import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
 import { usePlayerStore } from "@/store/playerStore"
@@ -25,7 +16,6 @@ import { formatCount } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
 import { formatTimeAgo } from "@/utils/formatTimeAgo"
 
-const COMING_SOON = "Coming soon"
 const AUTHOR_AVATAR = 44
 const CAPTION_LINES = 2
 
@@ -138,9 +128,6 @@ function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardP
           count={commentsCount}
           onPress={() => onOpenComments(post)}
         />
-        <Action icon={Repeat2} label="Repost" onPress={() => showToast(COMING_SOON)} />
-        <View style={styles.spacer} />
-        <IconButton icon={Ellipsis} label="More options" onPress={() => showToast(COMING_SOON)} />
       </View>
       {post.caption.length > 0 && (
         <AppText
@@ -224,5 +211,4 @@ const useStyles = makeStyles((colors) => ({
     gap: spacing.xs,
     paddingRight: spacing.md,
   },
-  spacer: { flex: 1 },
 }))

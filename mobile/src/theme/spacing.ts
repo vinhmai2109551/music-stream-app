@@ -40,7 +40,6 @@ export const sizes = {
   suggestionHeight: 224,
   chartCard: 128,
   userAvatar: 40,
-  notificationDot: 8,
   playButton: 56,
   collectionCover: 208,
   aboutImageHeight: 160,

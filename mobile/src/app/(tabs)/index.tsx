@@ -15,10 +15,7 @@ import { pressedStyle } from "@/components/ui/pressed"
 import { copy } from "@/constants/copy"
 import { useHomeData } from "@/hooks/useHomeData"
 import { useAuthStore } from "@/store/authStore"
-import { showToast } from "@/store/toastStore"
 import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
-
-const COMING_SOON = "Coming soon"
 
 const openSearch = () => router.navigate({ pathname: "/search", params: { focus: "1" } })
 
@@ -42,7 +39,6 @@ export default function HomeScreen() {
           <HomeHeader
             name={user?.name ?? ""}
             avatarUrl={user?.avatarUrl ?? null}
-            onNotifications={() => showToast(COMING_SOON)}
             onAccount={() => setAccountOpen(true)}
           />
           <Pressable

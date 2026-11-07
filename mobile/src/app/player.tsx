@@ -12,6 +12,7 @@ import { PlayerError } from "@/components/media/PlayerError"
 import { PlayerHeader } from "@/components/media/PlayerHeader"
 import { PlayerTrackInfo } from "@/components/media/PlayerTrackInfo"
 import { SeekBar } from "@/components/media/SeekBar"
+import { TrackMenuSheet } from "@/components/media/TrackMenuSheet"
 import { YouTubeLabel } from "@/components/media/YouTubeLabel"
 import { YouTubeSlot } from "@/components/media/YouTubeSlot"
 import { AppText } from "@/components/ui/AppText"
@@ -29,8 +30,7 @@ import { showToast } from "@/store/toastStore"
 import { canAutoSkip, usePlayerStore } from "@/store/playerStore"
 import { colors, spacing } from "@/theme"
 import { youtubeWatchUrl } from "@/utils/playbackKind"
-
-const COMING_SOON = "Coming soon"
+import { shareTrack } from "@/utils/shareTrack"
 
 const close = () => router.back()
 
@@ -58,6 +58,7 @@ export default function PlayerScreen() {
     usePlayerStore.getState()
 
   const [commentsOpen, setCommentsOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   /** Comments counted once the sheet has been opened; until then the design's sample number. */
   const [commentCount, setCommentCount] = useState<{ trackId: string; count: number } | null>(null)
 
@@ -77,6 +78,8 @@ export default function PlayerScreen() {
 
   const videoId = track.youtubeVideoId
 
+  const share = () => shareTrack(track).catch(() => showToast(copy.errors.unknown))
+
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
@@ -88,11 +91,7 @@ export default function PlayerScreen() {
             { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + spacing.lg },
           ]}
         >
-          <PlayerHeader
-            source={queueSource}
-            onClose={close}
-            onMore={() => showToast(COMING_SOON)}
-          />
+          <PlayerHeader source={queueSource} onClose={close} onMore={() => setMenuOpen(true)} />
           {/* The video takes the place of the cover; it must stay at least 200 x 200 and visible. */}
           <View style={[styles.artwork, playsFromYouTube && styles.video]}>
             {playsFromYouTube ? (
@@ -144,11 +143,12 @@ export default function PlayerScreen() {
               }
               onToggleLike={() => toggleLike(track.id)}
               onComments={() => setCommentsOpen(true)}
-              onShare={() => showToast(COMING_SOON)}
+              onShare={() => void share()}
             />
           </View>
         </View>
       </SwipeToDismiss>
+      {menuOpen && <TrackMenuSheet track={track} visible onClose={() => setMenuOpen(false)} />}
       {commentsOpen && (
         <CommentsSheet
           target={{ trackId: track.id }}
