@@ -1,13 +1,26 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import type { Track } from "../../generated/prisma/client.js"
+import type { Region } from "../../generated/prisma/enums.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
-import { pageArgs, toPage, type Page } from "../../shared/index.js"
+import { CatalogEvents, pageArgs, toPage, type Page } from "../../shared/index.js"
 import { ArtistsService } from "../artists/index.js"
 import { LikeKind, LikesService } from "../likes/index.js"
 import { UploadsService } from "../uploads/index.js"
 import { CreateTrackDto, ListTracksQueryDto, UpdateTrackDto } from "./dto/track.dto.js"
 import { readPlayConfig } from "./tracks.config.js"
+
+/** What the embeddings module needs to describe a track. */
+export interface TrackEmbeddingSource {
+  id: string
+  title: string
+  artist: string
+  region: Region
+  genres: string[]
+  mood: string[]
+  tags: string[]
+  description: string
+}
 
 export interface TrackView {
   id: string
@@ -49,6 +62,7 @@ export class TracksService {
     private readonly artists: ArtistsService,
     private readonly likes: LikesService,
     private readonly uploads: UploadsService,
+    private readonly events: CatalogEvents,
     config: ConfigService,
   ) {
     this.playDedupeMs = readPlayConfig(config).dedupeMs
@@ -102,6 +116,7 @@ export class TracksService {
     this.assertPlayable(dto)
     this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl ?? undefined })
     const track = await this.prisma.track.create({ data: dto })
+    this.events.changed({ kind: "track", id: track.id })
     return this.get(track.id)
   }
 
@@ -115,7 +130,49 @@ export class TracksService {
       if (current) this.assertPlayable({ ...current, ...dto })
     }
     await this.prisma.track.update({ where: { id }, data: dto })
+    this.events.changed({ kind: "track", id })
     return this.get(id)
+  }
+
+  /** For the embeddings module: the tracks that exist among `ids`, with their artist, by id. */
+  async embeddingSources(ids: readonly string[]): Promise<Map<string, TrackEmbeddingSource>> {
+    const rows = await this.prisma.track.findMany({ where: { id: { in: [...new Set(ids)] } } })
+    const artists = await this.artists.embeddingSources(rows.map((row) => row.artistId))
+    return new Map(
+      rows.map((row) => [
+        row.id,
+        {
+          id: row.id,
+          title: row.title,
+          artist: artists.get(row.artistId)?.name ?? "",
+          region: artists.get(row.artistId)?.region ?? "GLOBAL",
+          genres: row.genres,
+          mood: row.mood,
+          tags: row.tags,
+          description: row.description,
+        },
+      ]),
+    )
+  }
+
+  /** For the embeddings module: track ids in order, `limit` of them after `after`. */
+  async listIds(after: string | null, limit: number): Promise<string[]> {
+    const rows = await this.prisma.track.findMany({
+      where: after ? { id: { gt: after } } : {},
+      orderBy: { id: "asc" },
+      take: limit,
+      select: { id: true },
+    })
+    return rows.map((row) => row.id)
+  }
+
+  async idsOfArtist(artistId: string): Promise<string[]> {
+    const rows = await this.prisma.track.findMany({ where: { artistId }, select: { id: true } })
+    return rows.map((row) => row.id)
+  }
+
+  count(): Promise<number> {
+    return this.prisma.track.count()
   }
 
   async remove(id: string): Promise<void> {

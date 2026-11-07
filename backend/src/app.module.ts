@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import { ThrottlerModule } from "@nestjs/throttler"
 import { validateEnv } from "./config/env.validation.js"
+import { CatalogEventsModule } from "./shared/index.js"
 import { PrismaModule } from "./infrastructure/prisma/prisma.module.js"
 import { AlbumsModule } from "./modules/albums/index.js"
 import { ArtistsModule } from "./modules/artists/index.js"
@@ -34,6 +35,7 @@ import { avatarThrottler, UsersModule } from "./modules/users/index.js"
       }),
     }),
     PrismaModule,
+    CatalogEventsModule,
     UsersModule,
     AuthModule,
     ArtistsModule,

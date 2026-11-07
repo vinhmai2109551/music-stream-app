@@ -1,25 +1,30 @@
 import { Module } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EMBEDDING_PROVIDER, type EmbeddingProvider } from "./embedding-provider.js"
-import { readEmbeddingsConfig } from "./embeddings.config.js"
+import { ArtistsModule } from "../artists/index.js"
+import { TracksModule } from "../tracks/index.js"
+import { CatalogSyncListener } from "./catalog-sync.listener.js"
+import { EmbeddingIndexService } from "./embedding-index.service.js"
+import { createEmbeddingProvider } from "./create-provider.js"
+import { EMBEDDING_PROVIDER } from "./embedding-provider.js"
 import { EmbeddingsService } from "./embeddings.service.js"
-import { GeminiEmbeddingProvider } from "./gemini-embedding.provider.js"
-import { HashingEmbeddingProvider } from "./hashing-embedding.provider.js"
+import { CATALOG_SOURCES, EMBEDDING_STORE } from "./ports.js"
+import { PrismaEmbeddingStore } from "./prisma-embedding.store.js"
+import { ServiceCatalogSources } from "./service-catalog.sources.js"
 
-/** Builds the provider the settings ask for; null when there is none (or no key for it). */
-export function createEmbeddingProvider(config: ConfigService): EmbeddingProvider | null {
-  const { provider, model, apiKey } = readEmbeddingsConfig(config)
-  if (provider === "fake") return new HashingEmbeddingProvider()
-  if (provider === "gemini" && apiKey) return new GeminiEmbeddingProvider(model, apiKey)
-  return null
-}
-
-/** Text embeddings (vectors) for semantic search, recommendations and the assistant. */
+/**
+ * Text embeddings (vectors) for semantic search, recommendations and the assistant: the provider,
+ * the vectors stored in PostgreSQL, and the work that keeps them up to date.
+ */
 @Module({
+  imports: [TracksModule, ArtistsModule],
   providers: [
     { provide: EMBEDDING_PROVIDER, inject: [ConfigService], useFactory: createEmbeddingProvider },
+    { provide: EMBEDDING_STORE, useClass: PrismaEmbeddingStore },
+    { provide: CATALOG_SOURCES, useClass: ServiceCatalogSources },
     EmbeddingsService,
+    EmbeddingIndexService,
+    CatalogSyncListener,
   ],
-  exports: [EmbeddingsService],
+  exports: [EmbeddingsService, EmbeddingIndexService, EMBEDDING_STORE],
 })
 export class EmbeddingsModule {}

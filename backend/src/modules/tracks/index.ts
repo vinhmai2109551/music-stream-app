@@ -2,4 +2,4 @@
 export { TracksModule } from "./tracks.module.js"
 export { TracksService } from "./tracks.service.js"
 export { playThrottler } from "./tracks.config.js"
-export type { PlayResult, TrackView } from "./tracks.service.js"
+export type { PlayResult, TrackEmbeddingSource, TrackView } from "./tracks.service.js"

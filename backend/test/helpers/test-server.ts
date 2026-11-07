@@ -37,7 +37,7 @@ const TEST_ENV = {
   R2_BUCKET: "",
   R2_PUBLIC_URL: "",
   // Blank, so no real key reaches a test server; a spec that needs vectors sets the fake provider.
-  ANTHROPIC_API_KEY: "",
+  GEMINI_API_KEY: "",
   EMBEDDING_PROVIDER: "",
   EMBEDDING_MODEL: "",
   EMBEDDING_API_KEY: "",
@@ -49,6 +49,8 @@ const TEST_ENV = {
 export interface TestServer {
   /** e.g. http://127.0.0.1:41234 - pass it to supertest. */
   url: string
+  /** The environment the API runs with (same database, same settings), for jobs started beside it. */
+  env: NodeJS.ProcessEnv
   db: TestDb
   stop: () => Promise<void>
 }
@@ -65,15 +67,16 @@ export async function startTestServer(env: Record<string, string> = {}): Promise
   const port = await freePort()
   const url = `http://127.0.0.1:${port}`
 
+  const childEnv: NodeJS.ProcessEnv = {
+    ...process.env,
+    ...TEST_ENV,
+    ...env,
+    PORT: String(port),
+    DATABASE_URL: databaseUrl,
+    DATABASE_URL_LOCAL: databaseUrl,
+  }
   const child = spawn(process.execPath, [ENTRY], {
-    env: {
-      ...process.env,
-      ...TEST_ENV,
-      ...env,
-      PORT: String(port),
-      DATABASE_URL: databaseUrl,
-      DATABASE_URL_LOCAL: databaseUrl,
-    },
+    env: childEnv,
     stdio: ["ignore", "pipe", "pipe"],
   })
   const output = collectOutput(child)
@@ -88,6 +91,7 @@ export async function startTestServer(env: Record<string, string> = {}): Promise
   const db = await TestDb.connect(databaseUrl)
   return {
     url,
+    env: childEnv,
     db,
     stop: async () => {
       await db.deleteTestData()

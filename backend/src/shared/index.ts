@@ -1,4 +1,6 @@
 /** Shared kernel: cross-cutting building blocks with no domain knowledge. */
+export { CatalogEvents, CatalogEventsModule } from "./events/catalog-events.js"
+export type { CatalogChange } from "./events/catalog-events.js"
 export { Auth, OptionalAuth } from "./auth/auth.decorator.js"
 export type { AuthUser } from "./auth/auth-user.js"
 export { CurrentUser } from "./auth/current-user.decorator.js"

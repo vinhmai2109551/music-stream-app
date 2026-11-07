@@ -132,6 +132,49 @@ describe("validateEnv", () => {
     })
   })
 
+  describe("the AI settings", () => {
+    it("are optional: none of them has to be set", () => {
+      expect(() => validateEnv(base)).not.toThrow()
+      expect(() =>
+        validateEnv({ ...base, GEMINI_API_KEY: "", AI_MODEL: "", AI_THINKING_LEVEL: "" }),
+      ).not.toThrow()
+    })
+
+    it("refuse a blank number, like every other numeric setting", () => {
+      expect(() => validateEnv({ ...base, AI_MAX_TOKENS: "" })).toThrow(/AI_MAX_TOKENS/)
+      expect(() => validateEnv({ ...base, AI_DAILY_MESSAGE_LIMIT: "" })).toThrow(
+        /AI_DAILY_MESSAGE_LIMIT/,
+      )
+    })
+
+    it("accept the values .env.example ships", () => {
+      expect(() =>
+        validateEnv({
+          ...base,
+          GEMINI_API_KEY: "",
+          AI_MODEL: "gemini-3.5-flash-lite",
+          AI_MAX_TOKENS: "1024",
+          AI_DAILY_MESSAGE_LIMIT: "30",
+          AI_THINKING_LEVEL: "",
+        }),
+      ).not.toThrow()
+    })
+
+    it.each(["minimal", "low", "medium", "high"])("accept the thinking level %s", (level) => {
+      expect(() => validateEnv({ ...base, AI_THINKING_LEVEL: level })).not.toThrow()
+    })
+
+    it("refuse a thinking level that does not exist and limits that are not positive integers", () => {
+      expect(() => validateEnv({ ...base, AI_THINKING_LEVEL: "extreme" })).toThrow(
+        /AI_THINKING_LEVEL/,
+      )
+      expect(() => validateEnv({ ...base, AI_MAX_TOKENS: "0" })).toThrow(/AI_MAX_TOKENS/)
+      expect(() => validateEnv({ ...base, AI_DAILY_MESSAGE_LIMIT: "-3" })).toThrow(
+        /AI_DAILY_MESSAGE_LIMIT/,
+      )
+    })
+  })
+
   it("still requires the basics", () => {
     expect(() => validateEnv({ JWT_SECRET: base.JWT_SECRET })).toThrow(/DATABASE_URL/)
     expect(() => validateEnv({ ...base, JWT_SECRET: "short" })).toThrow(/JWT_SECRET/)

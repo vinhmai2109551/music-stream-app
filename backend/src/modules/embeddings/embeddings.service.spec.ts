@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { Logger, ServiceUnavailableException } from "@nestjs/common"
 import type { ConfigService } from "@nestjs/config"
 import type { EmbeddingKind, EmbeddingProvider } from "./embedding-provider.js"
-import { createEmbeddingProvider } from "./embeddings.module.js"
+import { createEmbeddingProvider } from "./create-provider.js"
 import { EmbeddingsService } from "./embeddings.service.js"
 import { readEmbeddingsConfig } from "./embeddings.config.js"
 import { EmbeddingServiceError, GeminiEmbeddingProvider } from "./gemini-embedding.provider.js"
@@ -70,6 +70,49 @@ describe("EmbeddingsService with a provider", () => {
     embed.mockRejectedValue(new RangeError("bug"))
 
     await expect(new EmbeddingsService(provider).embedQuery("x")).rejects.toBeInstanceOf(RangeError)
+  })
+})
+
+describe("EmbeddingsService question cache", () => {
+  it("answers a repeated question from memory, without calling the service again", async () => {
+    const { provider, embed } = fakeProvider()
+    const service = new EmbeddingsService(provider)
+
+    const first = await service.embedQuery("nhạc buồn ngày mưa")
+    const second = await service.embedQuery("nhạc buồn ngày mưa")
+
+    expect(second).toBe(first)
+    expect(embed).toHaveBeenCalledTimes(1)
+  })
+
+  it("ignores spaces around the question but not its words", async () => {
+    const { provider, embed } = fakeProvider()
+    const service = new EmbeddingsService(provider)
+
+    await service.embedQuery("gym")
+    await service.embedQuery("  gym  ")
+    await service.embedQuery("gym k-pop")
+
+    expect(embed).toHaveBeenCalledTimes(2)
+  })
+
+  it("does not cache a failure", async () => {
+    const { provider, embed } = fakeProvider()
+    embed.mockRejectedValueOnce(new EmbeddingServiceError("busy", 429))
+    const service = new EmbeddingsService(provider)
+
+    await expect(service.embedQuery("gym")).rejects.toBeInstanceOf(ServiceUnavailableException)
+    await expect(service.embedQuery("gym")).resolves.toEqual([3])
+  })
+
+  it("does not use documents: they are always made fresh", async () => {
+    const { provider, embed } = fakeProvider()
+    const service = new EmbeddingsService(provider)
+
+    await service.embedDocuments(["a"])
+    await service.embedDocuments(["a"])
+
+    expect(embed).toHaveBeenCalledTimes(2)
   })
 })
 

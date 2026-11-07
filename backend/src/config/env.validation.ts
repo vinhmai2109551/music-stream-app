@@ -134,15 +134,35 @@ class EnvironmentVariables {
   @Matches(POSITIVE_INTEGER, { message: "AVATAR_THROTTLE_TTL_SECONDS must be a positive integer" })
   AVATAR_THROTTLE_TTL_SECONDS?: string
 
-  /** Key of the Claude API (the assistant and `npm run ai:enrich`). Blank = AI features are off. */
+  /**
+   * Key of the Gemini API for the assistant and `npm run ai:enrich`. Blank = EMBEDDING_API_KEY is
+   * used; with neither, AI features are off (503) and the rest of the API keeps working.
+   */
   @IsOptional()
   @IsString()
-  ANTHROPIC_API_KEY?: string
+  GEMINI_API_KEY?: string
 
-  /** Claude model for the assistant and for `ai:enrich`; defaults to claude-haiku-5-5. */
+  /** Gemini model of the assistant; defaults to gemini-3.5-flash-lite. */
   @IsOptional()
   @IsString()
   AI_MODEL?: string
+
+  /** Longest answer of the assistant, in tokens (what the model thinks counts too). */
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "AI_MAX_TOKENS must be a positive integer" })
+  AI_MAX_TOKENS?: string
+
+  /** Messages one user may send to the assistant per day. */
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "AI_DAILY_MESSAGE_LIMIT must be a positive integer" })
+  AI_DAILY_MESSAGE_LIMIT?: string
+
+  /** How hard the model thinks: minimal, low, medium or high. Blank = the default of the model. */
+  @ValidateIf((env: EnvironmentVariables) => Boolean(env.AI_THINKING_LEVEL?.trim()))
+  @Matches(/^(minimal|low|medium|high)$/, {
+    message: "AI_THINKING_LEVEL must be minimal, low, medium or high",
+  })
+  AI_THINKING_LEVEL?: string
 
   /**
    * Which service makes the text embeddings for semantic search. Blank = semantic features are

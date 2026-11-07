@@ -2,10 +2,19 @@ import { Injectable, NotFoundException } from "@nestjs/common"
 import type { Artist } from "../../generated/prisma/client.js"
 import type { Region } from "../../generated/prisma/enums.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
-import { pageArgs, toPage, type Page } from "../../shared/index.js"
+import { CatalogEvents, pageArgs, toPage, type Page } from "../../shared/index.js"
 import { FollowsService } from "../follows/index.js"
 import { UploadsService } from "../uploads/index.js"
 import { CreateArtistDto, ListArtistsQueryDto, UpdateArtistDto } from "./dto/artist.dto.js"
+
+/** What the embeddings module needs to describe an artist (and to describe their tracks). */
+export interface ArtistEmbeddingSource {
+  id: string
+  name: string
+  region: Region
+  bio: string
+  genres: string[]
+}
 
 export interface ArtistView {
   id: string
@@ -31,6 +40,7 @@ export class ArtistsService {
     private readonly prisma: PrismaService,
     private readonly follows: FollowsService,
     private readonly uploads: UploadsService,
+    private readonly events: CatalogEvents,
   ) {}
 
   async list(query: ListArtistsQueryDto, userId?: string): Promise<Page<ArtistView>> {
@@ -63,18 +73,48 @@ export class ArtistsService {
     return ids.flatMap((id) => views.find((view) => view.id === id) ?? [])
   }
 
-  create(dto: CreateArtistDto): Promise<Artist> {
+  async create(dto: CreateArtistDto): Promise<Artist> {
     this.uploads.assertManagedUrls({ imageUrl: dto.imageUrl })
-    return this.prisma.artist.create({ data: dto })
+    const artist = await this.prisma.artist.create({ data: dto })
+    this.events.changed({ kind: "artist", id: artist.id })
+    return artist
   }
 
-  update(id: string, dto: UpdateArtistDto): Promise<Artist> {
+  async update(id: string, dto: UpdateArtistDto): Promise<Artist> {
     this.uploads.assertManagedUrls({ imageUrl: dto.imageUrl })
-    return this.prisma.artist.update({ where: { id }, data: dto })
+    const artist = await this.prisma.artist.update({ where: { id }, data: dto })
+    this.events.changed({ kind: "artist", id })
+    return artist
   }
 
   async remove(id: string): Promise<void> {
     await this.prisma.artist.delete({ where: { id } })
+  }
+
+  /** For the embeddings module: the artists that exist among `ids`, by id. */
+  async embeddingSources(ids: readonly string[]): Promise<Map<string, ArtistEmbeddingSource>> {
+    const rows = await this.prisma.artist.findMany({ where: { id: { in: [...new Set(ids)] } } })
+    return new Map(
+      rows.map((row) => [
+        row.id,
+        { id: row.id, name: row.name, region: row.region, bio: row.bio, genres: row.genres },
+      ]),
+    )
+  }
+
+  /** For the embeddings module: artist ids in order, `limit` of them after `after`. */
+  async listIds(after: string | null, limit: number): Promise<string[]> {
+    const rows = await this.prisma.artist.findMany({
+      where: after ? { id: { gt: after } } : {},
+      orderBy: { id: "asc" },
+      take: limit,
+      select: { id: true },
+    })
+    return rows.map((row) => row.id)
+  }
+
+  count(): Promise<number> {
+    return this.prisma.artist.count()
   }
 
   /** For other modules: id -> {id, name, image}. Unknown ids are absent. */

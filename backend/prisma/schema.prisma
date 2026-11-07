@@ -86,6 +86,7 @@ model Artist {
   createdAt     DateTime @default(now())
 
   tracks    Track[]
+  embedding ArtistEmbedding?
   albums    Album[]
   follows   Follow[]
   feedPosts FeedPost[]
@@ -118,6 +119,7 @@ model Track {
   createdAt      DateTime @default(now())
 
   artist     Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  embedding  TrackEmbedding?
   albums     AlbumTrack[]
   playlists  PlaylistTrack[]
   likes      TrackLike[]
@@ -314,4 +316,31 @@ model FeedPostLike {
 
   @@id([userId, postId])
   @@index([postId])
+}
+
+// ----------------------------------------------------------- owner: embeddings
+/// The vector of the text that describes a track (see embedding-text.ts), for semantic search and
+/// recommendations. `embedding` is a pgvector column: Prisma cannot read or write it, so the
+/// embeddings module does that with parameterised raw SQL. The HNSW cosine index on it is created
+/// in the migration (Prisma cannot express it). `contentHash` is the hash of the text plus the model
+/// name: the vector is made again only when it changes. Deleting the track deletes its vector.
+model TrackEmbedding {
+  trackId     String                     @id
+  embedding   Unsupported("vector(768)")
+  model       String
+  contentHash String
+  updatedAt   DateTime                   @default(now())
+
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+}
+
+/// The same for an artist.
+model ArtistEmbedding {
+  artistId    String                     @id
+  embedding   Unsupported("vector(768)")
+  model       String
+  contentHash String
+  updatedAt   DateTime                   @default(now())
+
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
 }

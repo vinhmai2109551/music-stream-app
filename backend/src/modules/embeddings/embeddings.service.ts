@@ -5,6 +5,11 @@ import {
   type EmbeddingProvider,
 } from "./embedding-provider.js"
 import { EmbeddingServiceError } from "./gemini-embedding.provider.js"
+import { TtlLruCache } from "./ttl-lru-cache.js"
+
+/** Questions kept in memory: about 500 of them, for an hour. */
+export const QUERY_CACHE_ENTRIES = 500
+export const QUERY_CACHE_TTL_MS = 60 * 60 * 1000
 
 /**
  * The embedding provider as the rest of the API sees it. While no provider is configured every
@@ -13,6 +18,11 @@ import { EmbeddingServiceError } from "./gemini-embedding.provider.js"
 @Injectable()
 export class EmbeddingsService {
   private readonly logger = new Logger(EmbeddingsService.name)
+  /** Vectors of questions already asked, so repeating one costs no call to the service. */
+  private readonly queryCache = new TtlLruCache<string, number[]>(
+    QUERY_CACHE_ENTRIES,
+    QUERY_CACHE_TTL_MS,
+  )
 
   constructor(@Inject(EMBEDDING_PROVIDER) private readonly provider: EmbeddingProvider | null) {
     if (!provider) this.logger.warn("No embedding provider is set: semantic features are off")
@@ -36,9 +46,13 @@ export class EmbeddingsService {
     return this.embed(texts, "document")
   }
 
-  /** The vector of one question. */
+  /** The vector of one question. The same question (same model) is answered from memory. */
   async embedQuery(text: string): Promise<number[]> {
+    const key = `${this.provider?.model ?? ""}\u0000${text.trim()}`
+    const cached = this.queryCache.get(key)
+    if (cached) return cached
     const [vector] = await this.embed([text], "query")
+    this.queryCache.set(key, vector)
     return vector
   }
 
