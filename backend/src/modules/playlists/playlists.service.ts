@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common"
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  type OnModuleInit,
+} from "@nestjs/common"
 import type { Playlist, PlaylistTrack } from "../../generated/prisma/client.js"
 import { Role } from "../../generated/prisma/enums.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
@@ -9,6 +14,8 @@ import {
   type Page,
   type PaginationQueryDto,
 } from "../../shared/index.js"
+import { backfillSearchNames } from "../../shared/text/backfill-search-names.js"
+import { toSearchName } from "../../shared/text/search-name.js"
 import { LikeKind, LikesService } from "../likes/index.js"
 import { TracksService, type TrackView } from "../tracks/index.js"
 import { UsersService } from "../users/index.js"
@@ -41,7 +48,7 @@ const include = {
 } as const
 
 @Injectable()
-export class PlaylistsService {
+export class PlaylistsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tracks: TracksService,
@@ -49,11 +56,44 @@ export class PlaylistsService {
     private readonly users: UsersService,
   ) {}
 
+  /** Gives a search name to playlists that have none (made before the column, or written by SQL). */
+  async onModuleInit(): Promise<void> {
+    await backfillSearchNames({
+      label: "playlists",
+      read: async (take) =>
+        (
+          await this.prisma.playlist.findMany({
+            where: { searchName: null },
+            select: { id: true, name: true },
+            take,
+          })
+        ).map((row) => ({ id: row.id, text: row.name })),
+      write: async (rows) => {
+        await this.prisma.$transaction(
+          rows.map((row) =>
+            this.prisma.playlist.update({
+              where: { id: row.id },
+              data: { searchName: row.searchName },
+            }),
+          ),
+        )
+      },
+    })
+  }
+
   /** Editorial playlists, visible to everyone. */
   async listOfficial(query: PaginationQueryDto, userId?: string): Promise<Page<PlaylistView>> {
+    const needle = query.q ? toSearchName(query.q) : ""
     const where = {
       isOfficial: true,
-      ...(query.q ? { name: { contains: query.q, mode: "insensitive" as const } } : {}),
+      ...(query.q
+        ? {
+            OR: [
+              ...(needle ? [{ searchName: { contains: needle } }] : []),
+              { name: { contains: query.q, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
     }
     const [rows, total] = await Promise.all([
       this.prisma.playlist.findMany({
@@ -101,6 +141,7 @@ export class PlaylistsService {
     const playlist = await this.prisma.playlist.create({
       data: {
         ...dto,
+        searchName: toSearchName(dto.name),
         isOfficial: dto.isOfficial ?? false,
         ownerId: dto.isOfficial ? null : user.id,
       },
@@ -110,7 +151,10 @@ export class PlaylistsService {
 
   async update(id: string, user: AuthUser, dto: UpdatePlaylistDto): Promise<PlaylistDetail> {
     await this.findWritable(id, user)
-    await this.prisma.playlist.update({ where: { id }, data: dto })
+    await this.prisma.playlist.update({
+      where: { id },
+      data: { ...dto, ...(dto.name === undefined ? {} : { searchName: toSearchName(dto.name) }) },
+    })
     return this.get(id, user)
   }
 

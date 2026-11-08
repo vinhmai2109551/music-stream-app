@@ -20,6 +20,22 @@ export interface EmbeddingStore {
   /** Inserts or replaces vectors. A row whose track or artist no longer exists is skipped. */
   save(kind: EmbeddedKind, rows: readonly EmbeddingRow[]): Promise<void>
   count(kind: EmbeddedKind): Promise<number>
+  /**
+   * The ids whose vectors are closest to `vector` by cosine distance (0 = the same direction, 2 =
+   * opposite), nearest first. With `only`, just those ids are looked at.
+   */
+  nearest(
+    kind: EmbeddedKind,
+    vector: readonly number[],
+    limit: number,
+    only?: readonly string[],
+  ): Promise<NearestHit[]>
+}
+
+export interface NearestHit {
+  id: string
+  /** Cosine distance to the vector asked for. */
+  distance: number
 }
 
 /** Where the text to embed comes from (the tracks and artists modules). */

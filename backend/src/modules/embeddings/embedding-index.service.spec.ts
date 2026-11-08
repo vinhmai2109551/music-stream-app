@@ -52,6 +52,7 @@ function fakeStore() {
       for (const row of batch) rows[kind].set(row.id, row)
     },
     count: async (kind) => rows[kind].size,
+    nearest: async () => [],
   }
   return { store, rows, saves }
 }

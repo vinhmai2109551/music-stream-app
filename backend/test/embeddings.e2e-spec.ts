@@ -29,6 +29,21 @@ describe("pgvector (e2e)", () => {
     expect(rows).toEqual([{ extname: "vector" }])
   })
 
+  it("has the HNSW cosine indexes of the track and artist vectors, after all the migrations", async () => {
+    const rows = await server.db.rows<{ indexname: string; indexdef: string }>(
+      "SELECT indexname, indexdef FROM pg_indexes WHERE indexname LIKE '%\\_hnsw' ORDER BY indexname",
+    )
+
+    expect(rows.map((row) => row.indexname)).toEqual([
+      "ArtistEmbedding_embedding_hnsw",
+      "TrackEmbedding_embedding_hnsw",
+    ])
+    for (const row of rows) {
+      expect(row.indexdef).toContain("USING hnsw")
+      expect(row.indexdef).toContain("vector_cosine_ops")
+    }
+  })
+
   it("compares vectors passed as query parameters by cosine distance", async () => {
     const rows = await server.db.rows<{ same: number; orthogonal: number; opposite: number }>(
       `SELECT ($1::vector <=> $1::vector) AS same,

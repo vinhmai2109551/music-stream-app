@@ -16,6 +16,7 @@ import { HealthModule } from "./modules/health/index.js"
 import { LikesModule } from "./modules/likes/index.js"
 import { PlaylistsModule } from "./modules/playlists/index.js"
 import { playThrottler, TracksModule } from "./modules/tracks/index.js"
+import { SearchModule, semanticSearchThrottler } from "./modules/search/index.js"
 import { UploadsModule } from "./modules/uploads/index.js"
 import { avatarThrottler, UsersModule } from "./modules/users/index.js"
 
@@ -31,7 +32,12 @@ import { avatarThrottler, UsersModule } from "./modules/users/index.js"
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        throttlers: [...authThrottlers(config), playThrottler(config), avatarThrottler(config)],
+        throttlers: [
+          ...authThrottlers(config),
+          playThrottler(config),
+          avatarThrottler(config),
+          semanticSearchThrottler(config),
+        ],
       }),
     }),
     PrismaModule,
@@ -49,6 +55,7 @@ import { avatarThrottler, UsersModule } from "./modules/users/index.js"
     EmbedModule,
     EmbeddingsModule,
     FeedModule,
+    SearchModule,
     UploadsModule,
   ],
 })

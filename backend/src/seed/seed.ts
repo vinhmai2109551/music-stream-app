@@ -2,6 +2,7 @@ import { Logger } from "@nestjs/common"
 import { hash } from "bcryptjs"
 import { randomBytes } from "node:crypto"
 import type { PrismaClient } from "../generated/prisma/client.js"
+import { toSearchName } from "../shared/text/search-name.js"
 import {
   ADMIN_PROFILE,
   ALBUMS,
@@ -75,6 +76,7 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
   for (const artist of ARTISTS) {
     const data = {
       name: artist.name,
+      searchName: toSearchName(artist.name),
       bio: artist.bio,
       imageUrl: media(artist.image),
       baseFollowers: artist.baseFollowers,
@@ -91,6 +93,7 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
   for (const track of TRACKS) {
     const data = {
       title: track.title,
+      searchName: toSearchName(track.title),
       artistId: track.artistId,
       coverUrl: media(track.cover),
       audioUrl: track.audio ? media(track.audio) : null,
@@ -105,7 +108,12 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
     })
   }
   for (const album of ALBUMS) {
-    const data = { title: album.title, artistId: album.artistId, coverUrl: media(album.cover) }
+    const data = {
+      title: album.title,
+      searchName: toSearchName(album.title),
+      artistId: album.artistId,
+      coverUrl: media(album.cover),
+    }
     await prisma.album.upsert({
       where: { id: album.id },
       create: { id: album.id, ...data },
@@ -119,6 +127,7 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
   for (const playlist of PLAYLISTS) {
     const data = {
       name: playlist.name,
+      searchName: toSearchName(playlist.name),
       description: playlist.description,
       coverUrl: media(playlist.cover),
       isOfficial: playlist.official,

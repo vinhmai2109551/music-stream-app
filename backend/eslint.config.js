@@ -20,6 +20,7 @@ const MODULES = [
   "health",
   "likes",
   "playlists",
+  "search",
   "tracks",
   "uploads",
   "users",

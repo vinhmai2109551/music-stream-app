@@ -1,7 +1,9 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import { Injectable, NotFoundException, type OnModuleInit } from "@nestjs/common"
 import type { Album, AlbumTrack } from "../../generated/prisma/client.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
 import { pageArgs, toPage, type Page } from "../../shared/index.js"
+import { backfillSearchNames } from "../../shared/text/backfill-search-names.js"
+import { toSearchName } from "../../shared/text/search-name.js"
 import { ArtistsService } from "../artists/index.js"
 import { LikeKind, LikesService } from "../likes/index.js"
 import { TracksService, type TrackView } from "../tracks/index.js"
@@ -30,7 +32,7 @@ const include = {
 } as const
 
 @Injectable()
-export class AlbumsService {
+export class AlbumsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly artists: ArtistsService,
@@ -39,10 +41,43 @@ export class AlbumsService {
     private readonly uploads: UploadsService,
   ) {}
 
+  /** Gives a search name to albums that have none (made before the column, or written by SQL). */
+  async onModuleInit(): Promise<void> {
+    await backfillSearchNames({
+      label: "albums",
+      read: async (take) =>
+        (
+          await this.prisma.album.findMany({
+            where: { searchName: null },
+            select: { id: true, title: true },
+            take,
+          })
+        ).map((row) => ({ id: row.id, text: row.title })),
+      write: async (rows) => {
+        await this.prisma.$transaction(
+          rows.map((row) =>
+            this.prisma.album.update({
+              where: { id: row.id },
+              data: { searchName: row.searchName },
+            }),
+          ),
+        )
+      },
+    })
+  }
+
   async list(query: ListAlbumsQueryDto, userId?: string): Promise<Page<AlbumView>> {
+    const needle = query.q ? toSearchName(query.q) : ""
     const where = {
       ...(query.artistId ? { artistId: query.artistId } : {}),
-      ...(query.q ? { title: { contains: query.q, mode: "insensitive" as const } } : {}),
+      ...(query.q
+        ? {
+            OR: [
+              ...(needle ? [{ searchName: { contains: needle } }] : []),
+              { title: { contains: query.q, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
     }
     const [rows, total] = await Promise.all([
       this.prisma.album.findMany({
@@ -78,6 +113,7 @@ export class AlbumsService {
     const album = await this.prisma.album.create({
       data: {
         ...data,
+        searchName: toSearchName(data.title),
         tracks: { create: trackIds.map((trackId, position) => ({ trackId, position })) },
       },
     })
@@ -88,7 +124,13 @@ export class AlbumsService {
     this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl })
     const { trackIds, ...data } = dto
     await this.prisma.$transaction(async (tx) => {
-      await tx.album.update({ where: { id }, data })
+      await tx.album.update({
+        where: { id },
+        data: {
+          ...data,
+          ...(data.title === undefined ? {} : { searchName: toSearchName(data.title) }),
+        },
+      })
       if (trackIds) {
         await tx.albumTrack.deleteMany({ where: { albumId: id } })
         await tx.albumTrack.createMany({

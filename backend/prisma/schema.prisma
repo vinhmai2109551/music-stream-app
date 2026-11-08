@@ -76,6 +76,9 @@ model RefreshToken {
 model Artist {
   id            String   @id @default(cuid())
   name          String
+  /// The name in lower case without accents ("Sơn Tùng" -> "son tung"), so a search typed without
+  /// accents finds it. Written by the owning module whenever the name changes; null until then.
+  searchName    String?
   bio           String   @default("")
   imageUrl      String
   /// Followers that exist outside this app; real follows (Follow rows) are added on top.
@@ -99,6 +102,9 @@ model Artist {
 model Track {
   id             String   @id @default(cuid())
   title          String
+  /// The name in lower case without accents ("Sơn Tùng" -> "son tung"), so a search typed without
+  /// accents finds it. Written by the owning module whenever the name changes; null until then.
+  searchName     String?
   artistId       String
   coverUrl       String
   /// Audio file in our storage. Null for commercial tracks, which only play through YouTube.
@@ -147,11 +153,14 @@ model PlayEvent {
 
 // --------------------------------------------------------------- owner: albums
 model Album {
-  id        String   @id @default(cuid())
-  title     String
-  coverUrl  String
-  artistId  String
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  title      String
+  /// The name in lower case without accents ("Sơn Tùng" -> "son tung"), so a search typed without
+  /// accents finds it. Written by the owning module whenever the name changes; null until then.
+  searchName String?
+  coverUrl   String
+  artistId   String
+  createdAt  DateTime @default(now())
 
   artist Artist       @relation(fields: [artistId], references: [id], onDelete: Cascade)
   tracks AlbumTrack[]
@@ -176,6 +185,9 @@ model AlbumTrack {
 model Playlist {
   id          String   @id @default(cuid())
   name        String
+  /// The name in lower case without accents ("Sơn Tùng" -> "son tung"), so a search typed without
+  /// accents finds it. Written by the owning module whenever the name changes; null until then.
+  searchName  String?
   description String   @default("")
   coverUrl    String?
   /// Editorial playlists ("Music Stream") have no owner.

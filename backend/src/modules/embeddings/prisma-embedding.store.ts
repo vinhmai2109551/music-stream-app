@@ -2,7 +2,13 @@ import { Injectable } from "@nestjs/common"
 import { Prisma } from "../../generated/prisma/client.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
 import { EMBEDDING_DIMENSIONS } from "./embedding-provider.js"
-import type { EmbeddedKind, EmbeddingRow, EmbeddingStore, StoredEmbedding } from "./ports.js"
+import type {
+  EmbeddedKind,
+  EmbeddingRow,
+  EmbeddingStore,
+  NearestHit,
+  StoredEmbedding,
+} from "./ports.js"
 import { toVectorParam } from "./vector-math.js"
 
 /**
@@ -58,6 +64,38 @@ export class PrismaEmbeddingStore implements EmbeddingStore {
         if (sqlState(error) !== FOREIGN_KEY_VIOLATION) throw error
       }
     }
+  }
+
+  async nearest(
+    kind: EmbeddedKind,
+    vector: readonly number[],
+    limit: number,
+    only?: readonly string[],
+  ): Promise<NearestHit[]> {
+    if (only && only.length === 0) return []
+    const { table, key } = TABLES[kind]
+    const query = toVectorParam(vector, EMBEDDING_DIMENSIONS)
+    // `<=>` is cosine distance; with the HNSW index this reads the nearest neighbours directly.
+    const select = Prisma.sql`
+      SELECT ${key} AS id, embedding <=> ${query}::vector AS distance
+      FROM ${table}
+      ${only ? Prisma.sql`WHERE ${key} = ANY(${[...only]}::text[])` : Prisma.empty}
+      ORDER BY embedding <=> ${query}::vector
+      LIMIT ${limit}`
+    if (!only) {
+      const rows = await this.prisma.$queryRaw<{ id: string; distance: number }[]>(select)
+      return rows.map((row) => ({ id: row.id, distance: Number(row.distance) }))
+    }
+    // A filter is applied after the index scan, which by default stops after 40 candidates and may
+    // find fewer than `limit` of the wanted ones. pgvector 0.8 can keep scanning until it has
+    // enough; where the setting does not exist it is just an unused placeholder.
+    const rows = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw(
+        Prisma.sql`SELECT set_config('hnsw.iterative_scan', 'relaxed_order', true)`,
+      )
+      return tx.$queryRaw<{ id: string; distance: number }[]>(select)
+    })
+    return rows.map((row) => ({ id: row.id, distance: Number(row.distance) }))
   }
 
   async count(kind: EmbeddedKind): Promise<number> {

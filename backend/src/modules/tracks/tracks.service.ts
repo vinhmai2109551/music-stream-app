@@ -1,14 +1,29 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common"
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  type OnModuleInit,
+} from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import type { Track } from "../../generated/prisma/client.js"
 import type { Region } from "../../generated/prisma/enums.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
 import { CatalogEvents, pageArgs, toPage, type Page } from "../../shared/index.js"
+import { backfillSearchNames } from "../../shared/text/backfill-search-names.js"
+import { toSearchName } from "../../shared/text/search-name.js"
 import { ArtistsService } from "../artists/index.js"
 import { LikeKind, LikesService } from "../likes/index.js"
 import { UploadsService } from "../uploads/index.js"
 import { CreateTrackDto, ListTracksQueryDto, UpdateTrackDto } from "./dto/track.dto.js"
 import { readPlayConfig } from "./tracks.config.js"
+
+/** A track found by a keyword search: its title and artist in search form, and its popularity. */
+export interface TrackKeywordMatch {
+  id: string
+  name: string
+  artistName: string
+  plays: number
+}
 
 /** What the embeddings module needs to describe a track. */
 export interface TrackEmbeddingSource {
@@ -54,7 +69,7 @@ export interface PlayResult {
 }
 
 @Injectable()
-export class TracksService {
+export class TracksService implements OnModuleInit {
   private readonly playDedupeMs: number
 
   constructor(
@@ -68,13 +83,45 @@ export class TracksService {
     this.playDedupeMs = readPlayConfig(config).dedupeMs
   }
 
+  /** Gives a search name to tracks that have none (made before the column, or written by SQL). */
+  async onModuleInit(): Promise<void> {
+    await backfillSearchNames({
+      label: "tracks",
+      read: async (take) =>
+        (
+          await this.prisma.track.findMany({
+            where: { searchName: null },
+            select: { id: true, title: true },
+            take,
+          })
+        ).map((row) => ({ id: row.id, text: row.title })),
+      write: async (rows) => {
+        await this.prisma.$transaction(
+          rows.map((row) =>
+            this.prisma.track.update({
+              where: { id: row.id },
+              data: { searchName: row.searchName },
+            }),
+          ),
+        )
+      },
+    })
+  }
+
   async list(query: ListTracksQueryDto, userId?: string): Promise<Page<TrackView>> {
+    const needle = query.q ? toSearchName(query.q) : ""
     const where = {
       ...(query.artistId ? { artistId: query.artistId } : {}),
       ...(query.region ? { artist: { region: query.region } } : {}),
       ...(query.q
         ? {
             OR: [
+              ...(needle
+                ? [
+                    { searchName: { contains: needle } },
+                    { artist: { searchName: { contains: needle } } },
+                  ]
+                : []),
               { title: { contains: query.q, mode: "insensitive" as const } },
               { artist: { name: { contains: query.q, mode: "insensitive" as const } } },
             ],
@@ -115,7 +162,9 @@ export class TracksService {
   async create(dto: CreateTrackDto): Promise<TrackView> {
     this.assertPlayable(dto)
     this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl ?? undefined })
-    const track = await this.prisma.track.create({ data: dto })
+    const track = await this.prisma.track.create({
+      data: { ...dto, searchName: toSearchName(dto.title) },
+    })
     this.events.changed({ kind: "track", id: track.id })
     return this.get(track.id)
   }
@@ -129,9 +178,52 @@ export class TracksService {
       })
       if (current) this.assertPlayable({ ...current, ...dto })
     }
-    await this.prisma.track.update({ where: { id }, data: dto })
+    await this.prisma.track.update({
+      where: { id },
+      data: { ...dto, ...(dto.title === undefined ? {} : { searchName: toSearchName(dto.title) }) },
+    })
     this.events.changed({ kind: "track", id })
     return this.get(id)
+  }
+
+  /**
+   * For the search module: tracks whose title or artist contains the typed text (or all its
+   * words), most played first. Accents and case do not matter.
+   */
+  async keywordMatches(
+    q: string,
+    region: Region | undefined,
+    limit: number,
+  ): Promise<TrackKeywordMatch[]> {
+    const needle = toSearchName(q)
+    if (!needle) return []
+    const inEither = (word: string) => ({
+      OR: [{ searchName: { contains: word } }, { artist: { searchName: { contains: word } } }],
+    })
+    const rows = await this.prisma.track.findMany({
+      where: {
+        ...(region ? { artist: { region } } : {}),
+        OR: [inEither(needle), { AND: needle.split(" ").map(inEither) }],
+      },
+      orderBy: [{ plays: "desc" }, { id: "asc" }],
+      take: limit,
+      select: { id: true, searchName: true, plays: true, artist: { select: { searchName: true } } },
+    })
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.searchName ?? "",
+      artistName: row.artist.searchName ?? "",
+      plays: row.plays,
+    }))
+  }
+
+  /** For the search module: ids of the tracks whose artist comes from `region`. */
+  async idsInRegion(region: Region): Promise<string[]> {
+    const rows = await this.prisma.track.findMany({
+      where: { artist: { region } },
+      select: { id: true },
+    })
+    return rows.map((row) => row.id)
   }
 
   /** For the embeddings module: the tracks that exist among `ids`, with their artist, by id. */

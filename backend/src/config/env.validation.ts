@@ -134,6 +134,19 @@ class EnvironmentVariables {
   @Matches(POSITIVE_INTEGER, { message: "AVATAR_THROTTLE_TTL_SECONDS must be a positive integer" })
   AVATAR_THROTTLE_TTL_SECONDS?: string
 
+  /** Semantic searches one user may make per window (`GET /search/semantic`). */
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, {
+    message: "SEMANTIC_SEARCH_THROTTLE_LIMIT must be a positive integer",
+  })
+  SEMANTIC_SEARCH_THROTTLE_LIMIT?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, {
+    message: "SEMANTIC_SEARCH_THROTTLE_TTL_SECONDS must be a positive integer",
+  })
+  SEMANTIC_SEARCH_THROTTLE_TTL_SECONDS?: string
+
   /**
    * Key of the Gemini API for the assistant and `npm run ai:enrich`. Blank = EMBEDDING_API_KEY is
    * used; with neither, AI features are off (503) and the rest of the API keeps working.
