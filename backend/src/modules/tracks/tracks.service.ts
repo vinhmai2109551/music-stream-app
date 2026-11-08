@@ -247,6 +247,35 @@ export class TracksService implements OnModuleInit {
     )
   }
 
+  /**
+   * For the recommendations module: the listens of a user since `since`, newest first, one entry
+   * per listen (a track listened to twice appears twice).
+   */
+  async recentPlays(
+    userId: string,
+    since: Date,
+    limit: number,
+  ): Promise<{ trackId: string; playedAt: Date }[]> {
+    const rows = await this.prisma.playEvent.findMany({
+      where: { userId, createdAt: { gte: since } },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: { trackId: true, createdAt: true },
+    })
+    return rows.map((row) => ({ trackId: row.trackId, playedAt: row.createdAt }))
+  }
+
+  /** For the recommendations module: ids of the most played tracks, optionally of one region. */
+  async popularIds(region: Region | undefined, limit: number): Promise<string[]> {
+    const rows = await this.prisma.track.findMany({
+      where: region ? { artist: { region } } : {},
+      orderBy: [{ plays: "desc" }, { id: "asc" }],
+      take: limit,
+      select: { id: true },
+    })
+    return rows.map((row) => row.id)
+  }
+
   /** For the embeddings module: track ids in order, `limit` of them after `after`. */
   async listIds(after: string | null, limit: number): Promise<string[]> {
     const rows = await this.prisma.track.findMany({

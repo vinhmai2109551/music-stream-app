@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState"
 import { HorizontalList } from "@/components/ui/HorizontalList"
 import { SectionHeader } from "@/components/ui/SectionHeader"
 import { copy } from "@/constants/copy"
+import type { Region } from "@/api/types"
 import type { HomeData } from "@/hooks/useHomeData"
 import { useAuthStore } from "@/store/authStore"
 import { usePlayerStore } from "@/store/playerStore"
@@ -16,6 +17,7 @@ import { AlbumCard } from "./AlbumCard"
 import { ArtistAvatar } from "./ArtistAvatar"
 import { ChartCard } from "./ChartCard"
 import { PremiumBanner } from "./PremiumBanner"
+import { RecommendationSections } from "./RecommendationSections"
 import { SuggestionCard } from "./SuggestionCard"
 
 const SUGGESTION_SOURCE = "Suggestions for you"
@@ -28,10 +30,12 @@ const openPremium = () => router.push("/premium")
 
 type HomeContentProps = {
   data: HomeData
+  /** The region chosen on Home; the personal sections follow it. */
+  region: Region | null
 }
 
 /** The sections of the Home screen, below the header and the search field. */
-export function HomeContent({ data }: HomeContentProps) {
+export function HomeContent({ data, region }: HomeContentProps) {
   const playFromList = usePlayerStore((state) => state.playFromList)
   const isPremium = useAuthStore((state) => state.user?.isPremium ?? false)
 
@@ -61,6 +65,8 @@ export function HomeContent({ data }: HomeContentProps) {
 
   return (
     <>
+      <RecommendationSections region={region} />
+
       <Section title="Suggestions for you" onAction={openSearch}>
         <HorizontalList
           data={data.suggestions.map(toSuggestion)}

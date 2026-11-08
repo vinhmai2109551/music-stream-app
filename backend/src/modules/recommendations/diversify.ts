@@ -1,4 +1,4 @@
-import { cosineSimilarity } from "../embeddings/vector-math.js"
+import { cosineSimilarity } from "../../shared/vectors/vector-math.js"
 
 /** MMR trade-off: 1 = only relevance, 0 = only variety. */
 export const MMR_LAMBDA = 0.7
@@ -32,6 +32,9 @@ export function selectDiverse(
   const picked: Candidate[] = []
   const perArtist = new Map<string, number>()
   const remaining = [...candidates]
+  // How close each remaining candidate is to the closest one picked so far (kept in step with
+  // `remaining`): only the newly picked track has to be compared on each round.
+  const closest = remaining.map(() => 0)
 
   while (picked.length < limit && remaining.length > 0) {
     let best = -1
@@ -39,11 +42,7 @@ export function selectDiverse(
     for (let index = 0; index < remaining.length; index += 1) {
       const candidate = remaining[index]
       if ((perArtist.get(candidate.artistId) ?? 0) >= maxPerArtist) continue
-      const closest = picked.reduce(
-        (max, other) => Math.max(max, cosineSimilarity(candidate.vector, other.vector)),
-        0,
-      )
-      const score = lambda * candidate.relevance - (1 - lambda) * closest
+      const score = lambda * candidate.relevance - (1 - lambda) * closest[index]
       if (score > bestScore) {
         best = index
         bestScore = score
@@ -51,8 +50,15 @@ export function selectDiverse(
     }
     if (best === -1) break // everyone left belongs to an artist that is full
     const [chosen] = remaining.splice(best, 1)
+    closest.splice(best, 1)
     picked.push(chosen)
     perArtist.set(chosen.artistId, (perArtist.get(chosen.artistId) ?? 0) + 1)
+    for (let index = 0; index < remaining.length; index += 1) {
+      closest[index] = Math.max(
+        closest[index],
+        cosineSimilarity(remaining[index].vector, chosen.vector),
+      )
+    }
   }
   return picked
 }

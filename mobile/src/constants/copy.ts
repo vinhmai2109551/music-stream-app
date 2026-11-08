@@ -72,6 +72,17 @@ export const copy = {
     secondsSuffix: "giây",
   },
 
+  recommendations: {
+    forYou: "Dành cho bạn",
+    becauseYouListened: "Vì bạn đã nghe",
+    forYouSource: "Dành cho bạn",
+    similarTitle: "Bài tương tự",
+    similarOpen: "Xem bài tương tự",
+    similarSource: "Bài tương tự",
+    byMood: "Theo tâm trạng",
+    byMoodSource: "Theo tâm trạng",
+  },
+
   search: {
     recentTitle: "Recent searches",
     clearAll: "Clear all",

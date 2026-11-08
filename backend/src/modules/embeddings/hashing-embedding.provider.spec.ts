@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals"
 import { EMBEDDING_DIMENSIONS } from "./embedding-provider.js"
 import { HashingEmbeddingProvider } from "./hashing-embedding.provider.js"
-import { cosineSimilarity } from "./vector-math.js"
+import { cosineSimilarity } from "../../shared/vectors/vector-math.js"
 
 const provider = new HashingEmbeddingProvider()
 const vectorOf = async (text: string) => (await provider.embed([text], "document"))[0]

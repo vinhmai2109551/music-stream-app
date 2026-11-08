@@ -12,6 +12,7 @@ import { PlayerError } from "@/components/media/PlayerError"
 import { PlayerHeader } from "@/components/media/PlayerHeader"
 import { PlayerTrackInfo } from "@/components/media/PlayerTrackInfo"
 import { SeekBar } from "@/components/media/SeekBar"
+import { SimilarTracks } from "@/components/media/SimilarTracks"
 import { TrackMenuSheet } from "@/components/media/TrackMenuSheet"
 import { YouTubeLabel } from "@/components/media/YouTubeLabel"
 import { YouTubeSlot } from "@/components/media/YouTubeSlot"
@@ -145,6 +146,7 @@ export default function PlayerScreen() {
               onComments={() => setCommentsOpen(true)}
               onShare={() => void share()}
             />
+            <SimilarTracks trackId={track.id} />
           </View>
         </View>
       </SwipeToDismiss>

@@ -20,6 +20,8 @@ export interface EmbeddingStore {
   /** Inserts or replaces vectors. A row whose track or artist no longer exists is skipped. */
   save(kind: EmbeddedKind, rows: readonly EmbeddingRow[]): Promise<void>
   count(kind: EmbeddedKind): Promise<number>
+  /** The stored vectors of the ids that have one. */
+  vectorsOf(kind: EmbeddedKind, ids: readonly string[]): Promise<Map<string, number[]>>
   /**
    * The ids whose vectors are closest to `vector` by cosine distance (0 = the same direction, 2 =
    * opposite), nearest first. With `only`, just those ids are looked at.

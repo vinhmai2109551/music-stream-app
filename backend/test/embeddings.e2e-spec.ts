@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "@jest/globals"
 import { EMBEDDING_DIMENSIONS } from "../src/modules/embeddings/embedding-provider.js"
 import { startTestServer, type TestServer } from "./helpers/test-server.js"
-import { toVectorParam } from "../src/modules/embeddings/vector-math.js"
+import { toVectorParam } from "../src/shared/vectors/vector-math.js"
 
 /** A vector of the right size with a single 1 at `at` - orthogonal to a vector with its 1 elsewhere. */
 const unit = (at: number) =>

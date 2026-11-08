@@ -4,7 +4,7 @@ import {
   type EmbeddingKind,
   type EmbeddingProvider,
 } from "./embedding-provider.js"
-import { normalize } from "./vector-math.js"
+import { normalize } from "../../shared/vectors/vector-math.js"
 
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 const REQUEST_TIMEOUT_MS = 20_000

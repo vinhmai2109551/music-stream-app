@@ -215,6 +215,9 @@ flowchart LR
     search --> embeddings
     search --> tracks
     search --> artists
+    recommendations --> embeddings
+    recommendations --> tracks
+    recommendations --> likes
     feed --> tracks
     feed --> artists
     feed --> comments
@@ -346,6 +349,7 @@ The backend must be deployed first (any host that runs the Docker image or `npm 
 - **Expo Go:** background audio on iOS is part of Expo Go; on Android, the foreground service and lock screen controls come from the `expo-audio` config plugin in `app.json`, which Expo Go does not apply. If they do not show up on an Android phone, use a development build (`npx expo run:android` or EAS Build).
 - **Pictures of the new catalog are video pictures.** Artists, albums, regional playlists and songs show the picture YouTube makes of their official videos (nothing is hosted by us, so nothing has to be uploaded); the choice is in `backend/src/seed/catalog/pictures.ts`. They are video frames, not portraits, and a video that is removed loses its picture (the app then shows a coloured tile with initials). Only the Background playlist (Kevin MacLeod) and the original demo data have pictures in R2.
 - **Search by words ignores accents** (`son tung` finds `Sơn Tùng`) through a normalized `searchName` column kept in step by the API; a row changed by hand in SQL keeps its old `searchName` until it is renamed through the API. The match is a substring match without a trigram index, which is fine at this catalog size.
+- **Recommendations** (`GET /api/recommendations/for-you`, `/recommendations/because-you-listened`, `/tracks/:id/similar`) build a taste vector from the vectors of the tracks a user liked (weight 3) and played in the last 30 days (fading), skip what they already know, and pick a varied list (MMR, at most three tracks per artist). A user with no history gets the most played tracks. `similar` and `because-you-listened` answer `503` without embeddings and the app then hides those sections.
 - **Search by meaning** (`GET /api/search/semantic?q=nhạc buồn ngày mưa`) merges the search by words with the nearest vectors (reciprocal rank fusion). It needs the embeddings above; without a provider it answers `503`, and when the provider fails at that moment it answers with the search by words alone and `degraded: true`. There is no similarity cutoff yet, so a question matching nothing still returns the nearest tracks.
 - Some videos forbid embedding; they fall back to the R2 file or are reported as above.
 

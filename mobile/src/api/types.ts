@@ -232,3 +232,36 @@ export interface UpdateProfileInput {
   name?: string
   avatarUrl?: string
 }
+
+// ---------------------------------------------------------------- recommendations and semantic search
+
+/** `taste`: made from what the user liked and played; `popular`: the user has no history yet. */
+export type ForYouStrategy = "taste" | "popular"
+
+export interface ForYouResponse {
+  strategy: ForYouStrategy
+  items: ApiTrack[]
+}
+
+export interface BecauseYouListenedResponse {
+  /** The track the list is based on; null when nothing was played lately. */
+  basedOn: ApiTrack | null
+  items: ApiTrack[]
+}
+
+export interface SimilarTracksResponse {
+  items: ApiTrack[]
+}
+
+export interface SemanticTrackHit {
+  score: number
+  sources: ("keyword" | "vector")[]
+  track: ApiTrack
+}
+
+export interface SemanticTrackSearch {
+  query: string
+  /** True when only the search by words answered (the embedding service was down). */
+  degraded: boolean
+  items: SemanticTrackHit[]
+}

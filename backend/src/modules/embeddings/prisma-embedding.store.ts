@@ -9,7 +9,7 @@ import type {
   NearestHit,
   StoredEmbedding,
 } from "./ports.js"
-import { toVectorParam } from "./vector-math.js"
+import { parseVector, toVectorParam } from "../../shared/vectors/vector-math.js"
 
 /**
  * The only SQL text in this class that is not a parameter is a table and a column name, taken from
@@ -64,6 +64,15 @@ export class PrismaEmbeddingStore implements EmbeddingStore {
         if (sqlState(error) !== FOREIGN_KEY_VIOLATION) throw error
       }
     }
+  }
+
+  async vectorsOf(kind: EmbeddedKind, ids: readonly string[]): Promise<Map<string, number[]>> {
+    if (ids.length === 0) return new Map()
+    const { table, key } = TABLES[kind]
+    const rows = await this.prisma.$queryRaw<{ id: string; embedding: string }[]>(
+      Prisma.sql`SELECT ${key} AS id, embedding::text AS embedding FROM ${table} WHERE ${key} = ANY(${[...ids]}::text[])`,
+    )
+    return new Map(rows.map((row) => [row.id, parseVector(row.embedding)]))
   }
 
   async nearest(

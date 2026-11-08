@@ -1,4 +1,4 @@
-import { normalize } from "../embeddings/vector-math.js"
+import { normalize } from "../../shared/vectors/vector-math.js"
 
 /** A liked track weighs as much as this many fresh listens. */
 export const LIKE_WEIGHT = 3

@@ -2,6 +2,9 @@ import { afterAll, beforeAll, describe, expect, it } from "@jest/globals"
 import request from "supertest"
 import { startTestServer, uniqueEmail, type TestServer } from "./helpers/test-server.js"
 
+/** Starting the API takes a few seconds, and more on a busy machine. */
+const START_TIMEOUT_MS = 60_000
+
 /**
  * With a secret key configured, login must carry a Turnstile token. These cases are all refused
  * before the server would contact Cloudflare, so they need no network; the Siteverify exchange
@@ -15,7 +18,7 @@ describe("Turnstile on login (e2e)", () => {
   beforeAll(async () => {
     server = await startTestServer({ TURNSTILE_SECRET_KEY: "e2e-secret-key" })
     await http().post("/api/auth/register").send(credentials).expect(201)
-  })
+  }, START_TIMEOUT_MS)
 
   afterAll(async () => {
     await server.stop()
@@ -55,20 +58,24 @@ describe("Turnstile on login (e2e)", () => {
 })
 
 describe("Login without a Turnstile secret key (e2e)", () => {
-  it("works with no token, and a token that is sent is accepted and ignored", async () => {
-    const server = await startTestServer() // test env leaves TURNSTILE_SECRET_KEY blank
-    try {
-      const body = { email: uniqueEmail(), name: "Dev User", password: "password123" }
-      await request(server.url).post("/api/auth/register").send(body).expect(201)
+  it(
+    "works with no token, and a token that is sent is accepted and ignored",
+    async () => {
+      const server = await startTestServer() // test env leaves TURNSTILE_SECRET_KEY blank
+      try {
+        const body = { email: uniqueEmail(), name: "Dev User", password: "password123" }
+        await request(server.url).post("/api/auth/register").send(body).expect(201)
 
-      const credentials = { email: body.email, password: body.password }
-      await request(server.url).post("/api/auth/login").send(credentials).expect(200)
-      await request(server.url)
-        .post("/api/auth/login")
-        .send({ ...credentials, turnstileToken: "anything" })
-        .expect(200)
-    } finally {
-      await server.stop()
-    }
-  })
+        const credentials = { email: body.email, password: body.password }
+        await request(server.url).post("/api/auth/login").send(credentials).expect(200)
+        await request(server.url)
+          .post("/api/auth/login")
+          .send({ ...credentials, turnstileToken: "anything" })
+          .expect(200)
+      } finally {
+        await server.stop()
+      }
+    },
+    START_TIMEOUT_MS,
+  )
 })

@@ -53,6 +53,10 @@ function fakeStore() {
     },
     count: async (kind) => rows[kind].size,
     nearest: async () => [],
+    vectorsOf: async (kind, ids) =>
+      new Map(
+        ids.flatMap((id) => (rows[kind].has(id) ? [[id, [...rows[kind].get(id)!.vector]]] : [])),
+      ),
   }
   return { store, rows, saves }
 }

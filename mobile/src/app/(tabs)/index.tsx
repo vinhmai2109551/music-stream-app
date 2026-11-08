@@ -58,7 +58,7 @@ export default function HomeScreen() {
         {state.status === "error" && (
           <ErrorState error={state.error} onRetry={() => void reload()} />
         )}
-        {state.status === "ready" && <HomeContent data={state.data} />}
+        {state.status === "ready" && <HomeContent data={state.data} region={region} />}
       </ScrollView>
       <AccountSheet
         visible={accountOpen}

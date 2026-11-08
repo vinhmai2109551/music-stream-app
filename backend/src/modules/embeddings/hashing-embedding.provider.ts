@@ -3,7 +3,7 @@ import {
   type EmbeddingKind,
   type EmbeddingProvider,
 } from "./embedding-provider.js"
-import { normalize } from "./vector-math.js"
+import { normalize } from "../../shared/vectors/vector-math.js"
 
 /** Lower case without accents: "Sơn Tùng" and "son tung" become the same text. */
 const fold = (text: string) =>
