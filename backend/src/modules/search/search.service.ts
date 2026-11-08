@@ -47,6 +47,10 @@ export interface SemanticSearchResult {
 
 const SOURCE_NAMES: readonly SearchSource[] = ["keyword", "vector"]
 
+/** The one way the two lists are merged, for the API and for the evaluation. */
+const fuse = (keywordIds: readonly string[], vectorIds: readonly string[], limit: number) =>
+  reciprocalRankFusion([keywordIds, vectorIds]).slice(0, limit)
+
 /**
  * Search by meaning and by words at once. The question is turned into a vector and compared with
  * the vectors of the tracks (or artists); a plain search by name runs beside it; the two lists are
@@ -78,7 +82,7 @@ export class SearchService {
     ])
     const degraded = vector === null
 
-    const fused = reciprocalRankFusion([keywordIds, vectorIds]).slice(0, limit)
+    const fused = fuse(keywordIds, vectorIds, limit)
     const ids = fused.map((item) => item.id)
     const hitOf = (item: (typeof fused)[number]) => ({
       score: item.score,
@@ -108,6 +112,29 @@ export class SearchService {
         const artist = views.get(item.id)
         return artist ? [{ ...hitOf(item), artist }] : []
       }),
+    }
+  }
+
+  /**
+   * For the evaluation (`npm run ai:eval`): the ids of the tracks found by the search by words,
+   * by the search by meaning, and by the two merged exactly as `semantic()` merges them, best
+   * first. The two lists are made once and the merged one is worked out from them. A failing
+   * embedding service is an error here, not a quiet fallback: a number measured on half a search
+   * would be wrong.
+   */
+  async trackLists(
+    q: string,
+    limit: number,
+  ): Promise<{ keyword: string[]; vector: string[]; hybrid: string[] }> {
+    const vector = await this.embeddings.embedQuery(q)
+    const [keywordIds, vectorIds] = await Promise.all([
+      this.keywordIds("track", q),
+      this.vectorIds("track", vector),
+    ])
+    return {
+      keyword: keywordIds.slice(0, limit),
+      vector: vectorIds.slice(0, limit),
+      hybrid: fuse(keywordIds, vectorIds, limit).map((item) => item.id),
     }
   }
 

@@ -1,0 +1,401 @@
+{
+  "version": 1,
+  "description": "Queries for `npm run ai:eval` with the tracks (ids of backend/src/seed/catalog) that a person would accept as a good answer. Draft for review: the labels come from the title, artist, language and region of each song and from the (not yet reviewed) metadata of the catalog, so mood and occasion queries are partly circular with the vectors, which are made from the same metadata. Names and artists are not.",
+  "queries": [
+    {
+      "id": "title-lac-troi",
+      "kind": "title",
+      "q": "lạc trôi",
+      "relevant": ["son-tung-lac-troi"],
+      "note": "A title, typed with its accents."
+    },
+    {
+      "id": "title-see-tinh",
+      "kind": "title",
+      "q": "see tinh",
+      "relevant": ["hoang-thuy-linh-see-tinh"],
+      "note": "A title typed without accents."
+    },
+    {
+      "id": "title-pink-venom",
+      "kind": "title",
+      "q": "pink venom",
+      "relevant": ["blackpink-pink-venom"],
+      "note": "An English title."
+    },
+    {
+      "id": "title-dynamite",
+      "kind": "title",
+      "q": "dynamite",
+      "relevant": ["bts-dynamite"]
+    },
+    {
+      "id": "title-lemon",
+      "kind": "title",
+      "q": "lemon",
+      "relevant": ["kenshi-yonezu-lemon"]
+    },
+    {
+      "id": "artist-son-tung",
+      "kind": "artist",
+      "q": "son tung",
+      "relevant": [
+        "son-tung-chung-ta-cua-hien-tai",
+        "son-tung-dung-lam-trai-tim-anh-dau",
+        "son-tung-hay-trao-cho-anh",
+        "son-tung-lac-troi",
+        "son-tung-muon-roi-ma-sao-con",
+        "son-tung-noi-nay-co-anh"
+      ],
+      "note": "An artist typed without accents."
+    },
+    {
+      "id": "artist-blackpink",
+      "kind": "artist",
+      "q": "blackpink",
+      "relevant": [
+        "blackpink-ddu-du-ddu-du",
+        "blackpink-how-you-like-that",
+        "blackpink-pink-venom",
+        "blackpink-shut-down"
+      ]
+    },
+    {
+      "id": "artist-jack",
+      "kind": "artist",
+      "q": "jack",
+      "relevant": [
+        "jack-bac-phan",
+        "jack-hoa-hai-duong",
+        "jack-hong-nhan",
+        "jack-song-gio",
+        "jack-thien-ly-oi"
+      ]
+    },
+    {
+      "id": "artist-my-tam",
+      "kind": "artist",
+      "q": "mỹ tâm",
+      "relevant": ["my-tam-dau-chi-rieng-em", "my-tam-uoc-gi"]
+    },
+    {
+      "id": "artist-den-vau",
+      "kind": "artist",
+      "q": "đen vâu",
+      "relevant": ["den-bai-nay-chill-phet", "den-di-ve-nha", "den-mang-tien-ve-cho-me"],
+      "note": "The artist is called Đen; 'vâu' is the second half of the stage name people use."
+    },
+    {
+      "id": "mood-sad-rain-vi",
+      "kind": "mood",
+      "q": "nhạc buồn ngày mưa",
+      "relevant": [
+        "hoa-minzy-khong-the-cung-nhau-suot-kiep",
+        "kenshi-yonezu-lemon",
+        "vu-la-lung",
+        "bigbang-haru-haru"
+      ],
+      "note": "None of the words is in a title."
+    },
+    {
+      "id": "mood-heartbreak-vi",
+      "kind": "mood",
+      "q": "bài hát thất tình chia tay",
+      "relevant": [
+        "hoa-minzy-khong-the-cung-nhau-suot-kiep",
+        "gem-bubble",
+        "jack-song-gio",
+        "soobin-gia-nhu",
+        "soobin-phia-sau-mot-co-gai",
+        "my-tam-dau-chi-rieng-em",
+        "tlinh-neu-luc-do",
+        "son-tung-chung-ta-cua-hien-tai",
+        "vu-buoc-qua-nhau"
+      ]
+    },
+    {
+      "id": "mood-chill-vi",
+      "kind": "mood",
+      "q": "nhạc chill thư giãn cuối tuần",
+      "relevant": [
+        "den-bai-nay-chill-phet",
+        "le-sserafim-easy",
+        "mck-chim-sau",
+        "mono-em-la",
+        "kevin-macleod-tea-roots",
+        "hngle-tim-em",
+        "wren-evans-thich-em-hoi-nhieu",
+        "iu-blueming",
+        "jack-thien-ly-oi"
+      ]
+    },
+    {
+      "id": "mood-sleep-vi",
+      "kind": "mood",
+      "q": "nhạc nhẹ nhàng để ngủ",
+      "relevant": [
+        "kevin-macleod-dream-catcher",
+        "kevin-macleod-tea-roots",
+        "duc-phuc-anh-nang-cua-anh"
+      ]
+    },
+    {
+      "id": "mood-wedding-vi",
+      "kind": "mood",
+      "q": "nhạc tình yêu lãng mạn cho đám cưới",
+      "relevant": [
+        "duc-phuc-hon-ca-yeu",
+        "duc-phuc-anh-nang-cua-anh",
+        "son-tung-noi-nay-co-anh",
+        "jay-chou-love-confession",
+        "bts-boy-with-luv"
+      ]
+    },
+    {
+      "id": "mood-tet-vi",
+      "kind": "mood",
+      "q": "nhạc nhớ nhà ngày tết",
+      "relevant": [
+        "den-di-ve-nha",
+        "den-mang-tien-ve-cho-me",
+        "hoa-minzy-bac-bling",
+        "hoang-thuy-linh-de-mi-noi-cho-ma-nghe"
+      ]
+    },
+    {
+      "id": "occasion-gym-vi",
+      "kind": "occasion",
+      "q": "nhạc tập gym",
+      "relevant": [
+        "aespa-next-level",
+        "blackpink-how-you-like-that",
+        "bts-dna",
+        "bts-dynamite",
+        "kenshi-yonezu-kick-back",
+        "le-sserafim-antifragile",
+        "lisa-money",
+        "seventeen-hot",
+        "stray-kids-gods-menu",
+        "stray-kids-s-class",
+        "tlinh-gai-doc-than",
+        "tang-duy-tan-ben-tren-tang-lau"
+      ],
+      "note": "More than ten relevant: Recall@10 cannot reach 1."
+    },
+    {
+      "id": "occasion-run-vi",
+      "kind": "occasion",
+      "q": "nhạc chạy bộ buổi sáng",
+      "relevant": [
+        "yoasobi-yoru-ni-kakeru",
+        "kenshi-yonezu-kick-back",
+        "seventeen-super",
+        "kevin-macleod-severe-tire-damage",
+        "bts-dynamite",
+        "iu-blueming"
+      ]
+    },
+    {
+      "id": "occasion-drive-vi",
+      "kind": "occasion",
+      "q": "nhạc nghe khi lái xe ban đêm",
+      "relevant": [
+        "mck-chim-sau",
+        "tang-duy-tan-da-vu",
+        "tang-duy-tan-ben-tren-tang-lau",
+        "son-tung-hay-trao-cho-anh",
+        "le-sserafim-easy",
+        "soobin-dancing-in-the-dark"
+      ]
+    },
+    {
+      "id": "occasion-work-vi",
+      "kind": "occasion",
+      "q": "nhạc nền làm việc tập trung",
+      "relevant": [
+        "kevin-macleod-stratosphere",
+        "kevin-macleod-dream-catcher",
+        "kevin-macleod-tea-roots",
+        "den-bai-nay-chill-phet"
+      ]
+    },
+    {
+      "id": "occasion-party-vi",
+      "kind": "occasion",
+      "q": "nhạc quẩy tiệc tùng",
+      "relevant": [
+        "bigbang-bang-bang-bang",
+        "bts-butter",
+        "g-dragon-power",
+        "lisa-rockstar",
+        "tang-duy-tan-da-vu",
+        "bich-phuong-di-du-dua-di",
+        "twice-fancy",
+        "rose-apt",
+        "ive-after-like"
+      ]
+    },
+    {
+      "id": "genre-anime-vi",
+      "kind": "genre",
+      "q": "nhạc anime Nhật Bản",
+      "relevant": [
+        "ado-new-genesis",
+        "aimer-zankyosanka",
+        "creepy-nuts-bling-bang-bang-born",
+        "kenshi-yonezu-kick-back",
+        "king-gnu-specialz",
+        "yoasobi-idol"
+      ]
+    },
+    {
+      "id": "genre-cpop-vi",
+      "kind": "genre",
+      "q": "nhạc Hoa lời Trung",
+      "relevant": [
+        "eason-chan-lonely-warrior",
+        "gem-bubble",
+        "gem-light-years-away",
+        "jay-chou-love-confession",
+        "jay-chou-rice-field",
+        "jay-chou-sunny-day",
+        "jj-lin-jiang-nan",
+        "mayday-stubborn",
+        "mayday-suddenly-miss-you-so-bad"
+      ],
+      "note": "Nothing in a title or an artist's name says 'Hoa': only the language and the region do."
+    },
+    {
+      "id": "genre-rap-vi",
+      "kind": "genre",
+      "q": "nhạc rap Việt",
+      "relevant": [
+        "den-bai-nay-chill-phet",
+        "den-di-ve-nha",
+        "den-mang-tien-ve-cho-me",
+        "hieuthuhai-exit-sign",
+        "hieuthuhai-khong-the-say",
+        "hieuthuhai-ngu-mot-minh",
+        "mck-chim-sau",
+        "tlinh-gai-doc-than",
+        "son-tung-hay-trao-cho-anh",
+        "son-tung-lac-troi"
+      ]
+    },
+    {
+      "id": "genre-jp-ballad-vi",
+      "kind": "genre",
+      "q": "ballad Nhật Bản buồn",
+      "relevant": ["higedan-pretender", "higedan-subtitle", "kenshi-yonezu-lemon"]
+    },
+    {
+      "id": "genre-old-ballad-vi",
+      "kind": "genre",
+      "q": "ballad xưa thập niên 2000",
+      "relevant": [
+        "my-tam-uoc-gi",
+        "my-tam-dau-chi-rieng-em",
+        "jay-chou-sunny-day",
+        "mayday-suddenly-miss-you-so-bad"
+      ]
+    },
+    {
+      "id": "mood-sad-rain-en",
+      "kind": "mood",
+      "q": "sad songs for a rainy night",
+      "relevant": [
+        "hoa-minzy-khong-the-cung-nhau-suot-kiep",
+        "kenshi-yonezu-lemon",
+        "vu-la-lung",
+        "bigbang-haru-haru",
+        "jimin-like-crazy"
+      ],
+      "note": "The same need as 'nhạc buồn ngày mưa', asked in English."
+    },
+    {
+      "id": "occasion-workout-en",
+      "kind": "occasion",
+      "q": "workout music",
+      "relevant": [
+        "aespa-next-level",
+        "blackpink-how-you-like-that",
+        "bts-dna",
+        "bts-dynamite",
+        "kenshi-yonezu-kick-back",
+        "le-sserafim-antifragile",
+        "lisa-money",
+        "seventeen-hot",
+        "stray-kids-gods-menu",
+        "stray-kids-s-class",
+        "tlinh-gai-doc-than",
+        "tang-duy-tan-ben-tren-tang-lau"
+      ]
+    },
+    {
+      "id": "mood-background-en",
+      "kind": "mood",
+      "q": "relaxing background music",
+      "relevant": [
+        "kevin-macleod-dream-catcher",
+        "kevin-macleod-tea-roots",
+        "kevin-macleod-stratosphere",
+        "kevin-macleod-fork-and-spoon",
+        "den-bai-nay-chill-phet"
+      ]
+    },
+    {
+      "id": "mood-romantic-en",
+      "kind": "mood",
+      "q": "romantic love song",
+      "relevant": [
+        "duc-phuc-hon-ca-yeu",
+        "duc-phuc-anh-nang-cua-anh",
+        "son-tung-noi-nay-co-anh",
+        "jay-chou-love-confession",
+        "bts-boy-with-luv",
+        "fujii-kaze-shinunoga-e-wa",
+        "jung-kook-seven",
+        "newjeans-omg"
+      ]
+    },
+    {
+      "id": "occasion-party-en",
+      "kind": "occasion",
+      "q": "upbeat dance party songs",
+      "relevant": [
+        "bigbang-bang-bang-bang",
+        "bts-butter",
+        "aespa-whiplash",
+        "lisa-rockstar",
+        "twice-fancy",
+        "ive-after-like",
+        "rose-apt",
+        "bich-phuong-di-du-dua-di"
+      ]
+    },
+    {
+      "id": "genre-soundtrack-en",
+      "kind": "genre",
+      "q": "epic cinematic soundtrack",
+      "relevant": [
+        "kevin-macleod-strength-of-the-titans",
+        "gem-light-years-away",
+        "eason-chan-lonely-warrior"
+      ]
+    },
+    {
+      "id": "mixed-summer-kpop",
+      "kind": "mixed",
+      "q": "k-pop vui tươi dạo phố mùa hè",
+      "relevant": [
+        "newjeans-super-shy",
+        "newjeans-hype-boy",
+        "iu-blueming",
+        "bts-butter",
+        "twice-what-is-love",
+        "jung-kook-seven"
+      ],
+      "note": "Vietnamese and English in one query."
+    }
+  ]
+}

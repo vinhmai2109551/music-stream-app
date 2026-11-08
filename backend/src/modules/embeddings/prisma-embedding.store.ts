@@ -107,10 +107,10 @@ export class PrismaEmbeddingStore implements EmbeddingStore {
     return rows.map((row) => ({ id: row.id, distance: Number(row.distance) }))
   }
 
-  async count(kind: EmbeddedKind): Promise<number> {
+  async count(kind: EmbeddedKind, model?: string): Promise<number> {
     const { table } = TABLES[kind]
     const [row] = await this.prisma.$queryRaw<{ count: bigint }[]>(
-      Prisma.sql`SELECT count(*) AS count FROM ${table}`,
+      Prisma.sql`SELECT count(*) AS count FROM ${table} ${model === undefined ? Prisma.empty : Prisma.sql`WHERE model = ${model}`}`,
     )
     return Number(row.count)
   }

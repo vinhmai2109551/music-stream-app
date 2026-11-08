@@ -19,7 +19,8 @@ export interface EmbeddingStore {
   stored(kind: EmbeddedKind, ids: readonly string[]): Promise<Map<string, StoredEmbedding>>
   /** Inserts or replaces vectors. A row whose track or artist no longer exists is skipped. */
   save(kind: EmbeddedKind, rows: readonly EmbeddingRow[]): Promise<void>
-  count(kind: EmbeddedKind): Promise<number>
+  /** How many vectors there are; with `model`, only those made by that model. */
+  count(kind: EmbeddedKind, model?: string): Promise<number>
   /** The stored vectors of the ids that have one. */
   vectorsOf(kind: EmbeddedKind, ids: readonly string[]): Promise<Map<string, number[]>>
   /**
