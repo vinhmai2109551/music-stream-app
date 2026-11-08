@@ -3,6 +3,7 @@ import { NestFactory } from "@nestjs/core"
 import { AppModule } from "../../app.module.js"
 import { EmbeddingIndexService, type BackfillProgress } from "./embedding-index.service.js"
 import { EmbeddingsService } from "./embeddings.service.js"
+import { KnowledgeIndexService } from "./knowledge-index.service.js"
 
 const LABEL = { track: "tracks ", artist: "artists" } as const
 
@@ -33,18 +34,30 @@ async function main() {
       return
     }
     console.log(`Model: ${embeddings.model}${force ? " (--force: making every vector again)" : ""}`)
-    const report = await app.get(EmbeddingIndexService).backfill({
-      force,
-      onProgress: printProgress,
-      onRetry: (attempt, delayMs) =>
-        console.log(
-          `  the embedding service is busy, trying again in ${delayMs / 1000}s (try ${attempt})`,
-        ),
-    })
+    const onRetry = (attempt: number, delayMs: number) =>
+      console.log(
+        `  the embedding service is busy, trying again in ${delayMs / 1000}s (try ${attempt})`,
+      )
+    const report = await app
+      .get(EmbeddingIndexService)
+      .backfill({ force, onProgress: printProgress, onRetry })
     console.log(
       `\nDone. Artists: ${report.artists.embedded} made, ${report.artists.unchanged} up to date.` +
         ` Tracks: ${report.tracks.embedded} made, ${report.tracks.unchanged} up to date.`,
     )
+    // After the catalog, so a problem with the help texts cannot hide that the vectors are done.
+    try {
+      const help = await app.get(KnowledgeIndexService).sync({ force, onRetry })
+      console.log(
+        `Help texts: ${help.embedded} of ${help.chunks} chunks made (${help.files} files),` +
+          ` ${help.unchanged} up to date, ${help.removed} removed.`,
+      )
+    } catch (error) {
+      console.error(
+        `Help texts were NOT indexed: ${error instanceof Error ? error.message : String(error)}`,
+      )
+      process.exitCode = 1
+    }
   } finally {
     await app.close()
   }

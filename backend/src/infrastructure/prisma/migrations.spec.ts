@@ -36,6 +36,14 @@ describe("the migrations", () => {
     )
   })
 
+  it("create an HNSW cosine index for the vectors of the help texts", () => {
+    const all = [...migrations().values()].join("\n")
+
+    expect(all).toMatch(
+      /CREATE INDEX "KnowledgeChunk_embedding_hnsw" ON "KnowledgeChunk" USING hnsw \("embedding" vector_cosine_ops\)/,
+    )
+  })
+
   it("enable the vector extension before anything uses it", () => {
     const names = [...migrations().keys()].sort()
     const extension = names.find((name) =>

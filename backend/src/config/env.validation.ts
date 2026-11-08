@@ -193,6 +193,11 @@ class EnvironmentVariables {
   @IsString()
   EMBEDDING_API_KEY?: string
 
+  /** Folder of the help texts (*.md) that `npm run ai:embed` indexes; relative paths start where the command runs (`backend/`). */
+  @IsOptional()
+  @IsString()
+  KNOWLEDGE_DIR?: string
+
   /** Cloudflare Turnstile secret key (bot check on login). Required in production. */
   @ValidateIf(requiredInProduction)
   @IsString()

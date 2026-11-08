@@ -50,6 +50,53 @@ export interface CatalogSources {
   count(kind: EmbeddedKind): Promise<number>
 }
 
+/** A chunk of a help text, ready to be stored. */
+export interface KnowledgeRow {
+  source: string
+  heading: string
+  position: number
+  content: string
+  vector: readonly number[]
+  model: string
+  contentHash: string
+}
+
+/** A chunk found by `KnowledgeStore.nearest`. */
+export interface KnowledgeHit {
+  source: string
+  heading: string
+  position: number
+  content: string
+  /** Cosine distance to the question (0 = the same direction). */
+  distance: number
+}
+
+/** Where the vectors of the help texts are kept (PostgreSQL with pgvector). */
+export interface KnowledgeStore {
+  /** The model and hash stored for each chunk of `source`, by position. */
+  stored(source: string): Promise<Map<number, StoredEmbedding>>
+  /** Inserts or replaces chunks (a chunk is identified by its source and position). */
+  save(rows: readonly KnowledgeRow[]): Promise<void>
+  /** Deletes the chunks of `source` from `fromPosition` on (the file became shorter). */
+  deleteFrom(source: string, fromPosition: number): Promise<number>
+  /** Deletes the chunks of every source that is not in `sources` (the file was deleted). */
+  deleteSourcesNotIn(sources: readonly string[]): Promise<number>
+  /** The chunks closest to `vector`; only those made by `model` (vectors of another model mean nothing). */
+  nearest(vector: readonly number[], limit: number, model: string): Promise<KnowledgeHit[]>
+  count(): Promise<number>
+}
+
+/** A help file as read from disk. */
+export interface KnowledgeFile {
+  /** File name, e.g. "premium.md". */
+  name: string
+  text: string
+}
+
+export const KNOWLEDGE_STORE = "KNOWLEDGE_STORE"
+/** A function that reads the help files; replaceable in tests. */
+export const KNOWLEDGE_FILES = "KNOWLEDGE_FILES"
+
 /** Injection tokens. */
 export const EMBEDDING_STORE = "EMBEDDING_STORE"
 export const CATALOG_SOURCES = "CATALOG_SOURCES"

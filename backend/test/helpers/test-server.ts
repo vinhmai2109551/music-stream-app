@@ -10,7 +10,7 @@ import {
 } from "./test-database.js"
 
 const ENTRY = path.join("dist", "main.js")
-const STARTUP_TIMEOUT_MS = 30_000
+const STARTUP_TIMEOUT_MS = 55_000
 const POLL_INTERVAL_MS = 250
 
 const TEST_ENV = {

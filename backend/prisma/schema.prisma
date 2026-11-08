@@ -356,3 +356,25 @@ model ArtistEmbedding {
 
   artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
 }
+
+/// A piece of a help text (src/modules/ai/knowledge/*.md) with its vector, so the assistant can find
+/// the answer to a question about the app. `ai:embed` rebuilds the chunks of a file when its text
+/// changes. `embedding` is read and written by the embeddings module with raw SQL; its HNSW cosine
+/// index is created in the migration (Prisma cannot express it).
+model KnowledgeChunk {
+  id          String                     @id @default(cuid())
+  /// File the text came from, e.g. "premium.md".
+  source      String
+  /// Nearest heading above the chunk; shown as the citation.
+  heading     String
+  /// Order of the chunk inside its file.
+  position    Int
+  content     String
+  embedding   Unsupported("vector(768)")
+  model       String
+  contentHash String
+  updatedAt   DateTime                   @default(now())
+
+  @@unique([source, position])
+  @@index([source])
+}

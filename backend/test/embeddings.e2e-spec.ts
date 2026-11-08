@@ -29,13 +29,14 @@ describe("pgvector (e2e)", () => {
     expect(rows).toEqual([{ extname: "vector" }])
   })
 
-  it("has the HNSW cosine indexes of the track and artist vectors, after all the migrations", async () => {
+  it("has the HNSW cosine indexes of the track, artist and help text vectors, after all the migrations", async () => {
     const rows = await server.db.rows<{ indexname: string; indexdef: string }>(
       "SELECT indexname, indexdef FROM pg_indexes WHERE indexname LIKE '%\\_hnsw' ORDER BY indexname",
     )
 
     expect(rows.map((row) => row.indexname)).toEqual([
       "ArtistEmbedding_embedding_hnsw",
+      "KnowledgeChunk_embedding_hnsw",
       "TrackEmbedding_embedding_hnsw",
     ])
     for (const row of rows) {
