@@ -1,12 +1,10 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import {
   ConflictException,
-  HttpException,
   Logger,
   NotFoundException,
   ServiceUnavailableException,
 } from "@nestjs/common"
-import type { ConfigService } from "@nestjs/config"
 import { FAKE_TRIGGERS, FakeLlmClient } from "../../shared/llm/fake-llm-client.js"
 import {
   LlmRateLimitedError,
@@ -14,76 +12,15 @@ import {
   type LlmPart,
 } from "../../shared/llm/llm-client.js"
 import { ScriptedLlmClient } from "../../shared/llm/scripted-llm-client.js"
-import { SYSTEM_PROMPT } from "./system-prompt.js"
 import type { ChatEvent } from "./chat-events.js"
-import { ChatService } from "./chat.service.js"
-import type { ConversationsService } from "./conversations.service.js"
+import type { ChatService } from "./chat.service.js"
 import type { StoredMessage } from "./history.js"
-import type { UsageService } from "./usage.service.js"
+import { buildChat, CONVERSATION, USER } from "./testing/fakes.js"
+import { SYSTEM_PROMPT } from "./system-prompt.js"
 
-const USER = "u1"
-const CONVERSATION = "c1"
-
-/** In-memory conversations: remembers what was added, discarded and named. */
-function fakeConversations(initial: StoredMessage[] = []) {
-  const messages: (StoredMessage & { id: string })[] = initial.map((m, i) => ({
-    ...m,
-    id: `old${i}`,
-  }))
-  let next = 0
-  const state = { named: [] as string[], owner: USER }
-  const service = {
-    assertOwner: jest.fn(async (userId: string, id: string) => {
-      if (userId !== state.owner || id !== CONVERSATION) throw new NotFoundException()
-      return { title: "" }
-    }),
-    history: jest.fn(async () => messages.map(({ role, parts }) => ({ role, parts }))),
-    add: jest.fn(async (_id: string, role: "user" | "assistant", parts: readonly LlmPart[]) => {
-      next += 1
-      messages.push({ id: `m${next}`, role, parts: [...parts] })
-      return `m${next}`
-    }),
-    discard: jest.fn(async (id: string) => {
-      const index = messages.findIndex((m) => m.id === id)
-      if (index !== -1) messages.splice(index, 1)
-    }),
-    nameIfEmpty: jest.fn(async (_id: string, text: string) => void state.named.push(text)),
-  }
-  return { service: service as unknown as ConversationsService, messages, state, mocks: service }
-}
-
-/** A daily limit that counts. */
-function fakeUsage(limit = 30) {
-  const state = { used: 0 }
-  const service = {
-    consume: jest.fn(async (_userId: string, _limit: number) => {
-      if (state.used >= limit) throw new HttpException("limit", 429)
-      state.used += 1
-      return { userId: "u1", day: "2026-11-09" }
-    }),
-    release: jest.fn(async (_ticket: { userId: string; day: string }) => {
-      state.used = Math.max(0, state.used - 1)
-    }),
-  }
-  return { service: service as unknown as UsageService, state, mocks: service }
-}
-
-const config = (settings: Record<string, string> = {}) =>
-  ({ get: (key: string) => settings[key] }) as unknown as ConfigService
-
-function setup(
-  options: {
-    llm?: FakeLlmClient | null
-    initial?: StoredMessage[]
-    limit?: number
-    settings?: Record<string, string>
-  } = {},
-) {
-  const conversations = fakeConversations(options.initial)
-  const usage = fakeUsage(options.limit)
-  const llm = options.llm === undefined ? new FakeLlmClient() : options.llm
-  const chat = new ChatService(llm, conversations.service, usage.service, config(options.settings))
-  return { chat, conversations, usage, llm }
+/** The whole chat on fakes, with the model of your choice. */
+function setup(options: Parameters<typeof buildChat>[0] = {}) {
+  return buildChat(options)
 }
 
 async function drain(generator: AsyncGenerator<ChatEvent, void>): Promise<ChatEvent[]> {
@@ -222,8 +159,7 @@ describe("ChatService answer", () => {
         usage: { inputTokens: 1, outputTokens: 1, thoughtTokens: 0, totalTokens: 2 },
       },
     ])
-    const conversations = fakeConversations()
-    const chat = new ChatService(llm, conversations.service, fakeUsage().service, config())
+    const { chat, conversations } = setup({ llm })
 
     await ask(chat, "hi")
 
@@ -319,8 +255,7 @@ describe("ChatService failures", () => {
 
   it("hides the details of an unexpected error from the person", async () => {
     const llm = new ScriptedLlmClient([new Error("secret internal detail AIza123")])
-    const conversations = fakeConversations()
-    const chat = new ChatService(llm, conversations.service, fakeUsage().service, config())
+    const { chat } = setup({ llm })
 
     const events = await ask(chat, "hi")
 
@@ -334,9 +269,7 @@ describe("ChatService failures", () => {
       yield { type: "text_delta", text: "Bạn " }
       throw new LlmUnavailableError()
     }
-    const conversations = fakeConversations()
-    const usage = fakeUsage()
-    const chat = new ChatService(llm, conversations.service, usage.service, config())
+    const { chat, conversations, usage } = setup({ llm })
 
     const events = await ask(chat, "hi")
 
@@ -347,7 +280,7 @@ describe("ChatService failures", () => {
 
   it("reports a rate limit that happens on the second request as busy too", async () => {
     const llm = new ScriptedLlmClient([new LlmRateLimitedError()])
-    const chat = new ChatService(llm, fakeConversations().service, fakeUsage().service, config())
+    const { chat } = setup({ llm })
 
     expect((await ask(chat, "hi"))[0]).toMatchObject({ code: "assistant_busy" })
   })

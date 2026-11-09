@@ -13,6 +13,10 @@ export const MAX_MESSAGES_SHOWN = 500
 export const MAX_CONVERSATIONS = 50
 /** The whole answer, tools included, must be finished within this time. */
 export const ANSWER_TIMEOUT_MS = 90_000
+/** Tools one message may use; the model is then asked to answer without more. */
+export const MAX_TOOL_CALLS = 6
+/** How long the person has to approve a change the assistant proposed. */
+export const ACTION_TTL_MS = 10 * 60 * 1000
 /** The day of the daily limit starts and ends at midnight of this time zone. */
 export const QUOTA_TIME_ZONE = "Asia/Ho_Chi_Minh"
 /** A line sent now and then while the model thinks, so that no proxy closes the quiet connection. */

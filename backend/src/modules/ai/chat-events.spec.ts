@@ -45,8 +45,8 @@ describe("toSse", () => {
     expect(toSse({ type: "text_delta", text: "Xin chào" })).toBe(
       'event: text_delta\ndata: {"text":"Xin chào"}\n\n',
     )
-    expect(toSse({ type: "done", messageId: "m1", truncated: false })).toBe(
-      'event: done\ndata: {"messageId":"m1","truncated":false}\n\n',
+    expect(toSse({ type: "done", messageId: "m1", truncated: false, awaitingAction: false })).toBe(
+      'event: done\ndata: {"messageId":"m1","truncated":false,"awaitingAction":false}\n\n',
     )
   })
 

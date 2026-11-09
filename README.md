@@ -271,6 +271,21 @@ cd backend && npm run prisma:deploy     # applies the pgvector migration
 
 The answer is `text/event-stream`: `text_delta` `{ text }` pieces, then `done` `{ messageId, truncated }` or `error` `{ code, message }`. Anything that can be refused is an ordinary JSON error before the stream starts: `404` (not your conversation), `409` (the previous answer is still being written), `429` (more than 12 messages a minute, or the daily limit of `AI_DAILY_MESSAGE_LIMIT`, 30, counted per day of Vietnam time in its own table so that deleting a conversation gives nothing back), `503`. A rate limit of the model is retried once, then shown as "Trợ lý đang quá tải, thử lại sau ít phút"; a failed or cancelled answer is not kept and not counted. Closing the connection cancels the request to the model. Only the last 20 messages go to the model. `AI_PROVIDER=fake` is an echo for tests and offline development (refused in production). The "an answer is being written" lock is in memory, which is right for one API instance; behind several, make it a database lock first.
 
+**What the assistant can do (tools).** The model never touches data itself: it asks the server to run a tool, at most 6 per message, and the server checks every argument and acts only for the signed-in user.
+
+| Tool | Kind | What it does |
+| --- | --- | --- |
+| `search_catalog` | read | Hybrid search (words + meaning) of tracks, artists, albums or playlists |
+| `get_track`, `get_artist`, `get_album`, `get_playlist` | read | Details; a playlist is an editorial one or the user's own |
+| `get_my_library` | read | Liked tracks, followed artists, the user's playlists with their ids |
+| `recommend_tracks`, `similar_tracks` | read | Personal and similar tracks (see Recommendations) |
+| `search_help` | read | Looks up the help texts and returns the source to cite |
+| `play_tracks` | app | Sends the app a `client_action` event (up to 50 tracks); changes nothing |
+| `create_playlist`, `add_tracks_to_playlist`, `like_tracks`, `follow_artist` | change | Only **proposed**: the server stores a pending action (10 minutes), sends `action_required` and ends the stream; nothing happens until `POST /api/ai/actions/:id/confirm` |
+
+`/reject` turns it down. Both answers stream the rest of the assistant's reply, like a message does (`tool_result` first). They count as one message of the daily limit (at the limit a confirmed change is still made and reported, without a model reply) and the 12 per minute limit, counted per endpoint. A proposal is valid for the person who got it (`404` for anyone else), once (`409`), and for 10 minutes (`410`); writing a new message instead ends it. Only one change is proposed per round, only to the user's **own** playlists (an admin's assistant too), at most 50 tracks per call. SSE events: `text_delta`, `tool_call`, `tool_result` (with the `display` cards), `action_required`, `client_action`, `done` (`awaitingAction`), `error`.
+
+
 **Measuring the search.** `npm run ai:eval` (in `backend/`, after `prisma:seed` and `ai:embed`) runs the ~30 Vietnamese and English questions of `backend/eval/search-queries.json` (each with the tracks a person accepts as a good answer) through the search by words, the search by meaning and the two merged, prints Recall@10, MRR@10 and nDCG@10 for each, and writes `backend/eval/results.md` (per kind of query and per query, and the queries where merging is worse than the better list). It refuses to run with the offline `fake` provider (its numbers would say nothing about meaning), with tracks that have no vector, or with a track id that is not in the database. The labels were chosen from titles, artists, languages and the catalog metadata, which is also the text of the vectors, so mood questions favour the vector search a little.
 
 ### Behaviour worth knowing

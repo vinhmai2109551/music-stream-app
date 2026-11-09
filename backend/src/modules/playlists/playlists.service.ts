@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -174,10 +175,59 @@ export class PlaylistsService implements OnModuleInit {
     return this.get(id, user)
   }
 
+  /**
+   * Creates a playlist of the user with tracks already in it, all or nothing: a playlist is never
+   * left half filled. 400 when a track does not exist.
+   */
+  async createWithTracks(
+    user: AuthUser,
+    dto: CreatePlaylistDto,
+    trackIds: string[],
+  ): Promise<PlaylistDetail> {
+    if (dto.isOfficial) throw new ForbiddenException("Only the API can create official playlists")
+    const ids = [...new Set(trackIds)]
+    await this.assertTracksExist(ids)
+    const playlist = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.playlist.create({
+        data: { ...dto, searchName: toSearchName(dto.name), isOfficial: false, ownerId: user.id },
+      })
+      await tx.playlistTrack.createMany({
+        data: ids.map((trackId, position) => ({ playlistId: created.id, trackId, position })),
+      })
+      return created
+    })
+    return this.get(playlist.id, user)
+  }
+
+  /**
+   * Adds several tracks at the end of a playlist in one go (tracks already in it stay where they
+   * are). 400 when a track does not exist. Returns how many were new.
+   */
+  async addTracks(id: string, user: AuthUser, trackIds: string[]): Promise<number> {
+    const playlist = await this.findWritable(id, user)
+    await this.assertTracksExist([...new Set(trackIds)])
+    const present = new Set(playlist.tracks.map((track) => track.trackId))
+    const fresh = [...new Set(trackIds)].filter((trackId) => !present.has(trackId))
+    const start = playlist.tracks.reduce((max, track) => Math.max(max, track.position + 1), 0)
+    await this.prisma.playlistTrack.createMany({
+      data: fresh.map((trackId, index) => ({ playlistId: id, trackId, position: start + index })),
+      skipDuplicates: true,
+    })
+    return fresh.length
+  }
+
   async removeTrack(id: string, user: AuthUser, trackId: string): Promise<PlaylistDetail> {
     await this.findWritable(id, user)
     await this.prisma.playlistTrack.deleteMany({ where: { playlistId: id, trackId } })
     return this.get(id, user)
+  }
+
+  private async assertTracksExist(ids: string[]): Promise<void> {
+    if (ids.length === 0) return
+    const found = new Set((await this.tracks.getByIds(ids)).map((track) => track.id))
+    if (ids.some((id) => !found.has(id))) {
+      throw new BadRequestException("A track in the list does not exist")
+    }
   }
 
   /** Official playlists are public; personal ones only for their owner (or an admin). */

@@ -10,5 +10,6 @@ import { SearchService } from "./search.service.js"
   imports: [EmbeddingsModule, TracksModule, ArtistsModule],
   controllers: [SearchController],
   providers: [SearchService],
+  exports: [SearchService],
 })
 export class SearchModule {}

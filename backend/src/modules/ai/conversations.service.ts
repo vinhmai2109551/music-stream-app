@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common"
 import type { Prisma } from "../../generated/prisma/client.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
-import { textOf, type LlmPart } from "../../shared/llm/llm-client.js"
+import type { LlmPart } from "../../shared/llm/llm-client.js"
 import {
   HISTORY_MESSAGES,
   MAX_CONVERSATIONS,
@@ -18,11 +18,11 @@ export interface ConversationView {
   updatedAt: Date
 }
 
-/** A message as the app shows it: only what was said, never the tool traffic. */
-export interface AiMessageView {
+/** A stored message with its parts, as the messages view reads it. */
+export interface RawMessage {
   id: string
   role: "user" | "assistant"
-  text: string
+  parts: LlmPart[]
   createdAt: Date
 }
 
@@ -83,19 +83,20 @@ export class ConversationsService {
     return found
   }
 
-  async messages(userId: string, conversationId: string): Promise<AiMessageView[]> {
+  /** The latest messages (at most `MAX_MESSAGES_SHOWN`), oldest first. */
+  async rawMessages(userId: string, conversationId: string): Promise<RawMessage[]> {
     await this.assertOwner(userId, conversationId)
-    // The latest MAX_MESSAGES_SHOWN rows, oldest first.
     const newest = await this.prisma.aiMessage.findMany({
       where: { conversationId },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: MAX_MESSAGES_SHOWN,
     })
-    const rows = newest.reverse()
-    return rows.flatMap((row) => {
-      const text = textOf({ role: "assistant", parts: row.content as unknown as LlmPart[] })
-      return text ? [{ id: row.id, role: roleOf(row.role), text, createdAt: row.createdAt }] : []
-    })
+    return newest.reverse().map((row) => ({
+      id: row.id,
+      role: roleOf(row.role),
+      parts: row.content as unknown as LlmPart[],
+      createdAt: row.createdAt,
+    }))
   }
 
   async remove(userId: string, conversationId: string): Promise<void> {
@@ -140,8 +141,10 @@ export class ConversationsService {
   }
 
   /** Takes a message back (the answer to it failed), so that no question is left unanswered. */
-  async discard(messageId: string): Promise<void> {
-    await this.prisma.aiMessage.deleteMany({ where: { id: messageId } })
+  async discard(messageIds: string | readonly string[]): Promise<void> {
+    const ids = typeof messageIds === "string" ? [messageIds] : [...messageIds]
+    if (ids.length === 0) return
+    await this.prisma.aiMessage.deleteMany({ where: { id: { in: ids } } })
   }
 
   /** Names a conversation after its first message; one that already has a name keeps it. */

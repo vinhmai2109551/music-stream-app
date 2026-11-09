@@ -10,5 +10,6 @@ import { RecommendationsService } from "./recommendations.service.js"
   imports: [EmbeddingsModule, LikesModule, TracksModule],
   controllers: [RecommendationsController],
   providers: [RecommendationsService],
+  exports: [RecommendationsService],
 })
 export class RecommendationsModule {}
