@@ -54,7 +54,7 @@ export interface RequestOptions {
   skipAuth?: boolean
 }
 
-function parseBody(text: string): unknown {
+export function parseBody(text: string): unknown {
   if (!text) return undefined
   try {
     return JSON.parse(text)
@@ -64,7 +64,7 @@ function parseBody(text: string): unknown {
 }
 
 /** NestJS puts a string, or an array of strings for validation errors, in `message`. */
-function messageFromBody(body: unknown, status: number): string {
+export function messageFromBody(body: unknown, status: number): string {
   if (typeof body === "object" && body !== null && "message" in body) {
     const { message } = body as { message: unknown }
     if (Array.isArray(message)) {
@@ -186,4 +186,14 @@ export const api = {
     request<T>("PUT", path, body, options),
   delete: <T>(path: string, options?: RequestOptions) =>
     request<T>("DELETE", path, undefined, options),
+}
+
+/**
+ * What a streaming request (see ./stream) needs of the session: the token, a way to renew it that
+ * shares one refresh with every other request, and what to do when the session is over.
+ */
+export const session = {
+  token: (): string | null => handlers.getToken(),
+  renew: (rejectedToken: string): Promise<string | null> => renewAccessToken(rejectedToken),
+  expired: (): void => handlers.onUnauthorized(),
 }

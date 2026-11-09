@@ -12,6 +12,7 @@ import {
   saveUser,
 } from "@/utils/sessionStorage"
 import { useAppStore } from "./appStore"
+import { useAssistantStore } from "./assistantStore"
 import { useLibraryStore } from "./libraryStore"
 import { usePlayerStore } from "./playerStore"
 
@@ -78,6 +79,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
     set(SIGNED_OUT)
     usePlayerStore.getState().reset()
     useLibraryStore.getState().reset()
+    useAssistantStore.getState().reset()
     useAppStore.getState().start("login")
     await clearSession()
   }

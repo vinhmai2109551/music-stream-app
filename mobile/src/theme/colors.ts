@@ -49,6 +49,16 @@ const lightTokens = {
   premiumTint: "#F5F3FF",
   premiumText: "#7C3AED",
   premiumCheck: "#8B5CF6",
+  /** The assistant's mascot: the same in both themes (it is a drawing, not a surface). */
+  mascotInk: "#334155",
+  mascotStem: "#6D4AE8",
+  mascotPink: "#F9A8D4",
+  mascotViolet: "#8B5CF6",
+  mascotCyan: "#67E8F9",
+  mascotCheek: "rgba(249, 168, 212, 0.65)",
+  mascotGlow: "rgba(167, 139, 250, 0.45)",
+  mascotGlowActive: "rgba(34, 211, 238, 0.7)",
+  mascotShadow: "#7C3AED",
   playerScrim: "rgba(0, 0, 0, 0.6)",
   cardScrim: "rgba(0, 0, 0, 0.8)",
   transparent: "transparent",
@@ -62,6 +72,11 @@ const gradients = {
     violet: ["#6D28D9", "#D946EF"],
     cyan: ["#22D3EE", "#4F46E5"],
     orange: ["#FB923C", "#EC4899"],
+  },
+  /** The mascot's tile in the tab bar: at rest, and while it is pressed. */
+  mascotGradients: {
+    idle: ["#C4B5FD", "#818CF8", "#67E8F9"],
+    active: ["#F9A8D4", "#A78BFA", "#67E8F9"],
   },
   /** Backgrounds of pictures that have no photo; one is picked per item. White reads on all. */
   coverGradients: [

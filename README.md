@@ -68,6 +68,7 @@ The app consists of the 13 screens of the design:
 
 - Two playback sources: audio files from our own storage (`expo-audio`) and official YouTube videos (embedded player) — see [Playback architecture](#playback-architecture)
 - Region filter on Home (Vietnam, K-Pop, J-Pop, C-Pop)
+- **AI assistant** (`/assistant`), opened from the mascot button in the middle of the tab bar or from the account sheet: a chat whose answer streams in word by word (Server-Sent Events through `expo/fetch`), with a Stop button, the tracks / artists / playlists it finds shown as the app's own rows, "Đồng ý / Huỷ" before it changes your library, and a list of past conversations (open, start new, delete). It is hidden when the server answers `503` (no key, or switched off) — see [Backend](#backend)
 - Persistent library state (likes, follows, playlists, recent searches) via Zustand + AsyncStorage
 - Reusable UI kit: `AppText`, `Button`, `Chip`, `IconButton`, `SearchBar`, `BottomSheet`, `Toast`, `Skeleton`, `EmptyState`
 - Centralised design tokens (colors, typography, spacing, radius, shadows)

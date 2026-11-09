@@ -265,3 +265,77 @@ export interface SemanticTrackSearch {
   degraded: boolean
   items: SemanticTrackHit[]
 }
+
+// ---------------------------------------------------------------- AI assistant
+
+export interface AssistantConversation {
+  id: string
+  /** The start of the first message; empty until there is one. */
+  title: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AssistantUsage {
+  /** Messages sent today. */
+  used: number
+  /** Messages allowed per day. */
+  limit: number
+}
+
+/** The cards of a tool result: only the kinds that the result is about are present. */
+export interface AssistantDisplay {
+  tracks?: ApiTrack[]
+  artists?: ApiArtist[]
+  albums?: ApiAlbum[]
+  playlists?: ApiPlaylist[]
+  /** Where a help answer came from, for the citation. */
+  sources?: { source: string; heading: string }[]
+}
+
+export type AssistantActionStatus = "PENDING" | "CONFIRMED" | "REJECTED" | "EXPIRED"
+
+/** One line of a conversation: a text, or a card between texts (`tool`). */
+export interface AssistantMessageLine {
+  id: string
+  role: "user" | "assistant" | "tool"
+  text: string
+  createdAt: string
+  tool?: {
+    callId: string
+    name: string
+    /** Whether it worked; null while a proposed change waits for an answer. */
+    ok: boolean | null
+    display?: AssistantDisplay
+    action?: {
+      id: string
+      status: AssistantActionStatus
+      summary: string
+      expiresAt: string
+    }
+  }
+}
+
+/** The events of the stream that answers a message (see the API: POST /ai/conversations/:id/messages). */
+export type AssistantEvent =
+  | { type: "text_delta"; text: string }
+  | { type: "tool_call"; callId: string; name: string }
+  | {
+      type: "tool_result"
+      callId: string
+      name: string
+      ok: boolean
+      display?: AssistantDisplay
+      action?: { id: string; status: "CONFIRMED" | "REJECTED" }
+    }
+  | {
+      type: "action_required"
+      actionId: string
+      callId: string
+      tool: string
+      summary: string
+      expiresAt: string
+    }
+  | { type: "client_action"; action: "play_tracks"; trackIds: string[]; tracks: ApiTrack[] }
+  | { type: "done"; messageId: string; truncated: boolean; awaitingAction: boolean }
+  | { type: "error"; code: string; message: string }

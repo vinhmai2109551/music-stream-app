@@ -10,6 +10,7 @@ import { YouTubeHost } from "@/components/media/YouTubeHost"
 import { ToastHost } from "@/components/ui/ToastHost"
 import { useAppFonts } from "@/hooks/useAppFonts"
 import { useAppStore } from "@/store/appStore"
+import { useAssistantStore } from "@/store/assistantStore"
 import { useAuthStore } from "@/store/authStore"
 import { useLibraryStore } from "@/store/libraryStore"
 import { makeStyles, useColors } from "@/theme"
@@ -34,7 +35,10 @@ export default function RootLayout() {
   // The auth screen Launch (or a sign-out) chose.
   const authHref: Href = authIntent === "register" ? "/register" : "/login"
   useEffect(() => {
-    if (isAuthenticated) void useLibraryStore.getState().load()
+    if (!isAuthenticated) return
+    void useLibraryStore.getState().load()
+    // Learns whether the server has the assistant on; the tab bar shows its button until it is told no.
+    void useAssistantStore.getState().probe()
   }, [isAuthenticated])
 
   // Keep the splash screen up until fonts are loaded and the saved session has been checked.
@@ -94,6 +98,7 @@ export default function RootLayout() {
               name="player"
               options={{ animation: "slide_from_bottom", gestureEnabled: false }}
             />
+            <Stack.Screen name="assistant" options={{ animation: "slide_from_bottom" }} />
           </Stack.Protected>
         </Stack>
         <YouTubeHost />

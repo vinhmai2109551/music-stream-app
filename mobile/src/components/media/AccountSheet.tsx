@@ -1,4 +1,5 @@
 import { Image } from "expo-image"
+import { router } from "expo-router"
 import { useState } from "react"
 import { StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
@@ -6,8 +7,12 @@ import { BottomSheet } from "@/components/ui/BottomSheet"
 import { Button } from "@/components/ui/Button"
 import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
+import { useAssistantStore } from "@/store/assistantStore"
 import { radius, sizes, spacing } from "@/theme"
 import { EditProfileForm } from "./EditProfileForm"
+
+/** A little longer than the sheet takes to slide away (BottomSheet: 200 ms). */
+const SHEET_CLOSE_MS = 300
 
 type AccountSheetProps = {
   visible: boolean
@@ -29,6 +34,7 @@ export function AccountSheet({
 }: AccountSheetProps) {
   // The form lives in this sheet (not in a second one): two modals cannot be swapped reliably on iOS.
   const [editing, setEditing] = useState(false)
+  const assistantOn = useAssistantStore((store) => store.availability !== "unavailable")
 
   const close = () => {
     setEditing(false)
@@ -62,6 +68,17 @@ export function AccountSheet({
             </View>
           </View>
           <View style={styles.actions}>
+            {assistantOn && (
+              <Button
+                label={copy.assistant.open}
+                variant="tonal"
+                onPress={() => {
+                  close()
+                  // Wait until the sheet is gone: a screen pushed while a modal closes can be lost on iOS.
+                  setTimeout(() => router.push("/assistant"), SHEET_CLOSE_MS)
+                }}
+              />
+            )}
             <Button
               label={copy.account.editProfile}
               variant="tonal"
