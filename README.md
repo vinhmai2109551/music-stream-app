@@ -258,6 +258,19 @@ cd backend && npm run prisma:deploy     # applies the pgvector migration
 
 **Help texts for the assistant** live in `backend/src/modules/ai/knowledge/*.md` (what the app does and does not do; edit them like any document). `npm run ai:embed` also cuts them into chunks of about 500 characters (50 overlap, never across a heading), stores one vector per chunk in `KnowledgeChunk` and, on the next run, remakes only the chunks whose text changed. `KNOWLEDGE_DIR` points to another folder. Write only what is true of the app: the assistant quotes these files as its answer.
 
+**The AI assistant** (`backend/src/modules/ai`) is a chat with a language model (Gemini through the Interactions API, behind a provider-neutral `LlmClient`). It needs `GEMINI_API_KEY` (or `EMBEDDING_API_KEY`, one Google AI Studio key does both); without a key every `/api/ai/*` endpoint answers `503` and the app hides the feature. The key stays on the server.
+
+| Endpoint | What it does |
+| --- | --- |
+| `POST /api/ai/conversations` | New conversation (an empty one is given again; at most 50 per user, then `409`) |
+| `GET /api/ai/conversations` | The user's conversations, most recently used first |
+| `GET /api/ai/conversations/:id/messages` | What was said (the latest 500) |
+| `DELETE /api/ai/conversations/:id` | Deletes it (`409` while an answer is being written) |
+| `POST /api/ai/conversations/:id/messages` | Sends `{ text }` (1 to 2000 characters) and streams the answer as Server-Sent Events |
+| `GET /api/ai/usage` | `{ used, limit }` of today |
+
+The answer is `text/event-stream`: `text_delta` `{ text }` pieces, then `done` `{ messageId, truncated }` or `error` `{ code, message }`. Anything that can be refused is an ordinary JSON error before the stream starts: `404` (not your conversation), `409` (the previous answer is still being written), `429` (more than 12 messages a minute, or the daily limit of `AI_DAILY_MESSAGE_LIMIT`, 30, counted per day of Vietnam time in its own table so that deleting a conversation gives nothing back), `503`. A rate limit of the model is retried once, then shown as "Trợ lý đang quá tải, thử lại sau ít phút"; a failed or cancelled answer is not kept and not counted. Closing the connection cancels the request to the model. Only the last 20 messages go to the model. `AI_PROVIDER=fake` is an echo for tests and offline development (refused in production). The "an answer is being written" lock is in memory, which is right for one API instance; behind several, make it a database lock first.
+
 **Measuring the search.** `npm run ai:eval` (in `backend/`, after `prisma:seed` and `ai:embed`) runs the ~30 Vietnamese and English questions of `backend/eval/search-queries.json` (each with the tracks a person accepts as a good answer) through the search by words, the search by meaning and the two merged, prints Recall@10, MRR@10 and nDCG@10 for each, and writes `backend/eval/results.md` (per kind of query and per query, and the queries where merging is worse than the better list). It refuses to run with the offline `fake` provider (its numbers would say nothing about meaning), with tracks that have no vector, or with a track id that is not in the database. The labels were chosen from titles, artists, languages and the catalog metadata, which is also the text of the vectors, so mood questions favour the vector search a little.
 
 ### Behaviour worth knowing

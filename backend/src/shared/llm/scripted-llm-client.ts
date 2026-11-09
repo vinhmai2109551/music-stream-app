@@ -1,4 +1,11 @@
-import type { LlmClient, LlmMessage, LlmRequest, LlmResponse } from "./llm-client.js"
+import {
+  textOf,
+  type LlmClient,
+  type LlmMessage,
+  type LlmRequest,
+  type LlmResponse,
+  type LlmStreamEvent,
+} from "./llm-client.js"
 
 /** What a scripted answer may be: a ready response, a plain text, or an error to throw. */
 export type ScriptedAnswer = LlmResponse | string | Error
@@ -39,6 +46,16 @@ export class ScriptedLlmClient implements LlmClient {
       )
     }
     return Promise.resolve(answer)
+  }
+
+  /** Streams the next scripted answer: its text word by word, then the whole response. */
+  async *stream(request: LlmRequest): AsyncGenerator<LlmStreamEvent, void> {
+    const response = await this.generate(request)
+    for (const word of textOf(response.message).match(/\S+\s*/g) ?? []) {
+      if (request.signal?.aborted) throw request.signal.reason
+      yield { type: "text_delta", text: word }
+    }
+    yield { type: "done", response }
   }
 }
 

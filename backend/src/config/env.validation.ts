@@ -36,6 +36,20 @@ class EmbeddingProviderConstraint implements ValidatorConstraintInterface {
   }
 }
 
+/** `gemini`, or `fake` (an echo that is only for tests and offline development). */
+@ValidatorConstraint({ name: "aiProvider" })
+class AiProviderConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown, args: ValidationArguments): boolean {
+    const name = typeof value === "string" ? value.trim().toLowerCase() : ""
+    if (name === "gemini") return true
+    return name === "fake" && (args.object as EnvironmentVariables).NODE_ENV !== "production"
+  }
+
+  defaultMessage(): string {
+    return "AI_PROVIDER must be gemini (fake is only allowed outside production)"
+  }
+}
+
 class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
@@ -197,6 +211,21 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   KNOWLEDGE_DIR?: string
+
+  /** Blank = gemini when there is a key. `fake` answers with an echo, with no key and no network. */
+  @ValidateIf((env: EnvironmentVariables) => Boolean(env.AI_PROVIDER?.trim()))
+  @Validate(AiProviderConstraint)
+  AI_PROVIDER?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, { message: "AI_CHAT_THROTTLE_LIMIT must be a positive integer" })
+  AI_CHAT_THROTTLE_LIMIT?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, {
+    message: "AI_CHAT_THROTTLE_TTL_SECONDS must be a positive integer",
+  })
+  AI_CHAT_THROTTLE_TTL_SECONDS?: string
 
   /** Cloudflare Turnstile secret key (bot check on login). Required in production. */
   @ValidateIf(requiredInProduction)

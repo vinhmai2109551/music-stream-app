@@ -10,9 +10,12 @@ import {
   type LlmPart,
   type LlmRequest,
   type LlmResponse,
+  type LlmStreamEvent,
   type LlmUsage,
 } from "./llm-client.js"
 import type { ThinkingLevel } from "./llm-config.js"
+import { StepAssembler } from "./gemini-stream.js"
+import { readSse } from "./sse.js"
 
 const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/interactions"
 /** The revision of the Interactions API the code is written against (the one in Google's examples). */
@@ -165,7 +168,7 @@ function finishOf(status: unknown, parts: readonly LlmPart[]): LlmFinish {
 // ---------------------------------------------------------------------- the client
 
 type Outcome =
-  | { kind: "ok"; body: unknown }
+  | { kind: "ok"; response: Response }
   | { kind: "error"; error: Error; retryable: boolean; delayMs: number }
 
 /**
@@ -192,11 +195,12 @@ export class GeminiInteractionsClient implements LlmClient {
   }
 
   /** The JSON body of the request (exposed so tests can see exactly what is sent). */
-  buildBody(request: LlmRequest): JsonObject {
+  buildBody(request: LlmRequest, stream = false): JsonObject {
     const { thinkingLevel } = this.options
     return {
       model: this.options.model,
       store: false,
+      ...(stream ? { stream: true } : {}),
       ...(request.system ? { system_instruction: request.system } : {}),
       ...(request.tools && request.tools.length > 0
         ? {
@@ -219,17 +223,69 @@ export class GeminiInteractionsClient implements LlmClient {
 
   async generate(request: LlmRequest): Promise<LlmResponse> {
     const body = JSON.stringify(this.buildBody(request))
+    const { response, requests } = await this.sendWithRetry(body, request.signal)
+    return this.parse(await response.json().catch(() => null), requests)
+  }
+
+  async *stream(request: LlmRequest): AsyncGenerator<LlmStreamEvent, void> {
+    const body = JSON.stringify(this.buildBody(request, true))
+    // Only the start of the answer is retried: once text was sent on, there is no taking it back.
+    const { response, requests } = await this.sendWithRetry(body, request.signal, true)
+    if (!response.body)
+      throw new LlmUnavailableError("Gemini sent an answer that could not be read")
+
+    const assembler = new StepAssembler()
+    try {
+      for await (const message of readSse(response.body)) {
+        if (message.data === "[DONE]") break
+        let event: unknown
+        try {
+          event = JSON.parse(message.data)
+        } catch {
+          continue // not JSON: nothing to learn from it
+        }
+        const text = assembler.feed(event)
+        if (text) yield { type: "text_delta", text }
+      }
+    } catch (error) {
+      if (request.signal?.aborted) throw error
+      if (error instanceof LlmUnavailableError) throw error
+      throw new LlmUnavailableError("The answer from Gemini was cut off")
+    }
+    // A connection that closes without saying the answer is complete has cut it off.
+    if (!assembler.completed) throw new LlmUnavailableError("The answer from Gemini was cut off")
+    const { steps, status, usage } = assembler.result()
+    yield { type: "done", response: this.parse({ steps, status, usage }, requests) }
+  }
+
+  /** Sends the request; a 429, a 5xx or no answer is tried once more after a short wait. */
+  private async sendWithRetry(
+    body: string,
+    signal: AbortSignal | undefined,
+    streaming = false,
+  ): Promise<{ response: Response; requests: number }> {
     for (let attempt = 1; ; attempt += 1) {
-      const outcome = await this.send(body, request.signal)
-      if (outcome.kind === "ok") return this.parse(outcome.body, attempt)
+      const outcome = await this.send(body, signal, streaming)
+      if (outcome.kind === "ok") return { response: outcome.response, requests: attempt }
       if (!outcome.retryable || attempt >= ATTEMPTS) throw outcome.error
       this.logger.warn(`${outcome.error.message}; trying again in ${outcome.delayMs} ms`)
       await this.sleep(outcome.delayMs)
     }
   }
 
-  private async send(body: string, signal: AbortSignal | undefined): Promise<Outcome> {
-    const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+  private async send(
+    body: string,
+    signal: AbortSignal | undefined,
+    streaming: boolean,
+  ): Promise<Outcome> {
+    // A whole request must end in time. A stream may last longer than that while it writes: only
+    // the wait for it to begin is limited here, and the caller limits the rest with its signal.
+    const own = new AbortController()
+    const timer = setTimeout(
+      () => own.abort(new Error("Gemini did not answer in time")),
+      REQUEST_TIMEOUT_MS,
+    )
+    const timeout = streaming ? own.signal : AbortSignal.timeout(REQUEST_TIMEOUT_MS)
     let response: Response
     try {
       response = await this.fetchFn(ENDPOINT, {
@@ -245,6 +301,7 @@ export class GeminiInteractionsClient implements LlmClient {
     } catch (error) {
       // The caller gave up (the person closed the chat): not a failure to retry or to report.
       if (signal?.aborted) throw error
+      clearTimeout(timer)
       return {
         kind: "error",
         error: new LlmUnavailableError("Gemini could not be reached"),
@@ -253,7 +310,8 @@ export class GeminiInteractionsClient implements LlmClient {
       }
     }
 
-    if (response.ok) return { kind: "ok", body: await response.json().catch(() => null) }
+    clearTimeout(timer)
+    if (response.ok) return { kind: "ok", response }
 
     const detail = await this.describe(response)
     if (response.status === 429) {

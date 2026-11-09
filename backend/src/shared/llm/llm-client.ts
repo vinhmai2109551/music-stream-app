@@ -67,12 +67,25 @@ export interface LlmResponse {
   requests: number
 }
 
+/** What a streamed answer sends while it is being written. */
+export type LlmStreamEvent =
+  /** A piece of the answer's text, to show at once. */
+  | { type: "text_delta"; text: string }
+  /** The answer is complete: exactly what `generate` would have returned. Always the last event. */
+  | { type: "done"; response: LlmResponse }
+
 export interface LlmClient {
   /** The provider's name, e.g. `gemini`: the owner of the `opaque` parts it writes. */
   readonly provider: string
   /** The model's name, for logs. */
   readonly model: string
   generate(request: LlmRequest): Promise<LlmResponse>
+  /**
+   * The same answer as `generate`, delivered as it is written. A failure before the first event
+   * may be retried inside; after it the error is thrown, since the person has already seen text.
+   * Cancelling `request.signal` ends the stream with the signal's error.
+   */
+  stream(request: LlmRequest): AsyncGenerator<LlmStreamEvent, void>
 }
 
 /** Injection token of the language model (`LlmClient`, or null while none is configured). */
