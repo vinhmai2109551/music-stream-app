@@ -10,14 +10,17 @@ import { Alert, Button, Card, Col, Empty, Image, Row, Skeleton, Statistic, Table
 import type { ReactNode } from "react"
 import type { AdminStats } from "@/api/types"
 import { useApi } from "@/hooks/useApi"
-import { formatNumber } from "@/lib/time"
+import { formatCompact, formatNumber } from "@/lib/time"
 import { DailyChart } from "./DashboardCharts"
 import { TranslationQuota } from "./TranslationQuota"
 
 function Kpi({ title, value, icon }: { title: string; value: number; icon: ReactNode }) {
   return (
     <Card size="small">
-      <Statistic title={title} value={formatNumber(value)} prefix={icon} />
+      {/* The exact number is one hover away when the card shows it shortened. */}
+      <div title={formatNumber(value)}>
+        <Statistic title={title} value={formatCompact(value)} prefix={icon} />
+      </div>
     </Card>
   )
 }

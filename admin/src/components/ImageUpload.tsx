@@ -57,7 +57,7 @@ export function ImageUpload({ value, onChange, size = 160, disabled }: Props) {
         ref={input}
         type="file"
         accept={acceptFor("image")}
-        hidden
+        style={{ display: "none" }}
         onChange={(event) => {
           void pick(event.target.files?.[0])
           event.target.value = "" // the same file can be chosen again

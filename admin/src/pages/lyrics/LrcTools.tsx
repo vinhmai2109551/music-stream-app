@@ -83,7 +83,7 @@ export function LrcTools({ draft, fileName, onImport }: Props) {
             ref={input}
             type="file"
             accept=".lrc,.txt,text/plain"
-            hidden
+            style={{ display: "none" }}
             onChange={(event) => {
               void readFile(event.target.files?.[0])
               event.target.value = ""

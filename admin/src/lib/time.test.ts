@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { formatClock, formatDuration, parseClock } from "./time"
+import { formatClock, formatCompact, formatDuration, parseClock } from "./time"
 
 describe("formatClock", () => {
   it.each([
@@ -41,6 +41,19 @@ describe("parseClock", () => {
     for (const ms of [0, 10, 1230, 59_990, 61_000, 754_320]) {
       expect(parseClock(formatClock(ms))).toBe(ms)
     }
+  })
+})
+
+describe("formatCompact", () => {
+  it("shortens billions and millions, keeping one decimal", () => {
+    expect(formatCompact(25_533_100_003)).toBe("25,5 tỷ")
+    expect(formatCompact(950_000_000)).toBe("950 triệu")
+    expect(formatCompact(1_234_567)).toBe("1,2 triệu")
+  })
+
+  it("leaves smaller numbers whole, with dots between the thousands", () => {
+    expect(formatCompact(999_999)).toBe("999.999")
+    expect(formatCompact(0)).toBe("0")
   })
 })
 

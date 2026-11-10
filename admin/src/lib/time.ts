@@ -29,3 +29,12 @@ export function formatDuration(totalSeconds: number): string {
 
 /** `1234567` -> `1.234.567` */
 export const formatNumber = (value: number): string => new Intl.NumberFormat("vi-VN").format(value)
+
+/** A big count for a small place: `25533100003` -> `25,5 tỷ`, `1234567` -> `1,2 triệu`, else `formatNumber`. */
+export function formatCompact(value: number): string {
+  const short = (divided: number) =>
+    new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 }).format(divided)
+  if (value >= 1_000_000_000) return `${short(value / 1_000_000_000)} tỷ`
+  if (value >= 1_000_000) return `${short(value / 1_000_000)} triệu`
+  return formatNumber(value)
+}
