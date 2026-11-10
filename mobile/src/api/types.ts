@@ -339,3 +339,31 @@ export type AssistantEvent =
   | { type: "client_action"; action: "play_tracks"; trackIds: string[]; tracks: ApiTrack[] }
   | { type: "done"; messageId: string; truncated: boolean; awaitingAction: boolean }
   | { type: "error"; code: string; message: string }
+
+// ---------------------------------------------------------------- lyrics
+
+/** The original lyrics of a track: one element per line, a blank line is "". */
+export interface ApiLyrics {
+  trackId: string
+  /** App language code of the lines: vi, en-US, ko, ja or zh-Hans. */
+  language: string
+  lines: string[]
+  /** Start of each line in milliseconds, or null when there are no timings. */
+  timingsMs: number[] | null
+  /** Where the text comes from: "demo", "manual" or the name of a provider. */
+  source: string
+  updatedAt: string
+}
+
+/** The lyrics in another language; `lines` has one element for every original line, in place. */
+export interface ApiLyricsTranslation {
+  trackId: string
+  sourceLanguage: string
+  targetLanguage: string
+  lines: string[]
+  /** "deepl", or "original" when the lyrics were already in that language. */
+  provider: string
+  /** True when this request did not have to make the translation. */
+  cached: boolean
+  translatedAt: string | null
+}

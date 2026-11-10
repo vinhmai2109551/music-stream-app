@@ -247,6 +247,26 @@ class EnvironmentVariables {
   @Validate(TranslationProviderConstraint)
   TRANSLATION_PROVIDER?: string
 
+  /** Lyrics translations a user may ask for per window (a kept one costs DeepL nothing). */
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, {
+    message: "LYRICS_TRANSLATE_THROTTLE_LIMIT must be a positive integer",
+  })
+  LYRICS_TRANSLATE_THROTTLE_LIMIT?: string
+
+  @IsOptional()
+  @Matches(POSITIVE_INTEGER, {
+    message: "LYRICS_TRANSLATE_THROTTLE_TTL_SECONDS must be a positive integer",
+  })
+  LYRICS_TRANSLATE_THROTTLE_TTL_SECONDS?: string
+
+  /** From this share (1-100) of the monthly DeepL allowance on, no new lyrics are translated. */
+  @IsOptional()
+  @Matches(/^([1-9]d?|100)$/, {
+    message: "LYRICS_TRANSLATION_STOP_AT_PERCENT must be a whole number from 1 to 100",
+  })
+  LYRICS_TRANSLATION_STOP_AT_PERCENT?: string
+
   @IsOptional()
   @Matches(POSITIVE_INTEGER, { message: "AI_CHAT_THROTTLE_LIMIT must be a positive integer" })
   AI_CHAT_THROTTLE_LIMIT?: string

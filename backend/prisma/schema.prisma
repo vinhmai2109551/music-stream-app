@@ -130,6 +130,7 @@ model Track {
 
   artist     Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
   embedding  TrackEmbedding?
+  lyrics     TrackLyrics?
   albums     AlbumTrack[]
   playlists  PlaylistTrack[]
   likes      TrackLike[]
@@ -381,6 +382,50 @@ model KnowledgeChunk {
 
   @@unique([source, position])
   @@index([source])
+}
+
+// ---------------------------------------------------------------- owner: lyrics
+/// The original lyrics of a track, one element of `lines` per line; a blank line is "" so the
+/// position of every line is kept. Only text that may be stored is written here (own work, or a
+/// licensed source named in `source`); the demo data is written for the demo and says so.
+/// `contentHash` is the hash of `language` and `lines`: a translation is valid only for the hash it
+/// was made from. Deleting the track deletes its lyrics and their translations.
+model TrackLyrics {
+  id          String   @id @default(cuid())
+  trackId     String   @unique
+  /// Language of the lines, as an app language code: vi, en-US, ko, ja or zh-Hans.
+  language    String
+  lines       String[]
+  /// Start of each line in milliseconds, same length as `lines`; empty = no timings.
+  timingsMs   Int[]    @default([])
+  /// Where the text came from: "demo", "manual" or the name of a provider.
+  source      String
+  contentHash String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  track        Track                    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  translations TrackLyricsTranslation[]
+}
+
+/// One translation of one version of the lyrics. The unique key makes a second translation of the
+/// same lyrics, language and version impossible, so two requests at once store it once.
+model TrackLyricsTranslation {
+  id               String   @id @default(cuid())
+  lyricsId         String
+  targetLanguage   String
+  /// `contentHash` of the lyrics it was made from.
+  sourceHash       String
+  /// Same length as the original lines; a blank line stays blank.
+  lines            String[]
+  /// Engine that translated it ("deepl").
+  provider         String
+  billedCharacters Int
+  createdAt        DateTime @default(now())
+
+  lyrics TrackLyrics @relation(fields: [lyricsId], references: [id], onDelete: Cascade)
+
+  @@unique([lyricsId, targetLanguage, sourceHash])
 }
 
 // ---------------------------------------------------------------- owner: ai

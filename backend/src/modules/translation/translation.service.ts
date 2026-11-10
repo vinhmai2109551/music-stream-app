@@ -137,6 +137,20 @@ export class TranslationService {
     }
   }
 
+  /**
+   * Refuses when `percent` or more of the monthly allowance is already used, so a feature that is
+   * allowed to spend only part of it (lyrics) leaves the rest to the others. The figure is the last
+   * one known: DeepL is asked for it at most every ten minutes, and a failure to read it lets the
+   * call through (the engine's own 456 still stops it). Without a key it does nothing: translating
+   * answers "not configured" by itself.
+   */
+  async assertUsageBelow(percent: number): Promise<void> {
+    if (!this.translator) return
+    await this.monitor.checkIfDue()
+    const known = this.monitor.snapshot().percent
+    if (known !== null && known >= percent) throw translationQuotaExceeded()
+  }
+
   /** The usage of the allowance, read from DeepL now (for an administrator). */
   async usage(): Promise<TranslationUsage> {
     if (!this.translator) return this.monitor.snapshot()

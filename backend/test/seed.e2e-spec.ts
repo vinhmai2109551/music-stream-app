@@ -48,6 +48,36 @@ describe("Seed on start (e2e)", () => {
     })
   })
 
+  it("adds the demo lyrics, and leaves lyrics that an administrator replaced alone", async () => {
+    const env = { ...SEED_ENV, R2_PUBLIC_URL: "https://media.e2e.test" }
+    const lyrics = (server: TestServer) =>
+      server.db.rows<{ trackId: string; language: string; source: string }>(
+        `SELECT "trackId", language, source FROM "TrackLyrics" ORDER BY "trackId"`,
+      )
+
+    await withServer(env, async (server) => {
+      expect(await lyrics(server)).toEqual([
+        { trackId: "bts-dynamite", language: "ko", source: "demo" },
+        { trackId: "son-tung-lac-troi", language: "vi", source: "demo" },
+        { trackId: "yoasobi-idol", language: "ja", source: "demo" },
+      ])
+
+      await server.db.run(
+        `UPDATE "TrackLyrics" SET source = 'manual', lines = ARRAY['mine'] WHERE "trackId" = 'bts-dynamite'`,
+      )
+      const again = await startTestServer(env)
+      try {
+        const rows = await again.db.rows<{ lines: string[]; source: string }>(
+          `SELECT lines, source FROM "TrackLyrics" WHERE "trackId" = 'bts-dynamite'`,
+        )
+        expect(rows).toEqual([{ lines: ["mine"], source: "manual" }])
+        expect(await lyrics(again)).toHaveLength(3)
+      } finally {
+        await again.stop()
+      }
+    })
+  })
+
   it("writes region and youtubeVideoId, on create and again on update", async () => {
     const env = { ...SEED_ENV, R2_PUBLIC_URL: "https://media.e2e.test" }
     const regionOf = async (server: TestServer, id: string) =>

@@ -5,6 +5,7 @@ import { Linking, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { BlurredBackdrop } from "@/components/media/BlurredBackdrop"
 import { CommentsSheet } from "@/components/media/CommentsSheet"
+import { LyricsSheet } from "@/components/media/lyrics/LyricsSheet"
 import { PlayerActions } from "@/components/media/PlayerActions"
 import { PlayerArtwork } from "@/components/media/PlayerArtwork"
 import { PlayerControls } from "@/components/media/PlayerControls"
@@ -62,6 +63,7 @@ export default function PlayerScreen() {
 
   const [commentsOpen, setCommentsOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [lyricsOpen, setLyricsOpen] = useState(false)
   /** Comments counted once the sheet has been opened; until then the design's sample number. */
   const [commentCount, setCommentCount] = useState<{ trackId: string; count: number } | null>(null)
 
@@ -155,6 +157,7 @@ export default function PlayerScreen() {
               }
               onToggleLike={() => toggleLike(track.id)}
               onComments={() => setCommentsOpen(true)}
+              onLyrics={() => setLyricsOpen(true)}
               onShare={() => void share()}
             />
             <SimilarTracks trackId={track.id} />
@@ -162,6 +165,7 @@ export default function PlayerScreen() {
         </View>
       </SwipeToDismiss>
       {menuOpen && <TrackMenuSheet track={track} visible onClose={() => setMenuOpen(false)} />}
+      {lyricsOpen && <LyricsSheet trackId={track.id} onClose={() => setLyricsOpen(false)} />}
       {commentsOpen && (
         <CommentsSheet
           target={{ trackId: track.id }}

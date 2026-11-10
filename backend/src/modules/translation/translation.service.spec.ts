@@ -464,6 +464,40 @@ describe("usage", () => {
   })
 })
 
+describe("assertUsageBelow", () => {
+  it("lets a call through while less than the share is used", async () => {
+    const { service, translator } = scripted()
+    translator.usage.mockResolvedValue({ used: 400_000, limit: 500_000 }) // 80%
+    await expect(service.assertUsageBelow(90)).resolves.toBeUndefined()
+  })
+
+  it("refuses with the quota error from the share on", async () => {
+    const { service, translator } = scripted()
+    translator.usage.mockResolvedValue({ used: 450_000, limit: 500_000 }) // 90%
+    const error = await thrown(service.assertUsageBelow(90))
+    expect(error.getStatus()).toBe(503)
+    expect(codeOf(error)).toBe("TRANSLATION_QUOTA_EXCEEDED")
+  })
+
+  it("asks DeepL once, not on every call", async () => {
+    const { service, translator } = scripted()
+    await service.assertUsageBelow(90)
+    await service.assertUsageBelow(90)
+    expect(translator.usage).toHaveBeenCalledTimes(1)
+  })
+
+  it("lets the call through when the figure cannot be read", async () => {
+    const { service, translator } = scripted()
+    translator.usage.mockRejectedValue(new TranslatorFailure("unavailable"))
+    await expect(service.assertUsageBelow(90)).resolves.toBeUndefined()
+  })
+
+  it("does nothing without a key (translating says so by itself)", async () => {
+    const service = new TranslationService(null)
+    await expect(service.assertUsageBelow(1)).resolves.toBeUndefined()
+  })
+})
+
 describe("with the fake translator", () => {
   it("works end to end, with no network", async () => {
     const fake = new FakeTranslator()

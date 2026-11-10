@@ -15,6 +15,7 @@ import { FollowsModule } from "./modules/follows/index.js"
 import { HealthModule } from "./modules/health/index.js"
 import { LikesModule } from "./modules/likes/index.js"
 import { PlaylistsModule } from "./modules/playlists/index.js"
+import { LyricsModule, lyricsThrottler } from "./modules/lyrics/index.js"
 import { playThrottler, TracksModule } from "./modules/tracks/index.js"
 import { TranslationModule } from "./modules/translation/index.js"
 import { AiModule, aiChatThrottler } from "./modules/ai/index.js"
@@ -41,6 +42,7 @@ import { avatarThrottler, UsersModule } from "./modules/users/index.js"
           avatarThrottler(config),
           semanticSearchThrottler(config),
           aiChatThrottler(config),
+          lyricsThrottler(config),
         ],
       }),
     }),
@@ -63,6 +65,7 @@ import { avatarThrottler, UsersModule } from "./modules/users/index.js"
     RecommendationsModule,
     SearchModule,
     TranslationModule,
+    LyricsModule,
     UploadsModule,
   ],
 })

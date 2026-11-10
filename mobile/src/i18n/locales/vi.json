@@ -464,5 +464,30 @@
   },
   "suggestion": {
     "by": "{{title}} của {{subtitle}}"
+  },
+  "lyrics": {
+    "open": "Xem lời bài hát",
+    "title": "Lời bài hát",
+    "sourceLabel": "Nguồn lời: {{source}}",
+    "sourceDemo": "lời demo tự viết",
+    "translate": "Dịch sang {{language}}",
+    "translating": "Đang dịch…",
+    "autoTranslated": "Bản dịch tự động",
+    "viewLabel": "Cách hiển thị lời",
+    "viewOriginal": "Bản gốc",
+    "viewParallel": "Song song",
+    "viewTranslation": "Bản dịch",
+    "sameLanguage": "Lời bài hát đã bằng ngôn ngữ của bạn.",
+    "emptyTitle": "Bài này chưa có lời",
+    "emptyDescription": "Lời bài hát sẽ hiện ở đây khi có.",
+    "loading": "Đang tải lời bài hát",
+    "translationFailed": {
+      "generic": "Chưa dịch được lời bài hát. Bạn vẫn xem được lời gốc.",
+      "quota": "Đã hết hạn mức dịch của tháng này. Bạn vẫn xem được lời gốc.",
+      "notConfigured": "Tính năng dịch chưa sẵn sàng. Bạn vẫn xem được lời gốc.",
+      "rateLimited": "Bạn dịch quá nhanh. Vui lòng đợi một phút rồi thử lại.",
+      "offline": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
+      "busy": "Dịch vụ dịch đang bận. Vui lòng thử lại sau ít phút."
+    }
   }
 }

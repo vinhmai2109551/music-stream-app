@@ -15,6 +15,7 @@ import {
   type MediaRef,
 } from "./seed-data.js"
 import { CATALOG_METADATA } from "./catalog/load-metadata.js"
+import { seedDemoLyrics } from "./demo-lyrics.js"
 
 const BCRYPT_ROUNDS = 10
 const MINUTE_MS = 60_000
@@ -196,8 +197,11 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
     skipDuplicates: true,
   })
 
+  const demoLyrics = await seedDemoLyrics(prisma)
+
   log.log(
     `Seeded ${ARTISTS.length} artists, ${TRACKS.length} tracks, ${ALBUMS.length} albums, ` +
-      `${PLAYLISTS.length} playlists, ${FEED_POSTS.length} posts, ${COMMENTS.length} comments`,
+      `${PLAYLISTS.length} playlists, ${FEED_POSTS.length} posts, ${COMMENTS.length} comments, ` +
+      `${demoLyrics} demo lyrics`,
   )
 }
