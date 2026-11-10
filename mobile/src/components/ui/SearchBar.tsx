@@ -2,14 +2,14 @@ import { Search, X } from "lucide-react-native"
 import { useState, type Ref } from "react"
 import {
   Pressable,
-  StyleSheet,
   TextInput,
   View,
   type TextInputInstance,
   type TextInputProps,
 } from "react-native"
-import { colors, radius, shadows, sizes, spacing, typography } from "@/theme"
+import { makeStyles, radius, shadows, sizes, spacing, typography, useColors } from "@/theme"
 import { pressedStyle } from "./pressed"
+import { useTranslation } from "@/i18n"
 
 type SearchBarProps = Omit<TextInputProps, "style" | "value"> & {
   value: string
@@ -18,6 +18,11 @@ type SearchBarProps = Omit<TextInputProps, "style" | "value"> & {
 }
 
 export function SearchBar({ value, onClear, ref, onFocus, onBlur, ...props }: SearchBarProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+  const colors = useColors()
+
   const [focused, setFocused] = useState(false)
   // The thicker ring grows inward, so the padding shrinks to keep the text where it was.
   const borderWidth = focused ? sizes.borderThick : sizes.borderThin
@@ -52,7 +57,7 @@ export function SearchBar({ value, onClear, ref, onFocus, onBlur, ...props }: Se
       {value.length > 0 && (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Clear search"
+          accessibilityLabel={t("search.clear")}
           onPress={onClear}
           hitSlop={8}
           style={({ pressed }) => [styles.clear, pressedStyle(pressed)]}
@@ -64,7 +69,7 @@ export function SearchBar({ value, onClear, ref, onFocus, onBlur, ...props }: Se
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
     height: sizes.searchBarHeight,
     flexDirection: "row",
@@ -90,6 +95,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.text,
+    backgroundColor: colors.elevated,
   },
-})
+}))

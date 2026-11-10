@@ -10,7 +10,7 @@ import {
 } from "./test-database.js"
 
 const ENTRY = path.join("dist", "main.js")
-const STARTUP_TIMEOUT_MS = 30_000
+const STARTUP_TIMEOUT_MS = 55_000
 const POLL_INTERVAL_MS = 250
 
 const TEST_ENV = {
@@ -18,9 +18,23 @@ const TEST_ENV = {
   JWT_SECRET: "e2e-secret-that-is-long-enough-to-pass-validation",
   JWT_ACCESS_EXPIRES_IN: "15m",
   REFRESH_TOKEN_TTL_DAYS: "30",
-  // Effectively unlimited, so only the throttle spec ever hits the limit.
+  // Effectively unlimited, so only the throttle specs ever hit a limit.
   AUTH_THROTTLE_LIMIT: "1000",
   AUTH_THROTTLE_TTL_SECONDS: "60",
+  REFRESH_THROTTLE_LIMIT: "1000",
+  REFRESH_THROTTLE_TTL_SECONDS: "60",
+  PLAY_THROTTLE_LIMIT: "1000",
+  PLAY_THROTTLE_TTL_SECONDS: "60",
+  SEMANTIC_SEARCH_THROTTLE_LIMIT: "1000",
+  SEMANTIC_SEARCH_THROTTLE_TTL_SECONDS: "60",
+  AI_CHAT_THROTTLE_LIMIT: "1000",
+  AI_CHAT_THROTTLE_TTL_SECONDS: "60",
+  LYRICS_TRANSLATE_THROTTLE_LIMIT: "1000",
+  LYRICS_TRANSLATE_THROTTLE_TTL_SECONDS: "60",
+  AVATAR_THROTTLE_LIMIT: "1000",
+  AVATAR_THROTTLE_TTL_SECONDS: "60",
+  REFRESH_REUSE_GRACE_SECONDS: "10",
+  PLAY_DEDUPE_MINUTES: "30",
   SEED_ON_START: "false",
   // Blank, so the real R2 keys from .env never reach a test server unless a spec sets them.
   R2_ACCOUNT_ID: "",
@@ -28,11 +42,27 @@ const TEST_ENV = {
   R2_SECRET_ACCESS_KEY: "",
   R2_BUCKET: "",
   R2_PUBLIC_URL: "",
+  // Blank, so no real key reaches a test server; a spec that needs vectors sets the fake provider.
+  GEMINI_API_KEY: "",
+  AI_PROVIDER: "",
+  AI_DAILY_MESSAGE_LIMIT: "30",
+  EMBEDDING_PROVIDER: "",
+  EMBEDDING_MODEL: "",
+  EMBEDDING_API_KEY: "",
+  // Blank, so the real DeepL key (and its monthly allowance) never reaches a test server; a spec
+  // that needs a translator sets the fake provider.
+  DEEPL_API_KEY: "",
+  TRANSLATION_PROVIDER: "",
+  // Blank, so login specs do not need a Turnstile token (the service is unit tested on its own).
+  TURNSTILE_SECRET_KEY: "",
+  TURNSTILE_ALLOWED_HOSTNAMES: "",
 }
 
 export interface TestServer {
   /** e.g. http://127.0.0.1:41234 - pass it to supertest. */
   url: string
+  /** The environment the API runs with (same database, same settings), for jobs started beside it. */
+  env: NodeJS.ProcessEnv
   db: TestDb
   stop: () => Promise<void>
 }
@@ -49,15 +79,16 @@ export async function startTestServer(env: Record<string, string> = {}): Promise
   const port = await freePort()
   const url = `http://127.0.0.1:${port}`
 
+  const childEnv: NodeJS.ProcessEnv = {
+    ...process.env,
+    ...TEST_ENV,
+    ...env,
+    PORT: String(port),
+    DATABASE_URL: databaseUrl,
+    DATABASE_URL_LOCAL: databaseUrl,
+  }
   const child = spawn(process.execPath, [ENTRY], {
-    env: {
-      ...process.env,
-      ...TEST_ENV,
-      ...env,
-      PORT: String(port),
-      DATABASE_URL: databaseUrl,
-      DATABASE_URL_LOCAL: databaseUrl,
-    },
+    env: childEnv,
     stdio: ["ignore", "pipe", "pipe"],
   })
   const output = collectOutput(child)
@@ -72,6 +103,7 @@ export async function startTestServer(env: Record<string, string> = {}): Promise
   const db = await TestDb.connect(databaseUrl)
   return {
     url,
+    env: childEnv,
     db,
     stop: async () => {
       await db.deleteTestData()

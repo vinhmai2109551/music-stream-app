@@ -8,6 +8,7 @@ import { pressedStyle } from "@/components/ui/pressed"
 import { useLibraryStore } from "@/store/libraryStore"
 import { radius, shadows, sizes, spacing } from "@/theme"
 import type { ImageSource } from "@/types"
+import { useTranslation } from "@/i18n"
 
 type ArtistAvatarProps = {
   artist: { id: string; name: string; image: ImageSource }
@@ -15,6 +16,8 @@ type ArtistAvatarProps = {
 }
 
 function ArtistAvatarBase({ artist, onPress }: ArtistAvatarProps) {
+  const { t } = useTranslation()
+
   const followed = useLibraryStore((state) => state.followedArtistIds.includes(artist.id))
   const toggleFollow = useLibraryStore((state) => state.toggleFollow)
 
@@ -22,7 +25,7 @@ function ArtistAvatarBase({ artist, onPress }: ArtistAvatarProps) {
     <View style={styles.container}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Artist ${artist.name}`}
+        accessibilityLabel={t("artist.named", { name: artist.name })}
         onPress={() => onPress(artist.id)}
         style={({ pressed }) => [styles.link, pressedStyle(pressed)]}
       >
@@ -33,7 +36,7 @@ function ArtistAvatarBase({ artist, onPress }: ArtistAvatarProps) {
       </Pressable>
       <Button
         compact
-        label={followed ? "Following" : "Follow"}
+        label={followed ? t("common.following") : t("common.follow")}
         variant={followed ? "tonal" : "outline"}
         onPress={() => toggleFollow(artist.id)}
         style={styles.follow}

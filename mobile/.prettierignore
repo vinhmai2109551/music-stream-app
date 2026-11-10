@@ -3,3 +3,8 @@ node_modules
 dist
 web-build
 package-lock.json
+
+# Written by "npm run i18n:translate" in backend/ - do not format or edit by hand.
+src/i18n/locales/*.json
+!src/i18n/locales/vi.json
+src/i18n/translate/lock.json

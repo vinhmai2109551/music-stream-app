@@ -4,13 +4,16 @@
  * Media is referenced as { folder, file } and turned into `${R2_PUBLIC_URL}/folder/file` by the seeder.
  */
 import {
+  background,
   CATALOG_ALBUMS,
   CATALOG_ARTISTS,
   CATALOG_TRACKS,
   china,
   japan,
   korea,
+  pictureVideoOf,
   vietnam,
+  videoPicture,
 } from "./catalog/index.js"
 import {
   artistImage,
@@ -219,6 +222,12 @@ const ASIA_MIX_IDS = [
   "eason-chan-lonely-warrior",
 ]
 
+/** A playlist shows the picture of the video of its most played song, when one has a video. */
+const playlistCover = (trackIds: readonly string[], fallback: MediaRef): MediaRef => {
+  const video = pictureVideoOf(TRACKS.filter((track) => trackIds.includes(track.id)))
+  return video ? { url: videoPicture(video) } : fallback
+}
+
 export const PLAYLISTS = [
   {
     id: "top50",
@@ -248,7 +257,7 @@ export const PLAYLISTS = [
     id: "top50-vietnam",
     name: "Top 50 – Việt Nam",
     official: true,
-    cover: cover("playlists/top50-vietnam.jpg"),
+    cover: playlistCover(HOT_VIETNAM_IDS, cover("playlists/top50-vietnam.jpg")),
     description:
       "Những bài hát Việt Nam được nghe nhiều nhất, với hai bản hit mới của Hngle ở đầu danh sách.",
     trackIds: [
@@ -260,7 +269,7 @@ export const PLAYLISTS = [
     id: "top-kpop",
     name: "Top K-Pop",
     official: true,
-    cover: cover("playlists/top-kpop.jpg"),
+    cover: playlistCover(rankedIds(korea.TRACKS), cover("playlists/top-kpop.jpg")),
     description: "Tuyển tập K-Pop từ BTS, BLACKPINK, NewJeans, IU và nhiều nghệ sĩ Hàn Quốc khác.",
     trackIds: rankedIds(korea.TRACKS),
   },
@@ -268,7 +277,7 @@ export const PLAYLISTS = [
     id: "top-jpop",
     name: "J-Pop Hits",
     official: true,
-    cover: cover("playlists/top-jpop.jpg"),
+    cover: playlistCover(rankedIds(japan.TRACKS), cover("playlists/top-jpop.jpg")),
     description:
       "Những ca khúc Nhật Bản nổi bật của YOASOBI, Kenshi Yonezu, Ado và nhiều nghệ sĩ khác.",
     trackIds: rankedIds(japan.TRACKS),
@@ -277,7 +286,7 @@ export const PLAYLISTS = [
     id: "top-cpop",
     name: "C-Pop Hits",
     official: true,
-    cover: cover("playlists/top-cpop.jpg"),
+    cover: playlistCover(rankedIds(china.TRACKS), cover("playlists/top-cpop.jpg")),
     description:
       "Những ca khúc nhạc Hoa nổi tiếng của Jay Chou, G.E.M., JJ Lin, Mayday và Eason Chan.",
     trackIds: rankedIds(china.TRACKS),
@@ -286,9 +295,18 @@ export const PLAYLISTS = [
     id: "asia-mix",
     name: "Nhạc Á – Tuyển chọn",
     official: true,
-    cover: cover("playlists/asia-mix.jpg"),
+    cover: playlistCover(ASIA_MIX_IDS, cover("playlists/asia-mix.jpg")),
     description: "Tuyển chọn những bài hát nổi bật từ Việt Nam, Hàn Quốc, Nhật Bản và Trung Quốc.",
     trackIds: ASIA_MIX_IDS,
+  },
+  {
+    id: background.PLAYLIST_ID,
+    name: "Phát nền – Background",
+    official: true,
+    cover: cover("playlists/background-play.jpg"),
+    description:
+      "Nhạc của Kevin MacLeod (incompetech.com), giấy phép Creative Commons: By Attribution 3.0 / 4.0. Phát được cả khi tắt màn hình. Music by Kevin MacLeod, CC BY 3.0 / 4.0.",
+    trackIds: background.TRACKS.map((track) => track.id),
   },
   {
     id: "favorites",

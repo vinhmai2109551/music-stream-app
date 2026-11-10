@@ -1,7 +1,10 @@
-import { copy } from "@/constants/copy"
+import { t } from "@/i18n"
 
 const REQUEST_TIMEOUT_MS = 15_000
 const BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/+$/, "")
+
+/** The API address without a trailing slash; empty when it is not configured. */
+export const API_BASE_URL = BASE_URL
 
 export type ApiErrorKind = "http" | "network" | "timeout"
 
@@ -51,7 +54,7 @@ export interface RequestOptions {
   skipAuth?: boolean
 }
 
-function parseBody(text: string): unknown {
+export function parseBody(text: string): unknown {
   if (!text) return undefined
   try {
     return JSON.parse(text)
@@ -61,7 +64,7 @@ function parseBody(text: string): unknown {
 }
 
 /** NestJS puts a string, or an array of strings for validation errors, in `message`. */
-function messageFromBody(body: unknown, status: number): string {
+export function messageFromBody(body: unknown, status: number): string {
   if (typeof body === "object" && body !== null && "message" in body) {
     const { message } = body as { message: unknown }
     if (Array.isArray(message)) {
@@ -71,7 +74,7 @@ function messageFromBody(body: unknown, status: number): string {
       return message
     }
   }
-  return status >= 500 ? copy.errors.server : copy.errors.unknown
+  return status >= 500 ? t("errors.server") : t("errors.unknown")
 }
 
 /** One HTTP round trip with the given token. Throws ApiError for anything but a 2xx answer. */
@@ -82,7 +85,7 @@ async function send<T>(
   token: string | null,
 ): Promise<T> {
   if (!BASE_URL) {
-    throw new ApiError({ status: 0, kind: "network", message: copy.errors.notConfigured })
+    throw new ApiError({ status: 0, kind: "network", message: t("errors.notConfigured") })
   }
 
   const headers: Record<string, string> = { Accept: "application/json" }
@@ -112,8 +115,8 @@ async function send<T>(
   } catch {
     throw new ApiError(
       timedOut
-        ? { status: 0, kind: "timeout", message: copy.errors.timeout }
-        : { status: 0, kind: "network", message: copy.errors.network },
+        ? { status: 0, kind: "timeout", message: t("errors.timeout") }
+        : { status: 0, kind: "network", message: t("errors.network") },
     )
   } finally {
     clearTimeout(timer)
@@ -183,4 +186,14 @@ export const api = {
     request<T>("PUT", path, body, options),
   delete: <T>(path: string, options?: RequestOptions) =>
     request<T>("DELETE", path, undefined, options),
+}
+
+/**
+ * What a streaming request (see ./stream) needs of the session: the token, a way to renew it that
+ * shares one refresh with every other request, and what to do when the session is over.
+ */
+export const session = {
+  token: (): string | null => handlers.getToken(),
+  renew: (rejectedToken: string): Promise<string | null> => renewAccessToken(rejectedToken),
+  expired: (): void => handlers.onUnauthorized(),
 }

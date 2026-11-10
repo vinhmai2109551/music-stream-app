@@ -10,6 +10,8 @@ export const YOUTUBE_MIN_SIZE = 200
 export const AUTO_SKIP_DELAY_MS = 3_000
 /** A YouTube track waits this long for its player to appear before it pauses. */
 export const PLAYER_SCREEN_GRACE_MS = 2_500
+/** The "play in the background" hint stays on screen longer than a normal toast. */
+export const BACKGROUND_HINT_DURATION_MS = 5_000
 /** Length of the lock screen skip buttons, in seconds. */
 export const LOCK_SCREEN_SEEK_SECONDS = 15
 

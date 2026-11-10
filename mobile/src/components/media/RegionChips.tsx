@@ -1,9 +1,9 @@
 import { ScrollView, StyleSheet } from "react-native"
 import type { Region } from "@/api/types"
 import { Chip } from "@/components/ui/Chip"
-import { copy } from "@/constants/copy"
 import { REGION_FILTERS } from "@/constants/regions"
 import { spacing } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 type RegionChipsProps = {
   /** The chosen region; `null` is all of them. */
@@ -13,18 +13,20 @@ type RegionChipsProps = {
 
 /** One chip per region of the catalog (Vietnam, K-Pop, J-Pop, C-Pop) plus "all". */
 export function RegionChips({ selected, onSelect }: RegionChipsProps) {
+  const { t } = useTranslation()
+
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      accessibilityLabel={copy.home.regionsLabel}
+      accessibilityLabel={t("home.regionsLabel")}
       style={styles.scroll}
       contentContainerStyle={styles.content}
     >
       {REGION_FILTERS.map((filter) => (
         <Chip
           key={filter.region ?? "all"}
-          label={filter.label}
+          label={t(filter.labelKey)}
           selected={filter.region === selected}
           onPress={() => onSelect(filter.region)}
         />

@@ -1,31 +1,21 @@
 import { router } from "expo-router"
-import {
-  BadgeCheck,
-  Ellipsis,
-  Heart,
-  MessageSquare,
-  Play,
-  Repeat2,
-  User,
-} from "lucide-react-native"
+import { BadgeCheck, Heart, MessageSquare, Play, User } from "lucide-react-native"
 import { memo, useState } from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import { Pressable, View } from "react-native"
 import { likeFeedPost, unlikeFeedPost } from "@/api/feed"
 import type { ApiFeedPost } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
 import { CoverImage } from "@/components/ui/CoverImage"
-import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { usePlayerStore } from "@/store/playerStore"
 import { showToast } from "@/store/toastStore"
 import { describeApiError } from "@/utils/apiErrors"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 import { formatCount } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
 import { formatTimeAgo } from "@/utils/formatTimeAgo"
+import { useTranslation } from "@/i18n"
 
-const COMING_SOON = "Coming soon"
 const AUTHOR_AVATAR = 44
 const CAPTION_LINES = 2
 
@@ -38,6 +28,11 @@ type FeedPostCardProps = {
 
 /** One post of the feed: who posted it, the artwork with its track, and the like / comment row. */
 function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+  const colors = useColors()
+
   const [liked, setLiked] = useState(post.liked)
   const [likes, setLikes] = useState(post.likesCount)
   const playFromList = usePlayerStore((state) => state.playFromList)
@@ -64,7 +59,7 @@ function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardP
     <View style={styles.card}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={artist ? `Artist ${artist.name}` : "Artist"}
+        accessibilityLabel={artist ? t("artist.named", { name: artist.name }) : t("feed.artist")}
         disabled={!artist}
         onPress={openArtist}
         style={({ pressed }) => [styles.author, pressedStyle(pressed)]}
@@ -78,21 +73,25 @@ function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardP
         <View style={styles.authorText}>
           <View style={styles.nameRow}>
             <AppText variant="subtitle" numberOfLines={1} ellipsizeMode="tail" style={styles.name}>
-              {artist?.name ?? "Music Stream"}
+              {artist?.name ?? t("app.name")}
             </AppText>
             <BadgeCheck size={sizes.iconSm} color={colors.accent} />
           </View>
           <AppText variant="small" color="secondary">
-            {copy.feed.postedTrack} · {formatTimeAgo(post.createdAt)}
+            {t("feed.postedTrack")} · {formatTimeAgo(post.createdAt)}
           </AppText>
         </View>
       </Pressable>
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={track ? `Play ${track.title} by ${track.artist}` : "Post artwork"}
+        accessibilityLabel={
+          track
+            ? t("track.playNamed", { title: track.title, artist: track.artist })
+            : t("feed.artwork")
+        }
         disabled={!track}
-        onPress={() => track && playFromList([track], 0, copy.feed.title)}
+        onPress={() => track && playFromList([track], 0, t("feed.title"))}
         style={({ pressed }) => [styles.artworkWrap, pressedStyle(pressed)]}
       >
         <CoverImage
@@ -124,20 +123,17 @@ function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardP
       <View style={styles.actions}>
         <Action
           icon={Heart}
-          label={liked ? "Unlike post" : "Like post"}
+          label={liked ? t("feed.unlikePost") : t("feed.likePost")}
           count={likes}
           active={liked}
           onPress={() => void toggleLike()}
         />
         <Action
           icon={MessageSquare}
-          label="Comments"
+          label={t("feed.comments")}
           count={commentsCount}
           onPress={() => onOpenComments(post)}
         />
-        <Action icon={Repeat2} label="Repost" onPress={() => showToast(COMING_SOON)} />
-        <View style={styles.spacer} />
-        <IconButton icon={Ellipsis} label="More options" onPress={() => showToast(COMING_SOON)} />
       </View>
       {post.caption.length > 0 && (
         <AppText
@@ -164,6 +160,9 @@ type ActionProps = {
 }
 
 function Action({ icon: Icon, label, count, active = false, onPress }: ActionProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   const tint = active ? colors.like : colors.secondary
   return (
     <Pressable
@@ -183,7 +182,7 @@ function Action({ icon: Icon, label, count, active = false, onPress }: ActionPro
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   card: { gap: spacing.md },
   author: {
     minHeight: sizes.minTouch,
@@ -218,5 +217,4 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingRight: spacing.md,
   },
-  spacer: { flex: 1 },
-})
+}))

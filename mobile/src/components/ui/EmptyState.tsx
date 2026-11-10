@@ -1,7 +1,7 @@
 import { Search, type LucideIcon } from "lucide-react-native"
 import type { ReactNode } from "react"
-import { StyleSheet, View } from "react-native"
-import { colors, radius, spacing } from "@/theme"
+import { View } from "react-native"
+import { makeStyles, radius, spacing, useColors } from "@/theme"
 import { AppText } from "./AppText"
 
 const ICON_SIZE = 40
@@ -15,6 +15,9 @@ type EmptyStateProps = {
 }
 
 export function EmptyState({ title, description, icon: Icon = Search, action }: EmptyStateProps) {
+  const styles = useStyles()
+  const colors = useColors()
+
   return (
     <View style={styles.container}>
       <View style={styles.badge}>
@@ -31,7 +34,7 @@ export function EmptyState({ title, description, icon: Icon = Search, action }: 
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
     alignItems: "center",
     paddingHorizontal: spacing.xxxl,
@@ -49,4 +52,4 @@ const styles = StyleSheet.create({
   center: { textAlign: "center" },
   description: { marginTop: spacing.sm },
   action: { marginTop: spacing.xl },
-})
+}))

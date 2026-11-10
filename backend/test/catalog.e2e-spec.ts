@@ -21,6 +21,7 @@ interface ArtistBody {
 interface TrackBody {
   id: string
   title: string
+  audioUrl: string | null
   youtubeVideoId: string | null
 }
 
@@ -252,6 +253,69 @@ describe("Catalog regions and YouTube ids (e2e)", () => {
       for (const body of [filled.body, detail.body] as { tracks: TrackBody[] }[]) {
         expect(body.tracks.map((track) => track.youtubeVideoId)).toEqual([VIDEO_ID])
       }
+    })
+  })
+
+  describe("audioUrl is optional", () => {
+    const createRaw = (artistId: string, title: string, extra: object) => {
+      const { audioUrl: _omitted, ...withoutAudio } = trackBody(artistId, title)
+      return http()
+        .post("/api/tracks")
+        .set(asAdmin())
+        .send({ ...withoutAudio, ...extra })
+    }
+
+    it("a track that only plays on YouTube can be created without audioUrl", async () => {
+      const response = await createRaw(seoul.id, "E2E Video Only", {
+        youtubeVideoId: VIDEO_ID,
+      }).expect(201)
+      const track = response.body as TrackBody
+
+      expect(track.audioUrl).toBeNull()
+      const detail = (await http().get(`/api/tracks/${track.id}`).expect(200)).body as TrackBody
+      expect(detail.audioUrl).toBeNull()
+      const list = (await http().get("/api/tracks?q=Video Only").expect(200))
+        .body as Page<TrackBody>
+      expect(list.items.map((item) => item.audioUrl)).toEqual([null])
+    })
+
+    it("accepts audioUrl: null as well", async () => {
+      const response = await createRaw(seoul.id, "E2E Null Audio", {
+        audioUrl: null,
+        youtubeVideoId: VIDEO_ID,
+      }).expect(201)
+
+      expect((response.body as TrackBody).audioUrl).toBeNull()
+    })
+
+    it("a given audioUrl must still be a URL", async () => {
+      await createRaw(seoul.id, "E2E Bad Audio", { audioUrl: "not a url" }).expect(400)
+    })
+
+    it("a track with neither audioUrl nor youtubeVideoId cannot be played, so it is 400", async () => {
+      await createRaw(seoul.id, "E2E Silent", {}).expect(400)
+      await createRaw(seoul.id, "E2E Silent", { audioUrl: null, youtubeVideoId: null }).expect(400)
+    })
+
+    it("an update may clear audioUrl only while a YouTube video remains, and the other way round", async () => {
+      const both = (
+        await http()
+          .post("/api/tracks")
+          .set(asAdmin())
+          .send(trackBody(seoul.id, "E2E Both Sources", { youtubeVideoId: VIDEO_ID }))
+          .expect(201)
+      ).body as TrackBody
+      const patch = (id: string, body: object) =>
+        http().patch(`/api/tracks/${id}`).set(asAdmin()).send(body)
+
+      const cleared = await patch(both.id, { audioUrl: null }).expect(200)
+      expect((cleared.body as TrackBody).audioUrl).toBeNull()
+      // Now the video is the only source: removing it as well would leave nothing to play.
+      await patch(both.id, { youtubeVideoId: null }).expect(400)
+      // Putting an audio file back first makes that fine.
+      await patch(both.id, { audioUrl: AUDIO_URL }).expect(200)
+      await patch(both.id, { youtubeVideoId: null }).expect(200)
+      await patch(both.id, { audioUrl: null }).expect(400)
     })
   })
 })

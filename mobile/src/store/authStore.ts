@@ -1,7 +1,9 @@
 import { create } from "zustand"
 import * as authApi from "@/api/auth"
 import { ApiError, configureApi } from "@/api/client"
-import type { AuthResponse, LoginInput, RegisterInput, User } from "@/api/types"
+import type { AuthResponse, LoginInput, RegisterInput, UpdateProfileInput, User } from "@/api/types"
+import { uploadAvatar, type AvatarFile } from "@/api/uploads"
+import * as usersApi from "@/api/users"
 import {
   clearSession,
   loadSession,
@@ -10,6 +12,7 @@ import {
   saveUser,
 } from "@/utils/sessionStorage"
 import { useAppStore } from "./appStore"
+import { useAssistantStore } from "./assistantStore"
 import { useLibraryStore } from "./libraryStore"
 import { usePlayerStore } from "./playerStore"
 
@@ -31,12 +34,24 @@ type AuthActions = {
   register: (input: RegisterInput) => Promise<void>
   /** Replaces the signed-in user (e.g. after the profile or Premium changed on the server). */
   setUser: (user: User) => Promise<void>
+  /**
+   * Saves a new name and/or avatar. A picture is uploaded first, then the profile is updated with
+   * its address. The signed-in user changes only when everything succeeded, so a failure leaves
+   * the old name and avatar on screen.
+   */
+  updateProfile: (changes: ProfileChanges) => Promise<void>
   /** Revokes the refresh token on the server (best effort) and clears the session locally. */
   logout: () => Promise<void>
   /** Clears the session locally only; for when the server already said it is invalid. */
   expireSession: () => Promise<void>
   /** Renews the token pair; used by the API client. Null means the refresh token was rejected. */
   refreshSession: () => Promise<string | null>
+}
+
+export type ProfileChanges = {
+  name?: string
+  /** A picture that is ready to upload (see `prepareAvatar`). */
+  photo?: AvatarFile
 }
 
 export type AuthStore = AuthState & AuthActions
@@ -64,6 +79,7 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
     set(SIGNED_OUT)
     usePlayerStore.getState().reset()
     useLibraryStore.getState().reset()
+    useAssistantStore.getState().reset()
     useAppStore.getState().start("login")
     await clearSession()
   }
@@ -133,6 +149,14 @@ export const useAuthStore = create<AuthStore>()((set, get) => {
     setUser: async (user) => {
       set({ user })
       await saveUser(user)
+    },
+
+    updateProfile: async ({ name, photo }) => {
+      const input: UpdateProfileInput = {}
+      if (name !== undefined) input.name = name
+      if (photo) input.avatarUrl = await uploadAvatar(photo)
+      if (Object.keys(input).length === 0) return
+      await get().setUser(await usersApi.updateProfile(input))
     },
 
     login: async (input) => startSession(await authApi.login(input)),

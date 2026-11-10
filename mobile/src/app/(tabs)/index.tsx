@@ -1,7 +1,7 @@
 import { router } from "expo-router"
 import { Search } from "lucide-react-native"
 import { useState } from "react"
-import { Pressable, ScrollView, StyleSheet, View } from "react-native"
+import { Pressable, ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import type { Region } from "@/api/types"
 import { AccountSheet } from "@/components/media/AccountSheet"
@@ -12,17 +12,19 @@ import { RegionChips } from "@/components/media/RegionChips"
 import { AppText } from "@/components/ui/AppText"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { useHomeData } from "@/hooks/useHomeData"
 import { useAuthStore } from "@/store/authStore"
-import { showToast } from "@/store/toastStore"
-import { colors, radius, sizes, spacing } from "@/theme"
-
-const COMING_SOON = "Coming soon"
+import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const openSearch = () => router.navigate({ pathname: "/search", params: { focus: "1" } })
 
 export default function HomeScreen() {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+  const colors = useColors()
+
   const insets = useSafeAreaInsets()
   const [region, setRegion] = useState<Region | null>(null)
   const { state, reload } = useHomeData(region)
@@ -39,18 +41,17 @@ export default function HomeScreen() {
           <HomeHeader
             name={user?.name ?? ""}
             avatarUrl={user?.avatarUrl ?? null}
-            onNotifications={() => showToast(COMING_SOON)}
             onAccount={() => setAccountOpen(true)}
           />
           <Pressable
             accessibilityRole="search"
-            accessibilityLabel={copy.searchPlaceholder}
+            accessibilityLabel={t("search.placeholder")}
             onPress={openSearch}
             style={({ pressed }) => [styles.search, pressedStyle(pressed)]}
           >
             <Search size={sizes.iconMd} color={colors.tertiary} />
             <AppText color="secondary" numberOfLines={1}>
-              {copy.searchPlaceholder}
+              {t("search.placeholder")}
             </AppText>
           </Pressable>
         </View>
@@ -59,7 +60,7 @@ export default function HomeScreen() {
         {state.status === "error" && (
           <ErrorState error={state.error} onRetry={() => void reload()} />
         )}
-        {state.status === "ready" && <HomeContent data={state.data} />}
+        {state.status === "ready" && <HomeContent data={state.data} region={region} />}
       </ScrollView>
       <AccountSheet
         visible={accountOpen}
@@ -73,7 +74,7 @@ export default function HomeScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   padded: { paddingHorizontal: spacing.screen },
   search: {
@@ -87,4 +88,4 @@ const styles = StyleSheet.create({
     borderWidth: sizes.borderThin,
     borderColor: colors.divider,
   },
-})
+}))

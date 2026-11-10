@@ -1,11 +1,11 @@
 import { Send, X } from "lucide-react-native"
 import { useState } from "react"
-import { StyleSheet, TextInput, View } from "react-native"
+import { TextInput, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { IconButton } from "@/components/ui/IconButton"
-import { copy } from "@/constants/copy"
 import { useAuthStore } from "@/store/authStore"
-import { colors, radius, sizes, spacing, typography } from "@/theme"
+import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const MAX_LENGTH = 500
 
@@ -19,6 +19,11 @@ type CommentComposerProps = {
 
 /** The box at the bottom of the comments: avatar initial, text field and send button. */
 export function CommentComposer({ replyingTo, onCancelReply, onSend }: CommentComposerProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+  const colors = useColors()
+
   const userName = useAuthStore((state) => state.user?.name ?? "")
   const [text, setText] = useState("")
   const [sending, setSending] = useState(false)
@@ -37,11 +42,11 @@ export function CommentComposer({ replyingTo, onCancelReply, onSend }: CommentCo
       {replyingTo !== null && (
         <View style={styles.replying}>
           <AppText variant="caption" color="secondary" numberOfLines={1} style={styles.flex}>
-            {copy.comments.replyingTo} {replyingTo}
+            {t("comments.replyingTo")} {replyingTo}
           </AppText>
           <IconButton
             icon={X}
-            label={copy.comments.cancelReply}
+            label={t("comments.cancelReply")}
             size={sizes.iconMd}
             onPress={onCancelReply}
           />
@@ -58,18 +63,18 @@ export function CommentComposer({ replyingTo, onCancelReply, onSend }: CommentCo
             value={text}
             onChangeText={setText}
             onSubmitEditing={() => void send()}
-            placeholder={copy.comments.placeholder}
+            placeholder={t("comments.placeholder")}
             placeholderTextColor={colors.tertiary}
             selectionColor={colors.accent}
             maxLength={MAX_LENGTH}
             returnKeyType="send"
             editable={!sending}
-            accessibilityLabel={copy.comments.placeholder}
+            accessibilityLabel={t("comments.placeholder")}
             style={styles.input}
           />
           <IconButton
             icon={Send}
-            label={copy.comments.send}
+            label={t("comments.send")}
             active={canSend}
             size={sizes.iconMd}
             disabled={!canSend}
@@ -81,7 +86,7 @@ export function CommentComposer({ replyingTo, onCancelReply, onSend }: CommentCo
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   flex: { flex: 1 },
   replying: { flexDirection: "row", alignItems: "center", paddingLeft: sizes.userAvatar },
   row: { flexDirection: "row", alignItems: "center", gap: spacing.md },
@@ -112,4 +117,4 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
     outlineWidth: 0,
   },
-})
+}))

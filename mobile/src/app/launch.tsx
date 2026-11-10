@@ -7,10 +7,10 @@ import Animated, { FadeInDown } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
 import { useAppStore } from "@/store/appStore"
 import { colors, radius, sizes, spacing } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const BLUR_INTENSITY = 30
 const ENTER_DURATION = 500
@@ -25,6 +25,8 @@ const SCRIM_COLORS = [
 const SCRIM_LOCATIONS = [0, 0.38, 0.6, 0.85] as const
 
 export default function LaunchScreen() {
+  const { t } = useTranslation()
+
   const insets = useSafeAreaInsets()
   const start = useAppStore((state) => state.start)
 
@@ -52,16 +54,16 @@ export default function LaunchScreen() {
         <View style={styles.block}>
           <View style={styles.copyBlock}>
             <AppText variant="display" color="white" accessibilityRole="header" numberOfLines={2}>
-              {copy.launchHeadline.replace(", ", ",\n")}
+              {t("launch.headline").replace(", ", ",\n")}
             </AppText>
             <AppText color="onDarkMuted" numberOfLines={3} ellipsizeMode="tail">
-              {copy.launchSubtitle}
+              {t("launch.subtitle")}
             </AppText>
           </View>
           <View style={styles.actions}>
-            <Button label="Create an account" onPress={() => start("register")} />
+            <Button label={t("launch.createAccount")} onPress={() => start("register")} />
             <Button
-              label="I already have an account"
+              label={t("launch.haveAccount")}
               variant="glass"
               onPress={() => start("login")}
             />
@@ -73,7 +75,7 @@ export default function LaunchScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.text },
+  container: { flex: 1, backgroundColor: colors.ink },
   content: {
     flex: 1,
     justifyContent: "space-between",

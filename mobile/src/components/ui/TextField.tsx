@@ -8,10 +8,10 @@ import {
   type TextInputInstance,
   type TextInputProps,
 } from "react-native"
-import { copy } from "@/constants/copy"
 import { colors, radius, sizes, spacing, typography } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
+import { useTranslation } from "@/i18n"
 
 type TextFieldProps = Omit<TextInputProps, "style" | "secureTextEntry"> & {
   label: string
@@ -32,6 +32,8 @@ export function TextField({
   editable = true,
   ...props
 }: TextFieldProps) {
+  const { t } = useTranslation()
+
   const [focused, setFocused] = useState(false)
   const [revealed, setRevealed] = useState(false)
   const highlighted = focused || Boolean(error)
@@ -75,7 +77,7 @@ export function TextField({
         {password && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={revealed ? copy.auth.hidePassword : copy.auth.showPassword}
+            accessibilityLabel={revealed ? t("auth.hidePassword") : t("auth.showPassword")}
             onPress={() => setRevealed((value) => !value)}
             style={({ pressed }) => [styles.toggle, pressedStyle(pressed)]}
           >

@@ -6,37 +6,17 @@ import YoutubeIframe, {
   type YoutubeIframeProps,
   type YoutubeIframeRef,
 } from "react-native-youtube-iframe"
+import { youtubePlayerPageUrl } from "@/api/embed"
 import { YOUTUBE_MIN_SIZE } from "@/constants/player"
 import { usePlayerStore } from "@/store/playerStore"
 import { colors, radius, shadows, sizes } from "@/theme"
 import { youTubeSource } from "@/utils/youtubeSource"
+import { useTranslation } from "@/i18n"
 
 // The package types its component with React.VFC, which React 19 no longer has.
 const Player = YoutubeIframe as ComponentType<YoutubeIframeProps>
 
-/**
- * Fixes two things in the page the player runs in (hosted by the library's author):
- * - it lays the video out 16:9, so the player is made to fill the square;
- * - its play / pause / mute handler is out of date: it expects the plain text "playVideo" while the
- *   library sends JSON, so those commands would never reach the video.
- */
-const PLAYER_PAGE_SCRIPT = `
-  var style = document.createElement("style");
-  style.textContent = ".container { height: 100vh !important; padding-bottom: 0 !important; }";
-  document.head.appendChild(style);
-  window.addEventListener("message", function (event) {
-    try {
-      var message = JSON.parse(event.data);
-      var commands = { playVideo: "playVideo", pauseVideo: "pauseVideo", muteVideo: "mute", unMuteVideo: "unMute" };
-      var command = commands[message.eventName];
-      if (command && window.player) window.player[command]();
-    } catch (error) {}
-  });
-  true;
-`
-
 const WEB_VIEW_PROPS: WebViewProps = {
-  injectedJavaScript: PLAYER_PAGE_SCRIPT,
   onError: () => youTubeSource.handleLoadFailure(),
   onHttpError: () => youTubeSource.handleLoadFailure(),
 }
@@ -47,6 +27,8 @@ const WEB_VIEW_PROPS: WebViewProps = {
  * player. `youTubeSource` decides what it plays; this view only draws it and reports back.
  */
 export function YouTubePlayerView() {
+  const { t } = useTranslation()
+
   const view = useSyncExternalStore(youTubeSource.subscribeView, youTubeSource.getViewState)
   const playerRef = useRef<YoutubeIframeRef>(null)
   const [size, setSize] = useState(0)
@@ -73,7 +55,7 @@ export function YouTubePlayerView() {
 
   return (
     <View style={styles.shadow}>
-      <View accessibilityLabel="Video player" style={styles.frame} onLayout={onLayout}>
+      <View accessibilityLabel={t("player.videoPlayer")} style={styles.frame} onLayout={onLayout}>
         {measured && view.videoId && (
           <Player
             key={view.instance}
@@ -83,6 +65,8 @@ export function YouTubePlayerView() {
             videoId={view.videoId}
             play={view.playing}
             initialPlayerParams={params}
+            // Our own page (see the backend's embed module), not the one of the library's author.
+            baseUrlOverride={youtubePlayerPageUrl}
             webViewProps={WEB_VIEW_PROPS}
             onReady={() => youTubeSource.handleReady()}
             onChangeState={(state) => youTubeSource.handleState(state)}

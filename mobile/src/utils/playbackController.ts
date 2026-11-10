@@ -1,4 +1,3 @@
-import { copy } from "@/constants/copy"
 import {
   AUDIO_UPDATE_INTERVAL_MS,
   AUTO_SKIP_DELAY_MS,
@@ -8,6 +7,7 @@ import {
 import { canAutoSkip, type PlayerStore, type usePlayerStore } from "@/store/playerStore"
 import type { PlaybackErrorKind, PlaybackSource, Unsubscribe } from "@/types/playback"
 import { probeAudio, type ProbeResult } from "./probeAudio"
+import { t } from "@/i18n"
 
 /** The YouTube source also tells whether its player (a view mounted above the screens) exists. */
 export interface AttachableSource extends PlaybackSource {
@@ -85,9 +85,15 @@ export class PlaybackController {
     this.stopActive()
   }
 
-  /** The app left the screen: a YouTube video cannot keep playing, so the player pauses. */
-  handleBackground(): void {
-    if (this.active?.kind === "youtube") this.deps.store.getState().pause()
+  /**
+   * The app left the screen: a YouTube video cannot keep playing, so the player pauses.
+   * Answers true when that stopped a YouTube track that was playing.
+   */
+  handleBackground(): boolean {
+    if (this.active?.kind !== "youtube") return false
+    const wasPlaying = this.deps.store.getState().isPlaying
+    this.deps.store.getState().pause()
+    return wasPlaying
   }
 
   // ------------------------------------------------------------ store changes
@@ -220,7 +226,7 @@ export class PlaybackController {
       if (token !== this.token || !this.waitingForScreen) return
       this.waitingForScreen = false
       this.deps.store.getState().pause()
-      this.deps.notify(copy.player.openPlayerToListen)
+      this.deps.notify(t("player.openPlayerToListen"))
     }, this.options.playerScreenGraceMs)
   }
 
@@ -252,8 +258,8 @@ export class PlaybackController {
     const { store, notify } = this.deps
     if (store.getState().error === kind) return
     store.getState().setError(kind)
-    if (kind === "blocked") notify(copy.player.cannotPlayInApp)
-    else if (kind !== "network") notify(copy.player.noSource)
+    if (kind === "blocked") notify(t("player.cannotPlayInApp"))
+    else if (kind !== "network") notify(t("player.noSource"))
 
     if (kind === "network" || !canAutoSkip(store.getState())) return
     const token = this.token

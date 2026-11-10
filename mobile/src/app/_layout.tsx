@@ -2,7 +2,7 @@ import { Stack, type Href } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import { StatusBar } from "expo-status-bar"
 import { useEffect } from "react"
-import { StyleSheet } from "react-native"
+
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { SafeAreaProvider } from "react-native-safe-area-context"
 import { AudioEngine } from "@/components/media/AudioEngine"
@@ -10,14 +10,21 @@ import { YouTubeHost } from "@/components/media/YouTubeHost"
 import { ToastHost } from "@/components/ui/ToastHost"
 import { useAppFonts } from "@/hooks/useAppFonts"
 import { useAppStore } from "@/store/appStore"
+import { useAssistantStore } from "@/store/assistantStore"
 import { useAuthStore } from "@/store/authStore"
+import { useLanguageStore } from "@/store/languageStore"
 import { useLibraryStore } from "@/store/libraryStore"
-import { colors } from "@/theme"
+import { makeStyles, useColors } from "@/theme"
 
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
+  const styles = useStyles()
+  const colors = useColors()
+
   const fontsReady = useAppFonts()
+  // The saved language is read before the first screen, so nothing is shown in the wrong one.
+  const languageReady = useLanguageStore((state) => state.ready)
   const status = useAuthStore((state) => state.status)
   const hasStarted = useAppStore((state) => state.hasStarted)
   const authIntent = useAppStore((state) => state.authIntent)
@@ -31,11 +38,14 @@ export default function RootLayout() {
   // The auth screen Launch (or a sign-out) chose.
   const authHref: Href = authIntent === "register" ? "/register" : "/login"
   useEffect(() => {
-    if (isAuthenticated) void useLibraryStore.getState().load()
+    if (!isAuthenticated) return
+    void useLibraryStore.getState().load()
+    // Learns whether the server has the assistant on; the tab bar shows its button until it is told no.
+    void useAssistantStore.getState().probe()
   }, [isAuthenticated])
 
-  // Keep the splash screen up until fonts are loaded and the saved session has been checked.
-  const ready = fontsReady && status !== "loading"
+  // Keep the splash screen up until fonts and language are loaded and the saved session has been checked.
+  const ready = fontsReady && languageReady && status !== "loading"
   useEffect(() => {
     if (ready) void SplashScreen.hideAsync()
   }, [ready])
@@ -45,7 +55,8 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        <StatusBar style={isAuthenticated ? "dark" : "light"} />
+        {/* Signed out, the auth screens are dark photos; signed in, the system theme decides. */}
+        <StatusBar style={isAuthenticated ? "auto" : "light"} />
         <AudioEngine />
         <Stack
           screenOptions={{
@@ -90,6 +101,7 @@ export default function RootLayout() {
               name="player"
               options={{ animation: "slide_from_bottom", gestureEnabled: false }}
             />
+            <Stack.Screen name="assistant" options={{ animation: "slide_from_bottom" }} />
           </Stack.Protected>
         </Stack>
         <YouTubeHost />
@@ -99,6 +111,6 @@ export default function RootLayout() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   root: { flex: 1, backgroundColor: colors.background },
-})
+}))

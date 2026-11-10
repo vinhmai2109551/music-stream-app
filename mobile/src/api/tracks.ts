@@ -11,5 +11,9 @@ export const getTrack = (id: string) => api.get<ApiTrack>(`/tracks/${pathId(id)}
 /** Tracks the current user liked, most recently liked first. */
 export const listLikedTracks = () => api.get<ApiTrack[]>("/tracks/liked")
 
-/** Counts one play. Call it once per listen (the app does so after 30 seconds). */
-export const recordPlay = (id: string) => api.post<{ plays: number }>(`/tracks/${pathId(id)}/play`)
+/**
+ * Counts one play. Call it once per listen (the app does so after 30 seconds). It needs a login.
+ * `counted` is false when the server ignored it because the user just played the same track.
+ */
+export const recordPlay = (id: string) =>
+  api.post<{ plays: number; counted: boolean }>(`/tracks/${pathId(id)}/play`)

@@ -26,6 +26,8 @@ export interface AuthResponse extends TokenPair {
 export interface LoginInput {
   email: string
   password: string
+  /** Cloudflare Turnstile token; required when the backend has TURNSTILE_SECRET_KEY set. */
+  turnstileToken?: string
 }
 
 export interface RegisterInput extends LoginInput {
@@ -78,8 +80,8 @@ export interface ApiTrack {
   artistId: string
   /** Cover image URL. */
   cover: string
-  /** File in our storage (R2). Tracks of real artists have none: they play from YouTube. */
-  audioUrl: string
+  /** File in our storage (R2). Tracks of real artists have none (null): they play from YouTube. */
+  audioUrl: string | null
   /** Official YouTube video to play from; null when the track plays `audioUrl` instead. */
   youtubeVideoId: string | null
   plays: number
@@ -177,6 +179,32 @@ export interface ApiComment {
   postId: string | null
 }
 
+/** A top-level comment with its newest replies; the rest are loaded on request. */
+export interface ApiCommentThread extends ApiComment {
+  /** Up to 3 newest replies, oldest first. */
+  replies: ApiComment[]
+  /** All replies, also those not in `replies`. */
+  repliesCount: number
+}
+
+/** One page of a list read with a cursor. */
+export interface CursorPage<T> {
+  items: T[]
+  /** Pass it as `cursor` to get the next page; null on the last page. */
+  nextCursor: string | null
+}
+
+export interface CursorQuery {
+  cursor?: string
+  limit?: number
+}
+
+/** A page of top-level comments, newest first. */
+export interface ApiCommentPage extends CursorPage<ApiCommentThread> {
+  /** Every comment on the target, replies included (not only this page). */
+  total: number
+}
+
 /** Comments belong to exactly one target. */
 export type CommentTarget = { trackId: string } | { postId: string }
 
@@ -203,4 +231,139 @@ export interface ApiFeedPost {
 export interface UpdateProfileInput {
   name?: string
   avatarUrl?: string
+}
+
+// ---------------------------------------------------------------- recommendations and semantic search
+
+/** `taste`: made from what the user liked and played; `popular`: the user has no history yet. */
+export type ForYouStrategy = "taste" | "popular"
+
+export interface ForYouResponse {
+  strategy: ForYouStrategy
+  items: ApiTrack[]
+}
+
+export interface BecauseYouListenedResponse {
+  /** The track the list is based on; null when nothing was played lately. */
+  basedOn: ApiTrack | null
+  items: ApiTrack[]
+}
+
+export interface SimilarTracksResponse {
+  items: ApiTrack[]
+}
+
+export interface SemanticTrackHit {
+  score: number
+  sources: ("keyword" | "vector")[]
+  track: ApiTrack
+}
+
+export interface SemanticTrackSearch {
+  query: string
+  /** True when only the search by words answered (the embedding service was down). */
+  degraded: boolean
+  items: SemanticTrackHit[]
+}
+
+// ---------------------------------------------------------------- AI assistant
+
+export interface AssistantConversation {
+  id: string
+  /** The start of the first message; empty until there is one. */
+  title: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AssistantUsage {
+  /** Messages sent today. */
+  used: number
+  /** Messages allowed per day. */
+  limit: number
+}
+
+/** The cards of a tool result: only the kinds that the result is about are present. */
+export interface AssistantDisplay {
+  tracks?: ApiTrack[]
+  artists?: ApiArtist[]
+  albums?: ApiAlbum[]
+  playlists?: ApiPlaylist[]
+  /** Where a help answer came from, for the citation. */
+  sources?: { source: string; heading: string }[]
+}
+
+export type AssistantActionStatus = "PENDING" | "CONFIRMED" | "REJECTED" | "EXPIRED"
+
+/** One line of a conversation: a text, or a card between texts (`tool`). */
+export interface AssistantMessageLine {
+  id: string
+  role: "user" | "assistant" | "tool"
+  text: string
+  createdAt: string
+  tool?: {
+    callId: string
+    name: string
+    /** Whether it worked; null while a proposed change waits for an answer. */
+    ok: boolean | null
+    display?: AssistantDisplay
+    action?: {
+      id: string
+      status: AssistantActionStatus
+      summary: string
+      expiresAt: string
+    }
+  }
+}
+
+/** The events of the stream that answers a message (see the API: POST /ai/conversations/:id/messages). */
+export type AssistantEvent =
+  | { type: "text_delta"; text: string }
+  | { type: "tool_call"; callId: string; name: string }
+  | {
+      type: "tool_result"
+      callId: string
+      name: string
+      ok: boolean
+      display?: AssistantDisplay
+      action?: { id: string; status: "CONFIRMED" | "REJECTED" }
+    }
+  | {
+      type: "action_required"
+      actionId: string
+      callId: string
+      tool: string
+      summary: string
+      expiresAt: string
+    }
+  | { type: "client_action"; action: "play_tracks"; trackIds: string[]; tracks: ApiTrack[] }
+  | { type: "done"; messageId: string; truncated: boolean; awaitingAction: boolean }
+  | { type: "error"; code: string; message: string }
+
+// ---------------------------------------------------------------- lyrics
+
+/** The original lyrics of a track: one element per line, a blank line is "". */
+export interface ApiLyrics {
+  trackId: string
+  /** App language code of the lines: vi, en-US, ko, ja or zh-Hans. */
+  language: string
+  lines: string[]
+  /** Start of each line in milliseconds, or null when there are no timings. */
+  timingsMs: number[] | null
+  /** Where the text comes from: "demo", "manual" or the name of a provider. */
+  source: string
+  updatedAt: string
+}
+
+/** The lyrics in another language; `lines` has one element for every original line, in place. */
+export interface ApiLyricsTranslation {
+  trackId: string
+  sourceLanguage: string
+  targetLanguage: string
+  lines: string[]
+  /** "deepl", or "original" when the lyrics were already in that language. */
+  provider: string
+  /** True when this request did not have to make the translation. */
+  cached: boolean
+  translatedAt: string | null
 }

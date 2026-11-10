@@ -1,9 +1,9 @@
 import { create } from "zustand"
-import { copy } from "@/constants/copy"
 import { RESTART_THRESHOLD_SECONDS } from "@/constants/player"
 import type { RepeatMode, Track } from "@/types"
 import type { PlaybackErrorKind, PlaybackKind } from "@/types/playback"
 import { getPlaybackKind } from "@/utils/playbackKind"
+import { t } from "@/i18n"
 
 type PlayerState = {
   queue: Track[]
@@ -106,7 +106,7 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => {
     duration: 0,
     shuffle: false,
     repeat: "off",
-    queueSource: copy.defaultSource,
+    queueSource: t("app.defaultSource"),
     isBuffering: false,
     source: "none",
     error: null,
@@ -114,7 +114,7 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => {
     playVersion: 0,
     seekVersion: 0,
 
-    playFromList: (list, index, source = copy.defaultSource) => {
+    playFromList: (list, index, source = t("app.defaultSource")) => {
       const track = list[index]
       if (!track) return
       set({ queue: list, queueSource: source, skipStreak: 0, ...start(track) })
@@ -213,7 +213,7 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => {
         duration: 0,
         shuffle: false,
         repeat: "off",
-        queueSource: copy.defaultSource,
+        queueSource: t("app.defaultSource"),
         isBuffering: false,
         source: "none",
         error: null,

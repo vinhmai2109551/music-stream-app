@@ -10,7 +10,7 @@ import {
   MinLength,
 } from "class-validator"
 import { Region } from "../../../generated/prisma/enums.js"
-import { PaginationQueryDto } from "../../../shared/index.js"
+import { PaginationQueryDto, StringList } from "../../../shared/index.js"
 
 export class CreateArtistDto {
   @IsString()
@@ -36,6 +36,10 @@ export class CreateArtistDto {
   @IsOptional()
   @IsEnum(Region)
   region?: Region
+
+  /** Music genres of the artist, e.g. `v-pop` (at most 10, each at most 40 characters). */
+  @StringList()
+  genres?: string[]
 }
 
 export class UpdateArtistDto extends PartialType(CreateArtistDto) {}

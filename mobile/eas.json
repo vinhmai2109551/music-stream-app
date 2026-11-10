@@ -1,0 +1,39 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://music-stream-api.example.com/api",
+        "EXPO_PUBLIC_MEDIA_BASE_URL": "https://pub-xxxxxxxx.r2.dev",
+        "EXPO_PUBLIC_TURNSTILE_SITE_KEY": "",
+        "EXPO_PUBLIC_TURNSTILE_HOSTNAME": "localhost"
+      }
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.1.x:3000/api",
+        "EXPO_PUBLIC_TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

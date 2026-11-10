@@ -1,3 +1,4 @@
+import { videoPicture } from "./pictures.js"
 import { YOUTUBE_VIDEO_IDS } from "./youtube-ids.js"
 
 /**
@@ -5,10 +6,9 @@ import { YOUTUBE_VIDEO_IDS } from "./youtube-ids.js"
  * They live here (not in `seed-data.ts`) so the catalog files do not import `seed-data.ts`,
  * which would create an import cycle.
  */
-export interface MediaRef {
-  folder: "audio" | "covers" | "artists" | "banners"
-  file: string
-}
+/** A file in the bucket (`folder/file`), or a picture that lives elsewhere (`url`). */
+export type MediaRef =
+  { folder: "audio" | "covers" | "artists" | "banners"; file: string } | { url: string }
 
 /** Where an artist comes from. `GLOBAL` is the original mock data. */
 export type Region = "VIETNAM" | "KOREA" | "JAPAN" | "CHINA" | "GLOBAL"
@@ -36,7 +36,8 @@ export interface SeedTrack {
   cover: MediaRef
   plays: number
   durationSec: number
-  audio: MediaRef
+  /** Audio file in the bucket; only the original demo tracks have one (the rest are commercial). */
+  audio?: MediaRef
   /** Id of the official YouTube video this track plays from (see youtube-ids.ts). */
   youtubeVideoId?: string
 }
@@ -64,7 +65,8 @@ export function createArtist(
 }
 
 /**
- * Id: `<artistId>-<slug>`. Cover: `covers/<region>/<id>.jpg`. Audio: `audio/<id>.mp3`.
+ * Id: `<artistId>-<slug>`. Cover: `covers/<region>/<id>.jpg`. No audio file: these are commercial
+ * recordings that play only through the official YouTube video.
  * The YouTube video comes from the verified list in youtube-ids.ts.
  */
 export function createTrack(
@@ -81,10 +83,12 @@ export function createTrack(
     id,
     title,
     artistId,
-    cover: cover(`${region.toLowerCase()}/${id}.jpg`),
+    // A song with an official video uses that video's picture; nothing has to be uploaded.
+    cover: youtubeVideoId
+      ? { url: videoPicture(youtubeVideoId) }
+      : cover(`${region.toLowerCase()}/${id}.jpg`),
     plays,
     durationSec,
-    audio: audio(id),
     ...(youtubeVideoId ? { youtubeVideoId } : {}),
   }
 }

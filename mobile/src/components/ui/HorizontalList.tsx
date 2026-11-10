@@ -1,6 +1,7 @@
 import { FlatList, StyleSheet, View, type ListRenderItem } from "react-native"
 import { spacing } from "@/theme"
 import { AppText } from "./AppText"
+import { useTranslation } from "@/i18n"
 
 type HorizontalListProps<T> = {
   data: readonly T[]
@@ -18,8 +19,10 @@ export function HorizontalList<T>({
   data,
   renderItem,
   keyExtractor,
-  emptyMessage = "Nothing here yet",
+  emptyMessage,
 }: HorizontalListProps<T>) {
+  const { t } = useTranslation()
+
   return (
     <FlatList
       horizontal
@@ -31,7 +34,7 @@ export function HorizontalList<T>({
       contentContainerStyle={styles.content}
       ListEmptyComponent={
         <AppText variant="caption" color="secondary">
-          {emptyMessage}
+          {emptyMessage ?? t("common.empty.generic")}
         </AppText>
       }
     />

@@ -1,19 +1,22 @@
-import { Body, Controller, Get, HttpCode, Post, UseGuards } from "@nestjs/common"
+import { Body, Controller, Get, HttpCode, Ip, Post } from "@nestjs/common"
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiServiceUnavailableResponse,
   ApiTags,
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from "@nestjs/swagger"
-import { ThrottlerGuard } from "@nestjs/throttler"
-import { Auth, CurrentUser, type AuthUser } from "../../shared/index.js"
+import { Auth, CurrentUser, ThrottleGroup, type AuthUser } from "../../shared/index.js"
 import { UsersService, type UserView } from "../users/index.js"
+import { CREDENTIALS_THROTTLE, REFRESH_THROTTLE } from "./auth.config.js"
 import { AuthResult, AuthService, TokenPair } from "./auth.service.js"
 import { AuthResponseDto, AuthUserDto, TokenPairDto } from "./dto/auth-response.dto.js"
 import { LoginDto, RefreshTokenDto, RegisterDto } from "./dto/auth.dto.js"
+import { TurnstileService } from "./turnstile.service.js"
 
 @ApiTags("auth")
 @Controller("auth")
@@ -21,12 +24,14 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly users: UsersService,
+    private readonly turnstile: TurnstileService,
   ) {}
 
-  // register, login and refresh are rate limited per IP (see AuthModule); the others are not.
+  // register, login and refresh are rate limited per IP, each group on its own (see auth.config);
+  // logout and me are not.
 
   @Post("register")
-  @UseGuards(ThrottlerGuard)
+  @ThrottleGroup(CREDENTIALS_THROTTLE)
   @ApiOperation({ summary: "Create an account and get an access + refresh token" })
   @ApiCreatedResponse({ type: AuthResponseDto })
   @ApiTooManyRequestsResponse({ description: "Too many attempts from this IP" })
@@ -36,23 +41,29 @@ export class AuthController {
 
   @Post("login")
   @HttpCode(200)
-  @UseGuards(ThrottlerGuard)
+  @ThrottleGroup(CREDENTIALS_THROTTLE)
   @ApiOperation({ summary: "Log in and get an access + refresh token" })
   @ApiOkResponse({ type: AuthResponseDto })
+  @ApiBadRequestResponse({ description: "Missing or failed Cloudflare Turnstile check" })
   @ApiUnauthorizedResponse({ description: "Wrong email or password" })
   @ApiTooManyRequestsResponse({ description: "Too many attempts from this IP" })
-  login(@Body() dto: LoginDto): Promise<AuthResult> {
+  @ApiServiceUnavailableResponse({ description: "Cloudflare Turnstile could not be reached" })
+  async login(@Body() dto: LoginDto, @Ip() ip: string): Promise<AuthResult> {
+    // The bot check runs before the password is compared, so a bot learns nothing about accounts.
+    await this.turnstile.verify(dto.turnstileToken, "login", ip)
     return this.auth.login(dto)
   }
 
   @Post("refresh")
   @HttpCode(200)
-  @UseGuards(ThrottlerGuard)
+  @ThrottleGroup(REFRESH_THROTTLE)
   @ApiOperation({
     summary: "Exchange a refresh token for a new access + refresh token (rotation)",
     description:
       "The refresh token you send is revoked. Sending an already-revoked token is treated as " +
-      "theft: every token of that login is revoked and the call fails with 401.",
+      "theft: every token of that login is revoked and the call fails with 401. The one exception " +
+      "is a token replaced a few seconds ago (REFRESH_REUSE_GRACE_SECONDS): the app may have been " +
+      "closed before it saved the new token, so it gets another new token of the same login.",
   })
   @ApiOkResponse({ type: TokenPairDto })
   @ApiUnauthorizedResponse({ description: "Unknown, expired, revoked or reused refresh token" })

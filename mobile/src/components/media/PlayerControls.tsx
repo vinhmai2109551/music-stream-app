@@ -4,6 +4,7 @@ import { IconButton } from "@/components/ui/IconButton"
 import { PlayButton } from "@/components/ui/PlayButton"
 import { sizes } from "@/theme"
 import type { RepeatMode } from "@/types"
+import { useTranslation, type TranslationKey } from "@/i18n"
 
 type PlayerControlsProps = {
   isPlaying: boolean
@@ -17,10 +18,10 @@ type PlayerControlsProps = {
   onCycleRepeat: () => void
 }
 
-const REPEAT_LABEL: Record<RepeatMode, string> = {
-  off: "Repeat off",
-  all: "Repeat all",
-  one: "Repeat one",
+const REPEAT_LABEL: Record<RepeatMode, TranslationKey> = {
+  off: "player.repeatOff",
+  all: "player.repeatAll",
+  one: "player.repeatOne",
 }
 
 export function PlayerControls({
@@ -34,27 +35,29 @@ export function PlayerControls({
   onToggleShuffle,
   onCycleRepeat,
 }: PlayerControlsProps) {
+  const { t } = useTranslation()
+
   return (
     <View style={styles.row}>
       <IconButton
         icon={Shuffle}
-        label={shuffle ? "Shuffle on" : "Shuffle off"}
+        label={shuffle ? t("player.shuffleOn") : t("player.shuffleOff")}
         active={shuffle}
         color="white"
         activeColor="accent"
         onPress={onToggleShuffle}
       />
-      <IconButton icon={SkipBack} label="Previous" color="white" onPress={onPrevious} />
+      <IconButton icon={SkipBack} label={t("player.previous")} color="white" onPress={onPrevious} />
       <PlayButton
         playing={isPlaying}
         loading={isBuffering && isPlaying}
         size={sizes.playButtonLg}
         onPress={onTogglePlay}
       />
-      <IconButton icon={SkipForward} label="Next" color="white" onPress={onNext} />
+      <IconButton icon={SkipForward} label={t("player.next")} color="white" onPress={onNext} />
       <IconButton
         icon={repeat === "one" ? Repeat1 : Repeat}
-        label={REPEAT_LABEL[repeat]}
+        label={t(REPEAT_LABEL[repeat])}
         active={repeat !== "off"}
         color="white"
         activeColor="accent"

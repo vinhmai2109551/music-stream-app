@@ -1,0 +1,114 @@
+name: CI
+
+# Runs for every push to, and every pull request into, main and dev.
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+# A newer push to the same branch makes the older run pointless.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  # The API: lint, types, unit tests and the end-to-end tests against a real PostgreSQL.
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        # PostgreSQL 16 with the pgvector extension, which the migrations enable.
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: music
+          POSTGRES_PASSWORD: music
+          POSTGRES_DB: music_stream
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U music -d music_stream"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Throwaway values for this run only; nothing here is a real secret. The e2e tests create a
+      # second database next to this one (music_stream_e2e), which the "music" superuser may do.
+      DATABASE_URL: postgresql://music:music@localhost:5432/music_stream?schema=public
+      DATABASE_URL_LOCAL: postgresql://music:music@localhost:5432/music_stream?schema=public
+      JWT_SECRET: ci-only-jwt-secret-not-used-anywhere-else
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate the Prisma client
+        run: npx prisma generate
+
+      - name: Apply the migrations
+        run: npx prisma migrate deploy
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      # Fails when mobile/src/i18n/locales/vi.json has a text that is not translated yet (or whose
+      # source changed): run `npm run i18n:translate` and commit the result. It calls nobody.
+      - name: App translations are up to date
+        run: npm run i18n:translate -- --check
+
+      # Builds the API first, then starts it as a separate process for each spec.
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+  # The app: lint, types and the Jest tests with a coverage table.
+  mobile:
+    name: Mobile
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Tests with coverage
+        run: npm test -- --coverage

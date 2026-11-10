@@ -2,8 +2,10 @@ import "reflect-metadata"
 import { Logger, ValidationPipe } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { NestFactory } from "@nestjs/core"
+import type { NestExpressApplication } from "@nestjs/platform-express"
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
 import { AppModule } from "./app.module.js"
+import { parseTrustProxy } from "./config/trust-proxy.js"
 import { PrismaExceptionFilter } from "./infrastructure/prisma/prisma-exception.filter.js"
 import { PrismaService } from "./infrastructure/prisma/prisma.service.js"
 import { runSeed } from "./seed/seed.js"
@@ -11,8 +13,12 @@ import { runSeed } from "./seed/seed.js"
 const DEFAULT_PORT = 3000
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule)
   const config = app.get(ConfigService)
+
+  // Behind a reverse proxy every request comes from the proxy's address; trusting its
+  // X-Forwarded-For header lets the rate limiter see (and count) the real visitor instead.
+  app.set("trust proxy", parseTrustProxy(config.get<string>("TRUST_PROXY")))
 
   app.setGlobalPrefix("api")
   app.useGlobalPipes(

@@ -8,9 +8,9 @@ import Animated, { FadeInDown } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
 import { colors, radius, sizes, spacing } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const BLUR_INTENSITY = 30
 const ENTER_DURATION = 500
@@ -22,6 +22,8 @@ const SCRIM_LOCATIONS = [0, 0.45, 1] as const
 
 /** "Premium Launch": shown right after Premium started. */
 export default function PremiumWelcomeScreen() {
+  const { t } = useTranslation()
+
   const insets = useSafeAreaInsets()
 
   return (
@@ -48,7 +50,7 @@ export default function PremiumWelcomeScreen() {
         </BlurView>
         <View style={styles.block}>
           <AppText variant="h1" color="white" accessibilityRole="header" style={styles.title}>
-            {copy.premium.welcomeTitle.replace("to ", "to\n")}
+            {t("premium.welcomeTitle")}
           </AppText>
           <View accessibilityElementsHidden style={styles.dots}>
             {[0, 1, 2].map((dot) => (
@@ -56,7 +58,7 @@ export default function PremiumWelcomeScreen() {
             ))}
           </View>
           <Button
-            label={copy.premium.welcomeAction}
+            label={t("premium.welcomeAction")}
             variant="dark"
             onPress={() => router.dismissTo("/")}
           />
@@ -67,7 +69,7 @@ export default function PremiumWelcomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.text },
+  container: { flex: 1, backgroundColor: colors.ink },
   content: {
     flex: 1,
     justifyContent: "space-between",

@@ -6,10 +6,10 @@ import { AppText } from "@/components/ui/AppText"
 import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
+import { useAuthStore } from "@/store/authStore"
 import { radius, sizes, spacing } from "@/theme"
 import { formatTimeAgo } from "@/utils/formatTimeAgo"
-import { plural } from "@/utils/plural"
+import { useTranslation } from "@/i18n"
 
 const REPLY_AVATAR = 28
 
@@ -19,12 +19,23 @@ type CommentItemProps = {
   isReply?: boolean
   onReply: (comment: ApiComment) => void
   onToggleLike: (comment: ApiComment) => void
+  /** Asks to delete the comment; the button only shows on the signed-in user's own comments. */
+  onDelete: (comment: ApiComment) => void
 }
 
-/** One comment: who, what, when, likes and a reply button. */
-function CommentItemBase({ comment, isReply = false, onReply, onToggleLike }: CommentItemProps) {
-  const name = comment.user?.name ?? "Deleted user"
+/** One comment: who, what, when, likes, and buttons to reply (and to delete one's own). */
+function CommentItemBase({
+  comment,
+  isReply = false,
+  onReply,
+  onToggleLike,
+  onDelete,
+}: CommentItemProps) {
+  const { t } = useTranslation()
+
+  const name = comment.user?.name ?? t("common.deletedUser")
   const avatar = isReply ? REPLY_AVATAR : sizes.userAvatar
+  const mine = useAuthStore((state) => state.user?.id === comment.user?.id && !!comment.user)
 
   return (
     <View style={[styles.row, isReply && styles.reply]}>
@@ -44,25 +55,38 @@ function CommentItemBase({ comment, isReply = false, onReply, onToggleLike }: Co
           </AppText>
           {comment.likesCount > 0 && (
             <AppText variant="small" color={comment.liked ? "accentText" : "secondary"}>
-              {comment.likesCount} {plural("like", comment.likesCount)}
+              {t("common.count.likes", { count: comment.likesCount, value: comment.likesCount })}
             </AppText>
           )}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`${copy.comments.reply} ${name}`}
+            accessibilityLabel={`${t("comments.reply")} ${name}`}
             onPress={() => onReply(comment)}
             hitSlop={8}
             style={({ pressed }) => [styles.replyButton, pressedStyle(pressed)]}
           >
             <AppText variant="small" color="secondary">
-              {copy.comments.reply}
+              {t("comments.reply")}
             </AppText>
           </Pressable>
+          {mine && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("comments.deleteComment")}
+              onPress={() => onDelete(comment)}
+              hitSlop={10}
+              style={({ pressed }) => [styles.replyButton, pressedStyle(pressed)]}
+            >
+              <AppText variant="small" color="secondary">
+                {t("comments.delete")}
+              </AppText>
+            </Pressable>
+          )}
         </View>
       </View>
       <IconButton
         icon={ThumbsUp}
-        label={comment.liked ? copy.comments.unlikeComment : copy.comments.likeComment}
+        label={comment.liked ? t("comments.unlikeComment") : t("comments.likeComment")}
         active={comment.liked}
         size={sizes.iconMd}
         onPress={() => onToggleLike(comment)}

@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react-native"
 import { Pressable, StyleSheet, type PressableProps } from "react-native"
-import { colors, radius, sizes, type ColorToken } from "@/theme"
+import { type ColorToken, radius, sizes, useColors } from "@/theme"
 import { pressedStyle } from "./pressed"
 
 const STROKE_WIDTH = 1.75
@@ -25,6 +25,8 @@ export function IconButton({
   style,
   ...props
 }: IconButtonProps) {
+  const colors = useColors()
+
   const tint = colors[active ? activeColor : color]
   return (
     <Pressable

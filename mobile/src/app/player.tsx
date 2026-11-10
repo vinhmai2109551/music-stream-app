@@ -5,6 +5,7 @@ import { Linking, StyleSheet, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { BlurredBackdrop } from "@/components/media/BlurredBackdrop"
 import { CommentsSheet } from "@/components/media/CommentsSheet"
+import { LyricsSheet } from "@/components/media/lyrics/LyricsSheet"
 import { PlayerActions } from "@/components/media/PlayerActions"
 import { PlayerArtwork } from "@/components/media/PlayerArtwork"
 import { PlayerControls } from "@/components/media/PlayerControls"
@@ -12,12 +13,13 @@ import { PlayerError } from "@/components/media/PlayerError"
 import { PlayerHeader } from "@/components/media/PlayerHeader"
 import { PlayerTrackInfo } from "@/components/media/PlayerTrackInfo"
 import { SeekBar } from "@/components/media/SeekBar"
+import { SimilarTracks } from "@/components/media/SimilarTracks"
+import { TrackMenuSheet } from "@/components/media/TrackMenuSheet"
 import { YouTubeLabel } from "@/components/media/YouTubeLabel"
 import { YouTubeSlot } from "@/components/media/YouTubeSlot"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
 import { SwipeToDismiss } from "@/components/ui/SwipeToDismiss"
-import { copy } from "@/constants/copy"
 import {
   BASE_COMMENT_COUNT,
   BASE_LIKE_COUNT,
@@ -29,15 +31,17 @@ import { showToast } from "@/store/toastStore"
 import { canAutoSkip, usePlayerStore } from "@/store/playerStore"
 import { colors, spacing } from "@/theme"
 import { youtubeWatchUrl } from "@/utils/playbackKind"
-
-const COMING_SOON = "Coming soon"
+import { shareTrack } from "@/utils/shareTrack"
+import { useTranslation } from "@/i18n"
 
 const close = () => router.back()
 
-const openOnYouTube = (videoId: string) =>
-  Linking.openURL(youtubeWatchUrl(videoId)).catch(() => showToast(copy.errors.unknown))
+const openOnYouTube = (videoId: string, onFailed: () => void) =>
+  Linking.openURL(youtubeWatchUrl(videoId)).catch(onFailed)
 
 export default function PlayerScreen() {
+  const { t } = useTranslation()
+
   const insets = useSafeAreaInsets()
 
   const track = usePlayerStore((state) => state.currentTrack)
@@ -58,6 +62,8 @@ export default function PlayerScreen() {
     usePlayerStore.getState()
 
   const [commentsOpen, setCommentsOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [lyricsOpen, setLyricsOpen] = useState(false)
   /** Comments counted once the sheet has been opened; until then the design's sample number. */
   const [commentCount, setCommentCount] = useState<{ trackId: string; count: number } | null>(null)
 
@@ -68,14 +74,21 @@ export default function PlayerScreen() {
     return (
       <View style={[styles.empty, { paddingTop: insets.top }]}>
         <AppText variant="title" color="white">
-          Nothing is playing
+          {t("player.nothingPlaying")}
         </AppText>
-        <Button label="Close" variant="glass" onPress={close} style={styles.emptyButton} />
+        <Button
+          label={t("common.close")}
+          variant="glass"
+          onPress={close}
+          style={styles.emptyButton}
+        />
       </View>
     )
   }
 
   const videoId = track.youtubeVideoId
+
+  const share = () => shareTrack(track).catch(() => showToast(t("errors.unknown")))
 
   return (
     <View style={styles.screen}>
@@ -88,11 +101,7 @@ export default function PlayerScreen() {
             { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + spacing.lg },
           ]}
         >
-          <PlayerHeader
-            source={queueSource}
-            onClose={close}
-            onMore={() => showToast(COMING_SOON)}
-          />
+          <PlayerHeader source={queueSource} onClose={close} onMore={() => setMenuOpen(true)} />
           {/* The video takes the place of the cover; it must stay at least 200 x 200 and visible. */}
           <View style={[styles.artwork, playsFromYouTube && styles.video]}>
             {playsFromYouTube ? (
@@ -109,6 +118,7 @@ export default function PlayerScreen() {
           <PlayerTrackInfo
             title={track.title}
             artist={track.artist}
+            track={track}
             liked={liked}
             onToggleLike={() => toggleLike(track.id)}
           />
@@ -131,7 +141,11 @@ export default function PlayerScreen() {
               kind={error}
               skipping={skipping}
               onRetry={retry}
-              onOpenYouTube={videoId ? () => void openOnYouTube(videoId) : undefined}
+              onOpenYouTube={
+                videoId
+                  ? () => void openOnYouTube(videoId, () => showToast(t("errors.unknown")))
+                  : undefined
+              }
             />
           )}
           <View style={styles.actions}>
@@ -143,11 +157,15 @@ export default function PlayerScreen() {
               }
               onToggleLike={() => toggleLike(track.id)}
               onComments={() => setCommentsOpen(true)}
-              onShare={() => showToast(COMING_SOON)}
+              onLyrics={() => setLyricsOpen(true)}
+              onShare={() => void share()}
             />
+            <SimilarTracks trackId={track.id} />
           </View>
         </View>
       </SwipeToDismiss>
+      {menuOpen && <TrackMenuSheet track={track} visible onClose={() => setMenuOpen(false)} />}
+      {lyricsOpen && <LyricsSheet trackId={track.id} onClose={() => setLyricsOpen(false)} />}
       {commentsOpen && (
         <CommentsSheet
           target={{ trackId: track.id }}
@@ -160,7 +178,7 @@ export default function PlayerScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.text },
+  screen: { flex: 1, backgroundColor: colors.ink },
   content: { flex: 1, paddingHorizontal: spacing.xxl },
   artwork: { flex: 1, justifyContent: "center", marginVertical: spacing.lg },
   video: { minHeight: YOUTUBE_MIN_SIZE },
@@ -171,7 +189,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.xl,
-    backgroundColor: colors.text,
+    backgroundColor: colors.ink,
   },
   emptyButton: { minWidth: 160 },
 })

@@ -5,7 +5,7 @@ import { StyleSheet, View } from "react-native"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { HorizontalList } from "@/components/ui/HorizontalList"
 import { SectionHeader } from "@/components/ui/SectionHeader"
-import { copy } from "@/constants/copy"
+import type { Region } from "@/api/types"
 import type { HomeData } from "@/hooks/useHomeData"
 import { useAuthStore } from "@/store/authStore"
 import { usePlayerStore } from "@/store/playerStore"
@@ -16,9 +16,9 @@ import { AlbumCard } from "./AlbumCard"
 import { ArtistAvatar } from "./ArtistAvatar"
 import { ChartCard } from "./ChartCard"
 import { PremiumBanner } from "./PremiumBanner"
+import { RecommendationSections } from "./RecommendationSections"
 import { SuggestionCard } from "./SuggestionCard"
-
-const SUGGESTION_SOURCE = "Suggestions for you"
+import { useTranslation } from "@/i18n"
 
 const openPlaylist = (id: string) => router.push({ pathname: "/playlist/[id]", params: { id } })
 const openAlbum = (id: string) => router.push({ pathname: "/album/[id]", params: { id } })
@@ -28,10 +28,14 @@ const openPremium = () => router.push("/premium")
 
 type HomeContentProps = {
   data: HomeData
+  /** The region chosen on Home; the personal sections follow it. */
+  region: Region | null
 }
 
 /** The sections of the Home screen, below the header and the search field. */
-export function HomeContent({ data }: HomeContentProps) {
+export function HomeContent({ data, region }: HomeContentProps) {
+  const { t } = useTranslation()
+
   const playFromList = usePlayerStore((state) => state.playFromList)
   const isPremium = useAuthStore((state) => state.user?.isPremium ?? false)
 
@@ -44,8 +48,8 @@ export function HomeContent({ data }: HomeContentProps) {
     return (
       <EmptyState
         icon={Music}
-        title={copy.home.emptyTitle}
-        description={copy.home.emptyDescription}
+        title={t("home.emptyTitle")}
+        description={t("home.emptyDescription")}
       />
     )
   }
@@ -53,7 +57,7 @@ export function HomeContent({ data }: HomeContentProps) {
   const playSuggestion = (suggestion: Suggestion) => {
     const index = data.suggestions.findIndex((track) => track.id === suggestion.trackId)
     if (index < 0) return
-    playFromList(data.suggestions, index, SUGGESTION_SOURCE)
+    playFromList(data.suggestions, index, t("home.sections.suggestions"))
     router.push("/player")
   }
 
@@ -61,38 +65,43 @@ export function HomeContent({ data }: HomeContentProps) {
 
   return (
     <>
-      <Section title="Suggestions for you" onAction={openSearch}>
+      <RecommendationSections region={region} />
+
+      <Section title={t("home.sections.suggestions")} onAction={openSearch}>
         <HorizontalList
           data={data.suggestions.map(toSuggestion)}
           keyExtractor={(item) => item.id}
-          emptyMessage="No songs yet"
+          emptyMessage={t("common.empty.songs")}
           renderItem={({ item }) => <SuggestionCard suggestion={item} onPress={playSuggestion} />}
         />
       </Section>
 
-      <Section title="Charts" onAction={firstChart ? () => openPlaylist(firstChart.id) : undefined}>
+      <Section
+        title={t("home.sections.charts")}
+        onAction={firstChart ? () => openPlaylist(firstChart.id) : undefined}
+      >
         <HorizontalList
           data={data.charts.map(toChartItem)}
           keyExtractor={(item) => item.id}
-          emptyMessage="No charts yet"
+          emptyMessage={t("common.empty.charts")}
           renderItem={({ item }) => <ChartCard chart={item} onPress={openPlaylist} />}
         />
       </Section>
 
-      <Section title="Trending albums">
+      <Section title={t("home.sections.trendingAlbums")}>
         <HorizontalList
           data={data.albums}
           keyExtractor={(item) => item.id}
-          emptyMessage="No albums yet"
+          emptyMessage={t("common.empty.albums")}
           renderItem={({ item }) => <AlbumCard album={item} onPress={openAlbum} />}
         />
       </Section>
 
-      <Section title="Popular artists">
+      <Section title={t("home.sections.popularArtists")}>
         <HorizontalList
           data={data.artists}
           keyExtractor={(item) => item.id}
-          emptyMessage="No artists yet"
+          emptyMessage={t("common.empty.artists")}
           renderItem={({ item }) => <ArtistAvatar artist={item} onPress={openArtist} />}
         />
       </Section>

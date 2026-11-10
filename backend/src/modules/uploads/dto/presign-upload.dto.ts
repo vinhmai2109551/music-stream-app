@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsIn, IsInt, IsString, Max, MaxLength, Min } from "class-validator"
-import { UPLOAD_KINDS, type UploadKind } from "../upload-rules.js"
+import { UPLOAD_KINDS, type AdminUploadKind } from "../upload-rules.js"
 
 /** Upper bound on the declared size; the exact per-kind limit is checked by `checkUpload`. */
 const HARD_MAX_BYTES = 1024 * 1024 * 1024
@@ -9,7 +9,7 @@ export class PresignUploadDto {
   /** `audio` (mp3, m4a, aac - max 20 MB) or `image` (jpeg, png, webp - max 5 MB). */
   @ApiProperty({ enum: UPLOAD_KINDS })
   @IsIn(UPLOAD_KINDS)
-  kind!: UploadKind
+  kind!: AdminUploadKind
 
   /** MIME type of the file, e.g. `audio/mpeg` or `image/png`. */
   @IsString()

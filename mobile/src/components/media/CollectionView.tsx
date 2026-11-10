@@ -1,7 +1,7 @@
 import { router } from "expo-router"
 import { Heart, Music, Shuffle } from "lucide-react-native"
 import { useEffect, useRef } from "react"
-import { FlatList, StyleSheet, View } from "react-native"
+import { FlatList, View } from "react-native"
 import { getAlbum } from "@/api/albums"
 import { getPlaylist } from "@/api/playlists"
 import type { ApiAlbumDetail, ApiPlaylistDetail } from "@/api/types"
@@ -17,19 +17,20 @@ import { useResource } from "@/hooks/useResource"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { showToast } from "@/store/toastStore"
-import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { makeStyles, radius, shadows, sizes, spacing } from "@/theme"
 import type { ImageSource, Track } from "@/types"
 import { formatNumber } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
-import { plural } from "@/utils/plural"
+import { PlaylistOwnerControls } from "./PlaylistOwnerControls"
 import { TrackRow } from "./TrackRow"
-
-const NOTHING_TO_PLAY = "Add some songs first"
+import { useTranslation } from "@/i18n"
 
 type Collection = {
   name: string
   cover: ImageSource
   description: string
+  /** Set for albums: their description is made from it when shown (it follows the language). */
+  albumArtist: string | null
   tracks: Track[]
   /** Second line under the name, without the like count (it changes when the user likes). */
   byline: string
@@ -44,6 +45,7 @@ function fromPlaylist(playlist: ApiPlaylistDetail): Collection {
     name: playlist.name,
     cover: playlist.cover ?? "",
     description: playlist.description,
+    albumArtist: null,
     tracks: playlist.tracks,
     byline: formatTime(totalDuration(playlist.tracks)),
     otherLikes: playlist.likesCount - (playlist.liked ? 1 : 0),
@@ -54,7 +56,8 @@ function fromAlbum(album: ApiAlbumDetail): Collection {
   return {
     name: album.title,
     cover: album.cover,
-    description: `An album by ${album.artist}.`,
+    description: "",
+    albumArtist: album.artist,
     tracks: album.tracks,
     byline: `${album.artist} · ${formatTime(totalDuration(album.tracks))}`,
     otherLikes: null,
@@ -68,6 +71,10 @@ type CollectionViewProps = {
 
 /** Playlist and album details share one layout; the id decides which data is loaded. */
 export function CollectionView({ kind, id }: CollectionViewProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+
   const { state, reload, refresh } = useResource<Collection>(
     async () =>
       kind === "playlist" ? fromPlaylist(await getPlaylist(id)) : fromAlbum(await getAlbum(id)),
@@ -87,6 +94,10 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
     kind === "playlist"
       ? library.likedPlaylistIds.includes(id)
       : library.likedAlbumIds.includes(id),
+  )
+  // Only playlists the user made are listed in `playlists`: official and other people's are not.
+  const mine = useLibraryStore(
+    (library) => kind === "playlist" && library.playlists.some((playlist) => playlist.id === id),
   )
   const togglePlaylistLike = useLibraryStore((library) => library.togglePlaylistLike)
   const toggleAlbumLike = useLibraryStore((library) => library.toggleAlbumLike)
@@ -118,7 +129,7 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
       return
     }
     if (collection.tracks.length === 0) {
-      showToast(NOTHING_TO_PLAY)
+      showToast(t("collection.addSongsFirst"))
       return
     }
     playFromList(collection.tracks, 0, collection.name)
@@ -132,7 +143,7 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
   const subtitle =
     collection.otherLikes === null
       ? collection.byline
-      : `${formatNumber(likeCount)} ${plural("like", likeCount)} · ${collection.byline}`
+      : `${t("common.count.likes", { count: likeCount, value: formatNumber(likeCount) })} · ${collection.byline}`
 
   const header = (
     <View>
@@ -150,19 +161,27 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
           {subtitle}
         </AppText>
         <AppText variant="body" color="secondary" numberOfLines={3} style={styles.center}>
-          {collection.description}
+          {collection.albumArtist === null
+            ? collection.description
+            : t("collection.albumBy", { artist: collection.albumArtist })}
         </AppText>
       </View>
       <View style={styles.controls}>
         <IconButton
           icon={Heart}
-          label={kind === "playlist" ? "Like playlist" : "Save album"}
+          label={kind === "playlist" ? t("collection.likePlaylist") : t("collection.saveAlbum")}
           active={liked}
           activeColor="like"
           onPress={onToggleLike}
         />
+        {mine ? <PlaylistOwnerControls playlistId={id} name={collection.name} /> : null}
         <View style={styles.spacer} />
-        <IconButton icon={Shuffle} label="Shuffle" active={shuffle} onPress={toggleShuffle} />
+        <IconButton
+          icon={Shuffle}
+          label={t("common.shuffle")}
+          active={shuffle}
+          onPress={toggleShuffle}
+        />
         <PlayButton playing={playingFromHere} onPress={onPlay} />
       </View>
     </View>
@@ -178,8 +197,8 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
         ListEmptyComponent={
           <EmptyState
             icon={Music}
-            title="No songs yet"
-            description="Add tracks from the “…” menu on any song."
+            title={t("collection.noSongsTitle")}
+            description={t("collection.noSongsDescription")}
           />
         }
         renderItem={({ item, index }) => (
@@ -189,6 +208,7 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
             list={collection.tracks}
             source={collection.name}
             numbered
+            playlistId={mine ? id : undefined}
           />
         )}
         contentContainerStyle={styles.list}
@@ -199,6 +219,8 @@ export function CollectionView({ kind, id }: CollectionViewProps) {
 }
 
 function CollectionSkeleton() {
+  const styles = useStyles()
+
   return (
     <View style={styles.screen}>
       <TopBar />
@@ -217,7 +239,7 @@ function CollectionSkeleton() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   list: { paddingHorizontal: spacing.screen, paddingBottom: spacing.xxxl },
   hero: { alignItems: "center", gap: spacing.sm },
@@ -237,4 +259,4 @@ const styles = StyleSheet.create({
   },
   spacer: { flex: 1 },
   skeleton: { alignItems: "center", gap: spacing.lg, paddingHorizontal: spacing.screen },
-})
+}))

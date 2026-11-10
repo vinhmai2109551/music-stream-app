@@ -5,12 +5,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { AppText } from "@/components/ui/AppText"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { YOUTUBE_MIN_SIZE } from "@/constants/player"
 import { usePlayerStore } from "@/store/playerStore"
 import { useVideoSlotStore } from "@/store/videoSlotStore"
 import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import { YouTubePlayerView } from "./YouTubePlayerView"
+import { useTranslation } from "@/i18n"
 
 /**
  * The one YouTube player of the app, mounted above every screen so the video keeps playing when
@@ -55,20 +55,22 @@ const openPlayer = () => router.push("/player")
 const stopPlayback = () => usePlayerStore.getState().reset()
 
 function FloatingHeader() {
+  const { t } = useTranslation()
+
   return (
     <View style={styles.header}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Open player"
+        accessibilityLabel={t("player.openPlayer")}
         onPress={openPlayer}
         style={({ pressed }) => [styles.label, pressedStyle(pressed)]}
       >
         <MonitorPlay size={sizes.iconSm} color={colors.onDarkMuted} />
         <AppText variant="small" color="white" numberOfLines={1} ellipsizeMode="tail">
-          {copy.player.viaYoutube}
+          {t("player.viaYoutube")}
         </AppText>
       </Pressable>
-      <IconButton icon={X} label="Stop playback" color="white" onPress={stopPlayback} />
+      <IconButton icon={X} label={t("player.stopPlayback")} color="white" onPress={stopPlayback} />
     </View>
   )
 }
@@ -80,7 +82,7 @@ const styles = StyleSheet.create({
     width: YOUTUBE_MIN_SIZE,
     overflow: "hidden",
     borderRadius: radius.card,
-    backgroundColor: colors.text,
+    backgroundColor: colors.ink,
     ...shadows.card,
   },
   header: { height: sizes.minTouch, flexDirection: "row", alignItems: "center" },

@@ -2,9 +2,11 @@ import { Tabs } from "expo-router"
 import { View } from "react-native"
 import { MiniPlayer } from "@/components/media/MiniPlayer"
 import { TabBar } from "@/components/ui/TabBar"
-import { colors } from "@/theme"
+import { useColors } from "@/theme"
 
 export default function TabsLayout() {
+  const colors = useColors()
+
   return (
     <Tabs
       backBehavior="history"

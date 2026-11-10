@@ -9,15 +9,23 @@ import tseslint from "typescript-eslint"
  * Reaching into `../users/users.service.js` or `../users/dto/...` is an error.
  */
 const MODULES = [
+  "ai",
   "albums",
   "artists",
   "auth",
   "comments",
+  "embed",
+  "embeddings",
   "feed",
   "follows",
+  "health",
   "likes",
+  "lyrics",
   "playlists",
+  "recommendations",
+  "search",
   "tracks",
+  "translation",
   "uploads",
   "users",
 ]

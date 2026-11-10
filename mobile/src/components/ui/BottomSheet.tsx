@@ -11,9 +11,10 @@ import {
 } from "react-native"
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 import { IconButton } from "./IconButton"
+import { useTranslation } from "@/i18n"
 
 const SHEET_MAX_HEIGHT = "88%"
 
@@ -27,6 +28,10 @@ type BottomSheetProps = {
 }
 
 export function BottomSheet({ visible, onClose, title, height, children }: BottomSheetProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+
   const insets = useSafeAreaInsets()
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -36,7 +41,7 @@ export function BottomSheet({ visible, onClose, title, height, children }: Botto
         style={styles.fill}
       >
         <Pressable
-          accessibilityLabel="Close"
+          accessibilityLabel={t("common.close")}
           style={[styles.fill, styles.backdrop]}
           onPress={onClose}
         />
@@ -61,7 +66,7 @@ export function BottomSheet({ visible, onClose, title, height, children }: Botto
               <AppText variant="subtitle" numberOfLines={1} style={styles.title}>
                 {title}
               </AppText>
-              <IconButton icon={ChevronDown} label="Close" onPress={onClose} />
+              <IconButton icon={ChevronDown} label={t("common.close")} onPress={onClose} />
             </View>
           )}
           {children}
@@ -71,7 +76,7 @@ export function BottomSheet({ visible, onClose, title, height, children }: Botto
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   fill: { ...StyleSheet.absoluteFill },
   backdrop: { backgroundColor: colors.backdrop },
   anchor: { flex: 1, justifyContent: "flex-end" },
@@ -97,4 +102,4 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: { flex: 1 },
-})
+}))
