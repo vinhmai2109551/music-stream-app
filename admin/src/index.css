@@ -18,6 +18,14 @@ html[data-theme="light"] body {
   background: #f5f5f5;
 }
 
+/* On a phone the menu button floats over the top-left corner of the page: leave room for it, so it
+   never covers the first row of buttons (Refine switches to the drawer below the lg breakpoint). */
+@media (max-width: 991.98px) {
+  .ant-layout-content {
+    padding-top: 48px;
+  }
+}
+
 /* A card or table never makes the whole page scroll sideways on a phone. */
 .ant-table-wrapper {
   max-width: 100%;

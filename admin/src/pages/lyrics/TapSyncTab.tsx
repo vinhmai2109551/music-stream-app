@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons"
 import { Alert, App, Button, Progress, Space, Tag, Typography } from "antd"
 import { useEffect } from "react"
-import { formatClock } from "@/lib/time"
+import { formatClock, formatDuration } from "@/lib/time"
 import { applyTap, markedCount, nextPending, wordLineCount } from "@/lib/tap-sync"
 import type { Draft } from "./draft"
 import { LyricLines } from "./LyricLines"
@@ -23,6 +23,8 @@ interface Props {
   controller: MediaController | null
   /** Position of the song in ms (-1 when not known). */
   nowMs: number
+  /** Length of the song in seconds, shown beside the position. */
+  durationSec?: number
   /** This tab is the one on screen: the keys only work then. */
   active: boolean
   onTap: (timeMs: number) => void
@@ -40,7 +42,16 @@ function isTyping(target: EventTarget | null): boolean {
  * Tap along with the song: Space marks the start of the next line, Backspace takes back the last
  * mark, R starts over, the arrows move the song by 3 seconds. The buttons do the same.
  */
-export function TapSyncTab({ draft, controller, nowMs, active, onTap, onUndo, onReset }: Props) {
+export function TapSyncTab({
+  draft,
+  controller,
+  nowMs,
+  durationSec,
+  active,
+  onTap,
+  onUndo,
+  onReset,
+}: Props) {
   const { message } = App.useApp()
   const { lines, marks } = draft
   const total = wordLineCount(lines)
@@ -157,12 +168,29 @@ export function TapSyncTab({ draft, controller, nowMs, active, onTap, onUndo, on
         </Button>
       </Space>
 
+      {/* Big enough to read at a glance while the eyes are on the lyrics. */}
+      <div
+        aria-label="Vị trí phát"
+        style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}
+      >
+        <Typography.Text
+          strong
+          style={{ fontSize: 32, lineHeight: 1.2, fontVariantNumeric: "tabular-nums" }}
+        >
+          {formatClock(Math.max(0, nowMs))}
+        </Typography.Text>
+        {durationSec ? (
+          <Typography.Text type="secondary" style={{ fontSize: 18 }}>
+            / {formatDuration(durationSec)}
+          </Typography.Text>
+        ) : null}
+      </div>
+
       <Space wrap align="center">
         <Progress percent={Math.round((done / total) * 100)} style={{ width: 220 }} size="small" />
         <Typography.Text>
           Đã ghi {done}/{total} dòng
         </Typography.Text>
-        {nowMs >= 0 ? <Tag>{formatClock(nowMs)}</Tag> : null}
         {draft.timingsMs !== null ? <Tag color="green">Đã đồng bộ xong</Tag> : null}
       </Space>
 

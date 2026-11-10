@@ -57,6 +57,11 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
+      # backend/package-lock.json is written by npm 11. The npm 10 that comes with Node 22 refuses
+      # it in `npm ci` ("Missing: chokidar from lock file"), so use the same major version.
+      - name: Use npm 11
+        run: npm install -g npm@11 --no-fund --no-audit
+
       - name: Install dependencies
         run: npm ci
 
@@ -112,3 +117,36 @@ jobs:
 
       - name: Tests with coverage
         run: npm test -- --coverage
+
+  # The admin web: lint, types, unit tests of its logic, and the production build.
+  admin:
+    name: Admin
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      # Type-checks again and bundles with the default API address; nothing is deployed.
+      - name: Build
+        run: npm run build

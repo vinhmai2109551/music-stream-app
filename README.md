@@ -593,7 +593,7 @@ The backend must be deployed first (any host that runs the Docker image or `npm 
 | `admin/`   | `npm test`               | Vitest unit tests of the pure logic (LRC, tap-sync, lyrics checks, upload rules, data provider, token refresh); on Windows run from PowerShell or cmd                             |
 | `backend/` | `npm run test:e2e`       | Builds the API, then runs end-to-end specs against a real PostgreSQL (needs `docker compose up -d db`; it creates its own `*_e2e` database and never touches the development one) |
 
-Every push and pull request into `main` and `dev` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml): two jobs in parallel, **Backend** (Prisma generate and migrate on a PostgreSQL service, lint, types, unit and e2e tests) and **Mobile** (lint, types, tests with coverage). npm downloads are cached per `package-lock.json`.
+Every push and pull request into `main` and `dev` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml): three jobs in parallel, **Backend** (Prisma generate and migrate on a PostgreSQL service, lint, types, unit and e2e tests), **Mobile** (lint, types, tests with coverage) and **Admin** (lint, types, unit tests, production build). npm downloads are cached per `package-lock.json`.
 
 ## Available Scripts
 
