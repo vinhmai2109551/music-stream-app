@@ -145,6 +145,10 @@ export class AlbumsService implements OnModuleInit {
     await this.prisma.album.delete({ where: { id } })
   }
 
+  count(): Promise<number> {
+    return this.prisma.album.count()
+  }
+
   private async toViews(rows: AlbumRow[], userId?: string): Promise<AlbumView[]> {
     const ids = rows.map((row) => row.id)
     const [artists, counts, liked] = await Promise.all([

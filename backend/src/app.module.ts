@@ -4,6 +4,7 @@ import { ThrottlerModule } from "@nestjs/throttler"
 import { validateEnv } from "./config/env.validation.js"
 import { CatalogEventsModule } from "./shared/index.js"
 import { PrismaModule } from "./infrastructure/prisma/prisma.module.js"
+import { AdminModule } from "./modules/admin/index.js"
 import { AlbumsModule } from "./modules/albums/index.js"
 import { ArtistsModule } from "./modules/artists/index.js"
 import { AuthModule, authThrottlers } from "./modules/auth/index.js"
@@ -67,6 +68,7 @@ import { avatarThrottler, UsersModule } from "./modules/users/index.js"
     TranslationModule,
     LyricsModule,
     UploadsModule,
+    AdminModule,
   ],
 })
 export class AppModule {}

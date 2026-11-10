@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpCode, Ip, Post } from "@nestjs/common"
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
@@ -46,6 +47,7 @@ export class AuthController {
   @ApiOkResponse({ type: AuthResponseDto })
   @ApiBadRequestResponse({ description: "Missing or failed Cloudflare Turnstile check" })
   @ApiUnauthorizedResponse({ description: "Wrong email or password" })
+  @ApiForbiddenResponse({ description: "The account is banned" })
   @ApiTooManyRequestsResponse({ description: "Too many attempts from this IP" })
   @ApiServiceUnavailableResponse({ description: "Cloudflare Turnstile could not be reached" })
   async login(@Body() dto: LoginDto, @Ip() ip: string): Promise<AuthResult> {
@@ -67,6 +69,7 @@ export class AuthController {
   })
   @ApiOkResponse({ type: TokenPairDto })
   @ApiUnauthorizedResponse({ description: "Unknown, expired, revoked or reused refresh token" })
+  @ApiForbiddenResponse({ description: "The account is banned" })
   @ApiTooManyRequestsResponse({ description: "Too many attempts from this IP" })
   refresh(@Body() dto: RefreshTokenDto): Promise<TokenPair> {
     return this.auth.refresh(dto.refreshToken)

@@ -33,6 +33,12 @@ export interface LyricsView {
   updatedAt: string
 }
 
+/** Whether a track has lyrics, and whether they have a start time for every line. */
+export interface LyricsStatus {
+  hasLyrics: boolean
+  hasTimings: boolean
+}
+
 export interface PutLyricsInput {
   language: string
   lines: string[]
@@ -65,6 +71,12 @@ export class LyricsService {
 
   async get(trackId: string): Promise<LyricsView> {
     return toLyricsView(await this.find(trackId))
+  }
+
+  /** For the admin module: what lyrics each of these tracks has (only what is kept, no source lookup). */
+  async statusOf(trackIds: readonly string[]): Promise<Map<string, LyricsStatus>> {
+    const rows = await this.store.findStatuses(trackIds)
+    return new Map(rows.map((row) => [row.trackId, { hasLyrics: true, hasTimings: row.timed }]))
   }
 
   /** The lyrics as kept (with their id and version), or a 404 that says the track has none. */

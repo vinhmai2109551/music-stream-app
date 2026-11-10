@@ -43,5 +43,23 @@ services:
       retries: 3
       start_period: 60s
 
+  admin:
+    # The admin web: a static site (Vite build) served by nginx at http://localhost:5173.
+    build:
+      context: ./admin
+      args:
+        # Baked into the bundle at build time. The browser calls the API, not the Docker network,
+        # so this is the address of the API as seen from the browser. Set ADMIN_API_URL (shell or
+        # a .env next to this file) to build for another address, then rebuild: up --build admin.
+        VITE_API_URL: ${ADMIN_API_URL:-http://localhost:3000/api}
+        # Cloudflare Turnstile Site Key of the login form; empty = no widget (see backend/.env).
+        VITE_TURNSTILE_SITE_KEY: ${ADMIN_TURNSTILE_SITE_KEY:-}
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
 volumes:
   pgdata:
