@@ -74,6 +74,23 @@ export class RefreshTokenService {
     return this.reuse(current ?? stored)
   }
 
+  /** Whose token this is, whether or not it is still valid; null when it is unknown. */
+  async ownerOf(rawToken: string): Promise<string | null> {
+    const stored = await this.prisma.refreshToken.findUnique({
+      where: { tokenHash: hashRefreshToken(rawToken) },
+      select: { userId: true },
+    })
+    return stored?.userId ?? null
+  }
+
+  /** Ends every login of a user at once (every family): none of their tokens can refresh again. */
+  async revokeAllOf(userId: string): Promise<void> {
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    })
+  }
+
   /** Revokes one token. Unknown or already revoked tokens are ignored (idempotent). */
   async revoke(rawToken: string): Promise<void> {
     await this.prisma.refreshToken.updateMany({

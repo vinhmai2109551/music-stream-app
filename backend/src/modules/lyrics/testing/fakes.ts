@@ -22,6 +22,15 @@ export class InMemoryLyricsStore implements LyricsStore {
     return Promise.resolve(this.lyrics.get(trackId) ?? null)
   }
 
+  findStatuses(trackIds: readonly string[]) {
+    return Promise.resolve(
+      trackIds.flatMap((trackId) => {
+        const kept = this.lyrics.get(trackId)
+        return kept ? [{ trackId, timed: kept.timingsMs.length > 0 }] : []
+      }),
+    )
+  }
+
   upsertLyrics(input: LyricsInput): Promise<StoredLyrics> {
     const kept = this.lyrics.get(input.trackId)
     const stored: StoredLyrics = {

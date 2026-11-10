@@ -30,6 +30,7 @@ Final project for the **Mobile Programming** course — Industrial University of
     - [Installation](#installation)
     - [Run on a device](#run-on-a-device)
   - [Backend](#backend)
+  - [Admin web](#admin-web)
   - [Languages and translation (DeepL)](#languages-and-translation-deepl)
   - [Playback architecture](#playback-architecture)
   - [Release builds (EAS)](#release-builds-eas)
@@ -122,7 +123,8 @@ The images are screenshots of the running app. The files to capture, what each o
 | Backend      | NestJS 12 (ESM), Prisma 7, PostgreSQL 16 with pgvector, Cloudflare R2 for files                                                                                                       |
 | Search & AI  | Vectors in pgvector (`gemini-embedding-2`, 768 numbers) for search by meaning and recommendations; the assistant is Gemini (Interactions API). Both sit behind provider-neutral ports |
 | Languages    | `i18next`, `react-i18next`, `expo-localization` in the app; DeepL (`deepl-node`) from the backend only                                                                                |
-| Security     | Cloudflare Turnstile on login, `@nestjs/throttler` rate limits, JWT access + rotating refresh tokens                                                                                  |
+| Admin web    | Vite, React 19, [Refine](https://refine.dev) with Ant Design 5, Recharts, Vitest (`admin/`)                                                                                           |
+| Security     | Cloudflare Turnstile on login, `@nestjs/throttler` rate limits, JWT access + rotating refresh tokens, banning of accounts                                                             |
 | Build & CI   | GitHub Actions (`.github/workflows/ci.yml`), EAS Build (`mobile/eas.json`)                                                                                                            |
 
 ## Project Structure
@@ -148,7 +150,8 @@ music-stream-app/
 │   ├── eas.json             # EAS Build profiles: development, preview, production
 │   └── package.json
 ├── backend/                 # NestJS API: modular monolith + Prisma + PostgreSQL
-├── docker-compose.yml       # PostgreSQL + API (with a healthcheck)
+├── admin/                   # Admin web: Vite + React + Refine + Ant Design (see "Admin web")
+├── docker-compose.yml       # PostgreSQL + API (with a healthcheck) + the admin web
 ├── docs/screenshots/        # Screenshots used by this README
 ├── .github/workflows/       # CI
 └── README.md
@@ -199,8 +202,15 @@ domain is a self-contained module that owns its tables and exposes a small publi
 ```mermaid
 flowchart LR
   Mobile[Mobile app] --> API
+  Admin[Admin web] --> API
   subgraph API[NestJS API]
     direction TB
+    admin --> users
+    admin --> auth
+    admin --> tracks
+    admin --> artists
+    admin --> albums
+    admin --> lyrics
     auth --> users
     artists --> follows
     artists --> uploads
@@ -362,15 +372,48 @@ What the numbers say: the search by words finds titles perfectly (nDCG 1.000) an
 
 All settings below are optional environment variables with the defaults shown (see `backend/.env.example`).
 
-| Topic                      | Behaviour                                                                                                                                                                                                                                                                                                                                                                          | Settings                                                                                                                          |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Rate limits**            | Three independent groups, counted per IP (play: per user): login + register `5/min` (each call can be a password guess), refresh `30/min` (a healthy app refreshes by itself), `POST /tracks/:id/play` `60/min`. Over the limit: `429`.                                                                                                                                            | `AUTH_THROTTLE_*`, `REFRESH_THROTTLE_*`, `PLAY_THROTTLE_*` (`LIMIT`, `TTL_SECONDS`)                                               |
-| **Cloudflare Turnstile**   | `POST /auth/login` needs a `turnstileToken` from the Turnstile widget on the login screen (a WebView on iOS / Android, Cloudflare's script on web). The server checks it with Siteverify before comparing the password: missing or failed `400`, Cloudflare unreachable `503`. Without a secret key the check is skipped (development only; production refuses to start).          | `TURNSTILE_SECRET_KEY`, `TURNSTILE_ALLOWED_HOSTNAMES`; mobile: `EXPO_PUBLIC_TURNSTILE_SITE_KEY`, `EXPO_PUBLIC_TURNSTILE_HOSTNAME` |
-| **Reverse proxy**          | `TRUST_PROXY=1` makes Express read the visitor's IP from the proxy's `X-Forwarded-For`, so the limits count real visitors behind Railway / Render. Use `0` / `false` when the API is reachable directly, otherwise a client could write that header itself and dodge the limit.                                                                                                    | `TRUST_PROXY` (`1`)                                                                                                               |
-| **Counting plays**         | `POST /tracks/:id/play` needs a login. The same user replaying the same track within the window answers `200 { plays, counted: false }` and changes nothing. Each counted listen is a `PlayEvent` row (also the base of a future "recently played" list). An unknown track is `404`.                                                                                               | `PLAY_DEDUPE_MINUTES` (`30`)                                                                                                      |
-| **Tracks without a file**  | `audioUrl` is optional (`null`). Commercial tracks only have a `youtubeVideoId`; the seed fills `audioUrl` just for the original demo tracks that are in the bucket. A track must have at least one of the two, or creating / updating it is `400`.                                                                                                                                |                                                                                                                                   |
-| **Comments**               | `GET /comments?trackId=` (or `postId=`) returns top-level comments, newest first, with `cursor` / `limit` (20, max 50): `{ items, nextCursor, total }`. Each comment carries its 3 newest replies (oldest first) and `repliesCount`; `GET /comments/:id/replies?cursor=&limit=` loads older ones. Replies are one level deep: answering a reply attaches to the top-level comment. |                                                                                                                                   |
-| **Refresh token rotation** | Every refresh replaces the token. Presenting a replaced token again is treated as theft and revokes the whole login (`401`), **except** during the grace period: the app may have been killed before it saved the new token, so a token replaced less than 10 s ago gets another new token of the same login.                                                                      | `REFRESH_REUSE_GRACE_SECONDS` (`10`; `0` turns it off)                                                                            |
+| Topic                      | Behaviour                                                                                                                                                                                                                                                                                                                                                                           | Settings                                                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Rate limits**            | Three independent groups, counted per IP (play: per user): login + register `5/min` (each call can be a password guess), refresh `30/min` (a healthy app refreshes by itself), `POST /tracks/:id/play` `60/min`. Over the limit: `429`.                                                                                                                                             | `AUTH_THROTTLE_*`, `REFRESH_THROTTLE_*`, `PLAY_THROTTLE_*` (`LIMIT`, `TTL_SECONDS`)                                               |
+| **Cloudflare Turnstile**   | `POST /auth/login` needs a `turnstileToken` from the Turnstile widget on the login screen (a WebView on iOS / Android, Cloudflare's script on web). The server checks it with Siteverify before comparing the password: missing or failed `400`, Cloudflare unreachable `503`. Without a secret key the check is skipped (development only; production refuses to start).           | `TURNSTILE_SECRET_KEY`, `TURNSTILE_ALLOWED_HOSTNAMES`; mobile: `EXPO_PUBLIC_TURNSTILE_SITE_KEY`, `EXPO_PUBLIC_TURNSTILE_HOSTNAME` |
+| **Reverse proxy**          | `TRUST_PROXY=1` makes Express read the visitor's IP from the proxy's `X-Forwarded-For`, so the limits count real visitors behind Railway / Render. Use `0` / `false` when the API is reachable directly, otherwise a client could write that header itself and dodge the limit.                                                                                                     | `TRUST_PROXY` (`1`)                                                                                                               |
+| **Counting plays**         | `POST /tracks/:id/play` needs a login. The same user replaying the same track within the window answers `200 { plays, counted: false }` and changes nothing. Each counted listen is a `PlayEvent` row (also the base of a future "recently played" list). An unknown track is `404`.                                                                                                | `PLAY_DEDUPE_MINUTES` (`30`)                                                                                                      |
+| **Tracks without a file**  | `audioUrl` is optional (`null`). Commercial tracks only have a `youtubeVideoId`; the seed fills `audioUrl` just for the original demo tracks that are in the bucket. A track must have at least one of the two, or creating / updating it is `400`.                                                                                                                                 |                                                                                                                                   |
+| **Comments**               | `GET /comments?trackId=` (or `postId=`) returns top-level comments, newest first, with `cursor` / `limit` (20, max 50): `{ items, nextCursor, total }`. Each comment carries its 3 newest replies (oldest first) and `repliesCount`; `GET /comments/:id/replies?cursor=&limit=` loads older ones. Replies are one level deep: answering a reply attaches to the top-level comment.  |                                                                                                                                   |
+| **Banned accounts**        | `User.isBanned`, set by an admin. A banned user gets `403` on login (after the password is checked, so strangers learn nothing) and on refresh; banning revokes all their refresh tokens; an access token they still hold is refused (`401`) because the guard reads role and ban from the database on every request (one primary-key read), so a ban or a demotion counts at once. |                                                                                                                                   |
+| **Refresh token rotation** | Every refresh replaces the token. Presenting a replaced token again is treated as theft and revokes the whole login (`401`), **except** during the grace period: the app may have been killed before it saved the new token, so a token replaced less than 10 s ago gets another new token of the same login.                                                                       | `REFRESH_REUSE_GRACE_SECONDS` (`10`; `0` turns it off)                                                                            |
+
+## Admin web
+
+`admin/` is a separate web app (Vite, React 19, Refine, Ant Design 5) for the people who run the
+service: catalog, accounts, lyrics. It only calls the API; every endpoint it uses is `@Auth(Role.ADMIN)`.
+
+```mermaid
+flowchart LR
+  Browser[Admin web<br/>nginx, port 5173] -->|"REST + Bearer token<br/>(refresh on 401, one at a time)"| API[NestJS API]
+  Browser -->|"PUT file (presigned URL)"| R2[(Cloudflare R2)]
+  API -->|"presign"| R2
+  API --> DB[(PostgreSQL)]
+  Browser -.->|"IFrame API (tap-sync of a YouTube track)"| YT[YouTube]
+  Browser -.->|"login check"| TS[Cloudflare Turnstile]
+```
+
+- **What it does:** dashboard (totals, plays and new users of the last 14 days, top tracks, DeepL quota),
+  tracks / artists / albums / feed, accounts (search, ban, role, delete), and the **lyrics editor**
+  (paste, tap-sync with `Space`, fine-tune by 0.1 s, preview, LRC import / export, translation).
+- **Backend endpoints made for it** (module `admin`, which owns no table and only calls other modules
+  through their public API): `GET /admin/stats`, `GET /admin/users?q=&role=&banned=&page=&limit=`,
+  `PATCH /admin/users/:id` `{ role?, isBanned? }`, `DELETE /admin/users/:id`,
+  `GET /admin/tracks/lyrics-status?ids=a,b,c` (one call for a whole page of the tracks table). An admin
+  cannot ban, demote or delete themselves (`400`); banning also revokes every refresh token of the user.
+  The users list is paged like the other lists (`page` / `limit`, answer `{ items, total, ... }`).
+- **Run it:** `docker compose up -d --build` starts `db`, `api` and `admin` (<http://localhost:5173>), or
+  `cd admin && npm install && npm run dev`. Log in with the seed admin (`SEED_ADMIN_EMAIL` /
+  `SEED_ADMIN_PASSWORD`, created when `SEED_ON_START=true`). Uploads need the `R2_*` settings and a CORS
+  rule on the bucket that allows `PUT` from the admin origin. Everything is explained in
+  [`admin/README.md`](admin/README.md).
+- **Apply the migration** that adds `User.isBanned` before using it: `cd backend && npm run prisma:deploy`
+  (the Docker API does it on start).
 
 ## Languages and translation (DeepL)
 
@@ -547,6 +590,7 @@ The backend must be deployed first (any host that runs the Docker image or `npm 
 | `mobile/`  | `npm test`               | Jest unit and component tests (the player, the API client, the stores, helpers, the track row, the login screen, the theme)                                                       |
 | `mobile/`  | `npm test -- --coverage` | The same with a coverage table for `src/utils` and `src/store` (the build fails under 80%; it is about 96% today)                                                                 |
 | `backend/` | `npm test`               | Unit tests of the configuration, pagination, Turnstile, health and the other small pieces                                                                                         |
+| `admin/`   | `npm test`               | Vitest unit tests of the pure logic (LRC, tap-sync, lyrics checks, upload rules, data provider, token refresh); on Windows run from PowerShell or cmd                             |
 | `backend/` | `npm run test:e2e`       | Builds the API, then runs end-to-end specs against a real PostgreSQL (needs `docker compose up -d db`; it creates its own `*_e2e` database and never touches the development one) |
 
 Every push and pull request into `main` and `dev` runs [`.github/workflows/ci.yml`](.github/workflows/ci.yml): two jobs in parallel, **Backend** (Prisma generate and migrate on a PostgreSQL service, lint, types, unit and e2e tests) and **Mobile** (lint, types, tests with coverage). npm downloads are cached per `package-lock.json`.

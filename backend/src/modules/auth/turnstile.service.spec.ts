@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, jest } from "@jest/globals"
 import { BadRequestException, Logger, ServiceUnavailableException } from "@nestjs/common"
 import type { ConfigService } from "@nestjs/config"
 import { TurnstileService } from "./turnstile.service.js"
-g
+
 const SECRET = "0x4AAAAAAF0pCDx-SgZEXiN7Y5lR8oAib0k"
 
 function makeService(env: Record<string, string | undefined>) {

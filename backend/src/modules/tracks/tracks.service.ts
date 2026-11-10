@@ -8,7 +8,8 @@ import { ConfigService } from "@nestjs/config"
 import type { Track } from "../../generated/prisma/client.js"
 import type { Region } from "../../generated/prisma/enums.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
-import { CatalogEvents, pageArgs, toPage, type Page } from "../../shared/index.js"
+import { CatalogEvents, pageArgs, toPage, type DailyCount, type Page } from "../../shared/index.js"
+import { dailyCountsQuery } from "../../shared/stats/daily-counts.js"
 import { backfillSearchNames } from "../../shared/text/backfill-search-names.js"
 import { toSearchName } from "../../shared/text/search-name.js"
 import { ArtistsService } from "../artists/index.js"
@@ -294,6 +295,20 @@ export class TracksService implements OnModuleInit {
 
   count(): Promise<number> {
     return this.prisma.track.count()
+  }
+
+  /** For the admin module: the plays of all tracks added up (the number the app shows). */
+  async totalPlays(): Promise<number> {
+    const sum = await this.prisma.track.aggregate({ _sum: { plays: true } })
+    return sum._sum.plays ?? 0
+  }
+
+  /**
+   * For the admin module: listens counted per day over the last `days` days (today included), by
+   * the day of `timeZone`; days without any are left out.
+   */
+  playsByDay(days: number, timeZone: string): Promise<DailyCount[]> {
+    return this.prisma.$queryRaw<DailyCount[]>(dailyCountsQuery("PlayEvent", days, timeZone))
   }
 
   async remove(id: string): Promise<void> {
