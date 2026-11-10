@@ -126,10 +126,24 @@ export function ArtistList() {
           fixed="right"
           render={(_, artist) => (
             <Space>
-              <ShowButton hideText size="small" recordItemId={artist.id} />
-              <EditButton hideText size="small" recordItemId={artist.id} />
+              <ShowButton
+                hideText
+                size="small"
+                title="Xem"
+                aria-label="Xem"
+                recordItemId={artist.id}
+              />
+              <EditButton
+                hideText
+                size="small"
+                title="Sửa"
+                aria-label="Sửa"
+                recordItemId={artist.id}
+              />
               <DeleteButton
                 hideText
+                title="Xoá"
+                aria-label="Xoá"
                 size="small"
                 recordItemId={artist.id}
                 confirmTitle="Xoá nghệ sĩ này và toàn bộ bài hát, album của họ?"

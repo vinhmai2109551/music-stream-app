@@ -98,10 +98,24 @@ export function AlbumList() {
           fixed="right"
           render={(_, album) => (
             <Space>
-              <ShowButton hideText size="small" recordItemId={album.id} />
-              <EditButton hideText size="small" recordItemId={album.id} />
+              <ShowButton
+                hideText
+                size="small"
+                title="Xem"
+                aria-label="Xem"
+                recordItemId={album.id}
+              />
+              <EditButton
+                hideText
+                size="small"
+                title="Sửa"
+                aria-label="Sửa"
+                recordItemId={album.id}
+              />
               <DeleteButton
                 hideText
+                title="Xoá"
+                aria-label="Xoá"
                 size="small"
                 recordItemId={album.id}
                 confirmTitle="Xoá album này? (các bài hát vẫn được giữ)"

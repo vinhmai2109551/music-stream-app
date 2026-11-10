@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { parseYouTubeVideoId } from "./youtube"
+import { parseYouTubeVideoId, youtubeEmbedUrl, youtubeWatchUrl } from "./youtube"
 
 const ID = "dQw4w9WgXcQ"
 
@@ -38,5 +38,19 @@ describe("parseYouTubeVideoId", () => {
     ["a link of another site that has the id in it", `https://example.com/watch?v=${ID}`],
   ])("gives null for %s", (_name, input) => {
     expect(parseYouTubeVideoId(input)).toBeNull()
+  })
+})
+
+describe("embed and watch urls", () => {
+  it("keep a real id as it is", () => {
+    expect(youtubeEmbedUrl(ID)).toBe(`https://www.youtube-nocookie.com/embed/${ID}`)
+    expect(youtubeWatchUrl("a-b_c-d_e-f")).toBe("https://www.youtube.com/watch?v=a-b_c-d_e-f")
+  })
+
+  it("never let an odd value change the path or the query of the address", () => {
+    expect(youtubeEmbedUrl("../x?y=1&z=2")).toBe(
+      "https://www.youtube-nocookie.com/embed/..%2Fx%3Fy%3D1%26z%3D2",
+    )
+    expect(youtubeWatchUrl("a&b=c")).toBe("https://www.youtube.com/watch?v=a%26b%3Dc")
   })
 })
