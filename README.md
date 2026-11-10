@@ -262,7 +262,7 @@ cd backend && npm run prisma:deploy     # applies the pgvector migration
 
 (Back up first if the data matters: `docker compose exec db sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' > backup.dump`.) A fresh volume needs none of this.
 
-**Text embeddings** (used by the semantic features that follow) need `EMBEDDING_PROVIDER=gemini` and an `EMBEDDING_API_KEY` in `backend/.env` (a key from [Google AI Studio](https://aistudio.google.com/apikey); the model is `gemini-embedding-2`, 768-number vectors). Without them those features answer `503` and are hidden in the app; everything else works. `EMBEDDING_PROVIDER=fake` is a deterministic offline stand-in for development and tests, refused in production. A new or edited track or artist gets its vector in the background; to catch up on everything (after the first seed, after `npm run ai:enrich`, or when the model changes) run `npm run ai:embed` in `backend/` (`-- --force` makes every vector again). It only does the work that is left, 64 texts at a time, waits out rate limits, and is safe to run again. Content sent through Google's free tier may be used by Google to improve its products.
+**Text embeddings** (used by the semantic features that follow) need `EMBEDDING_PROVIDER=gemini` and an `EMBEDDING_API_KEY` in `backend/.env` (a key from [Google AI Studio](https://aistudio.google.com/apikey); the model is `gemini-embedding-2`, 768-number vectors). Without them those features answer `503` and are hidden in the app; everything else works. `EMBEDDING_PROVIDER=fake` is a deterministic offline stand-in for development and tests, refused in production. A new or edited track or artist gets its vector in the background; to catch up on everything (after the first seed, after `npm run ai:enrich`, or when the model changes) run `npm run ai:embed` in `backend/` (`-- --force` makes every vector again). It only does the work that is left, 64 texts at a time, retries a rate limit for a few seconds, and is safe to run again. Google's free tier allows 100 texts a minute, so a first run over a whole catalog can stop with a 429: run it again a minute later and it continues where it stopped. Content sent through Google's free tier may be used by Google to improve its products.
 
 ```mermaid
 flowchart LR
@@ -348,13 +348,15 @@ npm run ai:embed      # vectors for tracks, artists and the help texts; only wha
 npm run ai:eval       # Recall@10, MRR@10 and nDCG@10 of the three searches -> eval/results.md
 ```
 
-Results of `ai:eval` (copy the summary table of `backend/eval/results.md` here after a run; nothing has been measured in this repository yet, so no number is claimed):
+Results of `ai:eval` (2026-11-10: 33 questions, 122 tracks, `gemini-embedding-2`; the full report with every question is `backend/eval/results.md`, made by the command, so run it again after changing the metadata or the model):
 
 | Search                     | Recall@10 | MRR@10 | nDCG@10 |
-| -------------------------- | --------- | ------ | ------- |
-| By words                   | –         | –      | –       |
-| By meaning                 | –         | –      | –       |
-| Merged (what the app uses) | –         | –      | –       |
+| -------------------------- | --------: | -----: | ------: |
+| By words                   |     0.273 |  0.273 |   0.273 |
+| By meaning                 |     0.635 |  0.705 |   0.611 |
+| Merged (what the app uses) |     0.635 |  0.720 |   0.622 |
+
+What the numbers say: the search by words finds titles perfectly (nDCG 1.000) and artists almost (0.800, it misses a nickname such as 'đen vâu'), and nothing else (0.000 on mood, occasion and genre questions); the search by meaning finds genres well (0.831) and moods less well (0.423), and occasions worst (0.191); merging keeps the exact matches of the first and the meaning of the second, so it is never behind the better of the two on title and artist questions and a little ahead overall. The labels were chosen from the same metadata the vectors are made of, so mood and genre scores are a little optimistic, and 33 questions are enough to compare the three searches but not to promise a figure.
 
 ### Behaviour worth knowing
 
