@@ -24,6 +24,7 @@ const MODULES = [
   "recommendations",
   "search",
   "tracks",
+  "translation",
   "uploads",
   "users",
 ]

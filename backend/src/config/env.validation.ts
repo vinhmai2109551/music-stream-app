@@ -50,6 +50,20 @@ class AiProviderConstraint implements ValidatorConstraintInterface {
   }
 }
 
+/** `deepl`, or `fake` (calls nobody; only for tests and offline development). */
+@ValidatorConstraint({ name: "translationProvider" })
+class TranslationProviderConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown, args: ValidationArguments): boolean {
+    const name = typeof value === "string" ? value.trim().toLowerCase() : ""
+    if (name === "deepl") return true
+    return name === "fake" && (args.object as EnvironmentVariables).NODE_ENV !== "production"
+  }
+
+  defaultMessage(): string {
+    return "TRANSLATION_PROVIDER must be deepl (fake is only allowed outside production)"
+  }
+}
+
 class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
@@ -216,6 +230,22 @@ class EnvironmentVariables {
   @ValidateIf((env: EnvironmentVariables) => Boolean(env.AI_PROVIDER?.trim()))
   @Validate(AiProviderConstraint)
   AI_PROVIDER?: string
+
+  /** Key of the DeepL API (free keys end in ":fx"). Required in production; blank = translating is off. */
+  @ValidateIf(requiredInProduction)
+  @IsString()
+  @IsNotEmpty({ message: "DEEPL_API_KEY is required in production" })
+  DEEPL_API_KEY?: string
+
+  /** Retries after the first attempt for a 429, a 5xx or a network failure. */
+  @IsOptional()
+  @Matches(/^(10|\d)$/, { message: "DEEPL_MAX_RETRIES must be a whole number from 0 to 10" })
+  DEEPL_MAX_RETRIES?: string
+
+  /** Blank = deepl. `fake` calls nobody and writes "[<language>] <text>". */
+  @ValidateIf((env: EnvironmentVariables) => Boolean(env.TRANSLATION_PROVIDER?.trim()))
+  @Validate(TranslationProviderConstraint)
+  TRANSLATION_PROVIDER?: string
 
   @IsOptional()
   @Matches(POSITIVE_INTEGER, { message: "AI_CHAT_THROTTLE_LIMIT must be a positive integer" })

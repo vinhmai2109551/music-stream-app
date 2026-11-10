@@ -47,6 +47,10 @@ const TEST_ENV = {
   EMBEDDING_PROVIDER: "",
   EMBEDDING_MODEL: "",
   EMBEDDING_API_KEY: "",
+  // Blank, so the real DeepL key (and its monthly allowance) never reaches a test server; a spec
+  // that needs a translator sets the fake provider.
+  DEEPL_API_KEY: "",
+  TRANSLATION_PROVIDER: "",
   // Blank, so login specs do not need a Turnstile token (the service is unit tested on its own).
   TURNSTILE_SECRET_KEY: "",
   TURNSTILE_ALLOWED_HOSTNAMES: "",

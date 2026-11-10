@@ -15,6 +15,9 @@ const r2 = {
 }
 
 const turnstile = { TURNSTILE_SECRET_KEY: "0x4AAAAAAA-secret" }
+const deepl = { DEEPL_API_KEY: "00000000-0000-0000-0000-000000000000:fx" }
+/** The secrets a production environment has to carry besides R2. */
+const secrets = { ...turnstile, ...deepl }
 
 describe("validateEnv", () => {
   it("accepts a minimal development environment without any R2 setting", () => {
@@ -39,9 +42,7 @@ describe("validateEnv", () => {
   })
 
   it("accepts a complete production environment", () => {
-    expect(() =>
-      validateEnv({ ...base, NODE_ENV: "production", ...r2, ...turnstile }),
-    ).not.toThrow()
+    expect(() => validateEnv({ ...base, NODE_ENV: "production", ...r2, ...secrets })).not.toThrow()
   })
 
   it("requires TURNSTILE_SECRET_KEY in production only", () => {
@@ -61,7 +62,7 @@ describe("validateEnv", () => {
           ...base,
           NODE_ENV: "production",
           ...r2,
-          ...turnstile,
+          ...secrets,
           TURNSTILE_ALLOWED_HOSTNAMES: value,
         }),
       ).not.toThrow()
@@ -109,7 +110,7 @@ describe("validateEnv", () => {
         validateEnv({
           ...base,
           ...r2,
-          ...turnstile,
+          ...secrets,
           NODE_ENV: "production",
           EMBEDDING_PROVIDER: "fake",
         }),
@@ -118,7 +119,7 @@ describe("validateEnv", () => {
         validateEnv({
           ...base,
           ...r2,
-          ...turnstile,
+          ...secrets,
           NODE_ENV: "production",
           EMBEDDING_PROVIDER: "gemini",
         }),
