@@ -1,5 +1,7 @@
 /** Public API of the lyrics module. Other modules must import from here only. */
 export { LyricsModule } from "./lyrics.module.js"
+export { LyricsService } from "./lyrics.service.js"
+export type { LyricsStatus } from "./lyrics.service.js"
 export { lyricsThrottler } from "./lyrics.config.js"
 export { lyricsContentHash, normalizeLines } from "./lyrics-text.js"
 export { LYRICS_SOURCE } from "./ports.js"

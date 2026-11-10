@@ -1,0 +1,24 @@
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The page behind Ant Design follows the mode (the components colour themselves). */
+html[data-theme="dark"] body {
+  background: #000;
+}
+
+html[data-theme="light"] body {
+  background: #f5f5f5;
+}
+
+/* A card or table never makes the whole page scroll sideways on a phone. */
+.ant-table-wrapper {
+  max-width: 100%;
+}

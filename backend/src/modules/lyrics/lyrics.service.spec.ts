@@ -138,3 +138,27 @@ describe("a connected lyrics source", () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 })
+
+describe("LyricsService.statusOf", () => {
+  it("tells apart tracks with timed lyrics, plain lyrics and none, without asking a source", async () => {
+    const fetch = jest.fn<LyricsSource["fetch"]>(async () => null)
+    const { service } = setup({ fetch })
+    await service.put("t1", { ...INPUT, timingsMs: [0, 1000, 2000] })
+
+    const status = await service.statusOf(["t1", "t2"])
+
+    expect(status.get("t1")).toEqual({ hasLyrics: true, hasTimings: true })
+    expect(status.has("t2")).toBe(false)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it("says plain lyrics have no timings", async () => {
+    const { service } = setup()
+    await service.put("t1", INPUT)
+
+    expect((await service.statusOf(["t1"])).get("t1")).toEqual({
+      hasLyrics: true,
+      hasTimings: false,
+    })
+  })
+})

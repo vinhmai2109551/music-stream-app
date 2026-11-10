@@ -44,6 +44,8 @@ export interface TranslationInput {
 /** Where the lyrics and their translations are kept. */
 export interface LyricsStore {
   findLyrics(trackId: string): Promise<StoredLyrics | null>
+  /** Which of these tracks have lyrics, and whether those lyrics are timed. Tracks without lyrics are left out. */
+  findStatuses(trackIds: readonly string[]): Promise<{ trackId: string; timed: boolean }[]>
   upsertLyrics(input: LyricsInput): Promise<StoredLyrics>
   /** Removes the translations of the lyrics that were made from another version of the text. */
   deleteStaleTranslations(lyricsId: string, currentHash: string): Promise<void>

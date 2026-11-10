@@ -24,5 +24,6 @@ import { TurnstileService } from "./turnstile.service.js"
   ],
   controllers: [AuthController],
   providers: [AuthService, RefreshTokenService, JwtStrategy, TurnstileService],
+  exports: [AuthService],
 })
 export class AuthModule {}

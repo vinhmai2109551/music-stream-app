@@ -35,6 +35,8 @@ model User {
   avatarUrl    String?
   role         Role     @default(USER)
   isPremium    Boolean  @default(false)
+  /// A banned user cannot log in, refresh a token or use an access token that is still valid.
+  isBanned     Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

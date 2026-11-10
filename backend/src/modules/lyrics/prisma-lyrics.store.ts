@@ -16,6 +16,14 @@ export class PrismaLyricsStore implements LyricsStore {
     return this.prisma.trackLyrics.findUnique({ where: { trackId } })
   }
 
+  async findStatuses(trackIds: readonly string[]): Promise<{ trackId: string; timed: boolean }[]> {
+    const rows = await this.prisma.trackLyrics.findMany({
+      where: { trackId: { in: [...trackIds] } },
+      select: { trackId: true, timingsMs: true },
+    })
+    return rows.map((row) => ({ trackId: row.trackId, timed: row.timingsMs.length > 0 }))
+  }
+
   upsertLyrics(input: LyricsInput): Promise<StoredLyrics> {
     const { trackId, ...data } = input
     return this.prisma.trackLyrics.upsert({

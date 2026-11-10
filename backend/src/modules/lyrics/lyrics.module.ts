@@ -44,5 +44,6 @@ import { TranslationGateway } from "./translation-gateway.js"
     LyricsService,
     LyricsTranslationService,
   ],
+  exports: [LyricsService],
 })
 export class LyricsModule {}
