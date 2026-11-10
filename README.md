@@ -70,6 +70,9 @@ The app consists of the 13 screens of the design:
 - Two playback sources: audio files from our own storage (`expo-audio`) and official YouTube videos (embedded player) — see [Playback architecture](#playback-architecture)
 - Region filter on Home (Vietnam, K-Pop, J-Pop, C-Pop)
 - **AI assistant** (`/assistant`), opened from the mascot button in the middle of the tab bar or from the account sheet: a chat whose answer streams in word by word (Server-Sent Events through `expo/fetch`), with a Stop button, the tracks / artists / playlists it finds shown as the app's own rows, "Đồng ý / Huỷ" before it changes your library, and a list of past conversations (open, start new, delete). It is hidden when the server answers `503` (no key, or switched off) — see [Backend](#backend)
+- **Search by meaning and recommendations**: the search results add a "Theo tâm trạng" section with tracks found by meaning ("nhạc buồn ngày mưa"), Home adds "Dành cho bạn" and "Vì bạn đã nghe", and the Player lists "Bài tương tự". Each section is hidden when the server answers `503` (no embedding key) — see [Backend](#backend)
+- **Five languages** (Vietnamese, English, Korean, Japanese, Simplified Chinese): the app follows the phone, the choice is made in **Account → Language** and applied at once; the texts are translated with DeepL while developing — see [Languages and translation](#languages-and-translation-deepl)
+- **Lyrics and their translation** in the Player: the original lyrics, a "Dịch sang …" button, the translation beside the original or alone, labelled "Bản dịch tự động"
 - Persistent library state (likes, follows, playlists, recent searches) via Zustand + AsyncStorage
 - Reusable UI kit: `AppText`, `Button`, `Chip`, `IconButton`, `SearchBar`, `BottomSheet`, `Toast`, `Skeleton`, `EmptyState`
 - Centralised design tokens (colors, typography, spacing, radius, shadows)
@@ -103,22 +106,24 @@ The images are screenshots of the running app. The files to capture, what each o
 
 ## Tech Stack
 
-| Area         | Technology                                                                                           |
-| ------------ | ---------------------------------------------------------------------------------------------------- |
-| Framework    | [Expo](https://expo.dev) SDK 58, React Native 0.88, React 19                                         |
-| Language     | TypeScript                                                                                           |
-| Navigation   | Expo Router (file-based, typed routes)                                                               |
-| State        | Zustand with `persist` middleware                                                                    |
-| Storage      | `@react-native-async-storage/async-storage`                                                          |
-| Audio        | `expo-audio` (files from R2), `react-native-youtube-iframe` + `react-native-webview` (YouTube)       |
-| Animation    | React Native Reanimated, Gesture Handler, Worklets                                                   |
-| UI & visuals | `expo-image`, `expo-linear-gradient`, `expo-blur`, `lucide-react-native`, `react-native-svg`         |
-| Typography   | Inter via `@expo-google-fonts/inter`                                                                 |
-| Code quality | ESLint (`eslint-config-expo`), Prettier, `tsc`                                                       |
-| Testing      | Jest (`jest-expo`) and React Native Testing Library for the app; Jest and supertest for the API      |
-| Backend      | NestJS 12 (ESM), Prisma 7, PostgreSQL 16, Cloudflare R2 for files                                    |
-| Security     | Cloudflare Turnstile on login, `@nestjs/throttler` rate limits, JWT access + rotating refresh tokens |
-| Build & CI   | GitHub Actions (`.github/workflows/ci.yml`), EAS Build (`mobile/eas.json`)                           |
+| Area         | Technology                                                                                                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework    | [Expo](https://expo.dev) SDK 58, React Native 0.88, React 19                                                                                                                          |
+| Language     | TypeScript                                                                                                                                                                            |
+| Navigation   | Expo Router (file-based, typed routes)                                                                                                                                                |
+| State        | Zustand with `persist` middleware                                                                                                                                                     |
+| Storage      | `@react-native-async-storage/async-storage`                                                                                                                                           |
+| Audio        | `expo-audio` (files from R2), `react-native-youtube-iframe` + `react-native-webview` (YouTube)                                                                                        |
+| Animation    | React Native Reanimated, Gesture Handler, Worklets                                                                                                                                    |
+| UI & visuals | `expo-image`, `expo-linear-gradient`, `expo-blur`, `lucide-react-native`, `react-native-svg`                                                                                          |
+| Typography   | Inter via `@expo-google-fonts/inter`                                                                                                                                                  |
+| Code quality | ESLint (`eslint-config-expo`), Prettier, `tsc`                                                                                                                                        |
+| Testing      | Jest (`jest-expo`) and React Native Testing Library for the app; Jest and supertest for the API                                                                                       |
+| Backend      | NestJS 12 (ESM), Prisma 7, PostgreSQL 16 with pgvector, Cloudflare R2 for files                                                                                                       |
+| Search & AI  | Vectors in pgvector (`gemini-embedding-2`, 768 numbers) for search by meaning and recommendations; the assistant is Gemini (Interactions API). Both sit behind provider-neutral ports |
+| Languages    | `i18next`, `react-i18next`, `expo-localization` in the app; DeepL (`deepl-node`) from the backend only                                                                                |
+| Security     | Cloudflare Turnstile on login, `@nestjs/throttler` rate limits, JWT access + rotating refresh tokens                                                                                  |
+| Build & CI   | GitHub Actions (`.github/workflows/ci.yml`), EAS Build (`mobile/eas.json`)                                                                                                            |
 
 ## Project Structure
 
@@ -146,7 +151,6 @@ music-stream-app/
 ├── docker-compose.yml       # PostgreSQL + API (with a healthcheck)
 ├── docs/screenshots/        # Screenshots used by this README
 ├── .github/workflows/       # CI
-├── frontend/                # Admin web app (planned)
 └── README.md
 ```
 
@@ -195,7 +199,6 @@ domain is a self-contained module that owns its tables and exposes a small publi
 ```mermaid
 flowchart LR
   Mobile[Mobile app] --> API
-  Admin[Admin web] --> API
   subgraph API[NestJS API]
     direction TB
     auth --> users
@@ -261,37 +264,97 @@ cd backend && npm run prisma:deploy     # applies the pgvector migration
 
 **Text embeddings** (used by the semantic features that follow) need `EMBEDDING_PROVIDER=gemini` and an `EMBEDDING_API_KEY` in `backend/.env` (a key from [Google AI Studio](https://aistudio.google.com/apikey); the model is `gemini-embedding-2`, 768-number vectors). Without them those features answer `503` and are hidden in the app; everything else works. `EMBEDDING_PROVIDER=fake` is a deterministic offline stand-in for development and tests, refused in production. A new or edited track or artist gets its vector in the background; to catch up on everything (after the first seed, after `npm run ai:enrich`, or when the model changes) run `npm run ai:embed` in `backend/` (`-- --force` makes every vector again). It only does the work that is left, 64 texts at a time, waits out rate limits, and is safe to run again. Content sent through Google's free tier may be used by Google to improve its products.
 
+```mermaid
+flowchart LR
+  subgraph Index["Indexing: ai:embed, and in the background when a track changes"]
+    T["Track or artist: title, artist, genres, mood, tags, description (never lyrics)"] --> X["One text per row (embedding-text.ts)"]
+    X --> H{"Text or model changed?"}
+    H -- no --> S["Skipped"]
+    H -- yes --> E["Gemini embedding: 768 numbers"]
+    E --> V[("pgvector: HNSW index, cosine")]
+  end
+  subgraph Read["Reading"]
+    Q["Question: nhạc buồn ngày mưa"] --> QE["Embed the question"]
+    QE --> N["Nearest vectors"]
+    V --> N
+    Q --> K["Search by words (searchName, no accents)"]
+    N --> F["Reciprocal rank fusion"]
+    K --> F
+    F --> R["Search by meaning"]
+    V --> TV["Taste vector of liked and played tracks, then MMR"]
+    TV --> REC["For you, Because you listened, Similar tracks"]
+  end
+```
+
 **Help texts for the assistant** live in `backend/src/modules/ai/knowledge/*.md` (what the app does and does not do; edit them like any document). `npm run ai:embed` also cuts them into chunks of about 500 characters (50 overlap, never across a heading), stores one vector per chunk in `KnowledgeChunk` and, on the next run, remakes only the chunks whose text changed. `KNOWLEDGE_DIR` points to another folder. Write only what is true of the app: the assistant quotes these files as its answer.
 
 **The AI assistant** (`backend/src/modules/ai`) is a chat with a language model (Gemini through the Interactions API, behind a provider-neutral `LlmClient`). It needs `GEMINI_API_KEY` (or `EMBEDDING_API_KEY`, one Google AI Studio key does both); without a key every `/api/ai/*` endpoint answers `503` and the app hides the feature. The key stays on the server.
 
-| Endpoint | What it does |
-| --- | --- |
-| `POST /api/ai/conversations` | New conversation (an empty one is given again; at most 50 per user, then `409`) |
-| `GET /api/ai/conversations` | The user's conversations, most recently used first |
-| `GET /api/ai/conversations/:id/messages` | What was said (the latest 500) |
-| `DELETE /api/ai/conversations/:id` | Deletes it (`409` while an answer is being written) |
+| Endpoint                                  | What it does                                                                         |
+| ----------------------------------------- | ------------------------------------------------------------------------------------ |
+| `POST /api/ai/conversations`              | New conversation (an empty one is given again; at most 50 per user, then `409`)      |
+| `GET /api/ai/conversations`               | The user's conversations, most recently used first                                   |
+| `GET /api/ai/conversations/:id/messages`  | What was said (the latest 500)                                                       |
+| `DELETE /api/ai/conversations/:id`        | Deletes it (`409` while an answer is being written)                                  |
 | `POST /api/ai/conversations/:id/messages` | Sends `{ text }` (1 to 2000 characters) and streams the answer as Server-Sent Events |
-| `GET /api/ai/usage` | `{ used, limit }` of today |
+| `GET /api/ai/usage`                       | `{ used, limit }` of today                                                           |
 
 The answer is `text/event-stream`: `text_delta` `{ text }` pieces, then `done` `{ messageId, truncated }` or `error` `{ code, message }`. Anything that can be refused is an ordinary JSON error before the stream starts: `404` (not your conversation), `409` (the previous answer is still being written), `429` (more than 12 messages a minute, or the daily limit of `AI_DAILY_MESSAGE_LIMIT`, 30, counted per day of Vietnam time in its own table so that deleting a conversation gives nothing back), `503`. A rate limit of the model is retried once, then shown as "Trợ lý đang quá tải, thử lại sau ít phút"; a failed or cancelled answer is not kept and not counted. Closing the connection cancels the request to the model. Only the last 20 messages go to the model. `AI_PROVIDER=fake` is an echo for tests and offline development (refused in production). The "an answer is being written" lock is in memory, which is right for one API instance; behind several, make it a database lock first.
 
 **What the assistant can do (tools).** The model never touches data itself: it asks the server to run a tool, at most 6 per message, and the server checks every argument and acts only for the signed-in user.
 
-| Tool | Kind | What it does |
-| --- | --- | --- |
-| `search_catalog` | read | Hybrid search (words + meaning) of tracks, artists, albums or playlists |
-| `get_track`, `get_artist`, `get_album`, `get_playlist` | read | Details; a playlist is an editorial one or the user's own |
-| `get_my_library` | read | Liked tracks, followed artists, the user's playlists with their ids |
-| `recommend_tracks`, `similar_tracks` | read | Personal and similar tracks (see Recommendations) |
-| `search_help` | read | Looks up the help texts and returns the source to cite |
-| `play_tracks` | app | Sends the app a `client_action` event (up to 50 tracks); changes nothing |
+| Tool                                                                        | Kind   | What it does                                                                                                                                                              |
+| --------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `search_catalog`                                                            | read   | Hybrid search (words + meaning) of tracks, artists, albums or playlists                                                                                                   |
+| `get_track`, `get_artist`, `get_album`, `get_playlist`                      | read   | Details; a playlist is an editorial one or the user's own                                                                                                                 |
+| `get_my_library`                                                            | read   | Liked tracks, followed artists, the user's playlists with their ids                                                                                                       |
+| `recommend_tracks`, `similar_tracks`                                        | read   | Personal and similar tracks (see Recommendations)                                                                                                                         |
+| `search_help`                                                               | read   | Looks up the help texts and returns the source to cite                                                                                                                    |
+| `play_tracks`                                                               | app    | Sends the app a `client_action` event (up to 50 tracks); changes nothing                                                                                                  |
 | `create_playlist`, `add_tracks_to_playlist`, `like_tracks`, `follow_artist` | change | Only **proposed**: the server stores a pending action (10 minutes), sends `action_required` and ends the stream; nothing happens until `POST /api/ai/actions/:id/confirm` |
 
 `/reject` turns it down. Both answers stream the rest of the assistant's reply, like a message does (`tool_result` first). They count as one message of the daily limit (at the limit a confirmed change is still made and reported, without a model reply) and the 12 per minute limit, counted per endpoint. A proposal is valid for the person who got it (`404` for anyone else), once (`409`), and for 10 minutes (`410`); writing a new message instead ends it. Only one change is proposed per round, only to the user's **own** playlists (an admin's assistant too), at most 50 tracks per call. SSE events: `text_delta`, `tool_call`, `tool_result` (with the `display` cards), `action_required`, `client_action`, `done` (`awaitingAction`), `error`.
 
+```mermaid
+sequenceDiagram
+  participant App as Mobile app
+  participant API as API (messages of a conversation)
+  participant Agent as Agent loop
+  participant LLM as Gemini (Interactions API)
+  participant Tool as Tools
+  participant Svc as Services (search, tracks, playlists, likes)
+  App->>API: text (the answer streams back as SSE)
+  API->>Agent: the last 20 messages
+  loop at most 6 tool calls
+    Agent->>LLM: messages and the list of tools
+    LLM-->>Agent: text, or a tool call
+    Agent->>Tool: arguments checked, acting for the signed-in user
+    Tool->>Svc: read, or only propose a change
+    Svc-->>Tool: result
+    Tool-->>Agent: result and the cards for the app
+  end
+  Agent-->>App: text_delta, tool_result, action_required, client_action, done
+  App->>API: POST /ai/actions/:id/confirm (only then is the change made)
+```
 
 **Measuring the search.** `npm run ai:eval` (in `backend/`, after `prisma:seed` and `ai:embed`) runs the ~30 Vietnamese and English questions of `backend/eval/search-queries.json` (each with the tracks a person accepts as a good answer) through the search by words, the search by meaning and the two merged, prints Recall@10, MRR@10 and nDCG@10 for each, and writes `backend/eval/results.md` (per kind of query and per query, and the queries where merging is worse than the better list). It refuses to run with the offline `fake` provider (its numbers would say nothing about meaning), with tracks that have no vector, or with a track id that is not in the database. The labels were chosen from titles, artists, languages and the catalog metadata, which is also the text of the vectors, so mood questions favour the vector search a little.
+
+**From an empty database to a measured search** (in `backend/`, with `EMBEDDING_PROVIDER=gemini` and a key in `.env`):
+
+```bash
+npm run prisma:seed   # the catalog (or SEED_ON_START=true once)
+npm run ai:enrich     # optional: proposes genres, moods, tags and a description for each track in src/seed/catalog/metadata.json; a person reviews it
+npm run ai:embed      # vectors for tracks, artists and the help texts; only what changed, safe to run again
+npm run ai:eval       # Recall@10, MRR@10 and nDCG@10 of the three searches -> eval/results.md
+```
+
+Results of `ai:eval` (copy the summary table of `backend/eval/results.md` here after a run; nothing has been measured in this repository yet, so no number is claimed):
+
+| Search                     | Recall@10 | MRR@10 | nDCG@10 |
+| -------------------------- | --------- | ------ | ------- |
+| By words                   | –         | –      | –       |
+| By meaning                 | –         | –      | –       |
+| Merged (what the app uses) | –         | –      | –       |
 
 ### Behaviour worth knowing
 
@@ -314,9 +377,9 @@ The app speaks five languages: Vietnamese (`vi`, the language every text is writ
 different things, and only the **backend** ever talks to it: the key lives in `backend/.env`, never
 in `mobile/` (nothing in the app calls DeepL, and a value in `mobile/.env` must not be there).
 
-| What | When | Where |
-| --- | --- | --- |
-| The texts of the app | While you develop, with a script; the result is committed | `mobile/src/i18n/` |
+| What                 | When                                                            | Where                        |
+| -------------------- | --------------------------------------------------------------- | ---------------------------- |
+| The texts of the app | While you develop, with a script; the result is committed       | `mobile/src/i18n/`           |
 | The lyrics of a song | When a person asks for a translation, then kept in the database | `backend/src/modules/lyrics` |
 
 DeepL's free plan allows **500 000 characters a month**, so nothing is translated twice (see below).
@@ -354,13 +417,13 @@ All endpoints need a login. The lyrics are text that may be stored: your own, or
 data has three short texts written for the project (`source: "demo"`, and the first line says they are not the real
 lyrics). The AI assistant has no tool for lyrics and the track views never carry them.
 
-| Endpoint | What it does |
-| --- | --- |
-| `GET /api/tracks/:id/lyrics` | The original lyrics: `{ language, lines, timingsMs, source }`. A track without lyrics answers `404` with `code: "LYRICS_NOT_FOUND"` |
+| Endpoint                                         | What it does                                                                                                                                                 |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/tracks/:id/lyrics`                     | The original lyrics: `{ language, lines, timingsMs, source }`. A track without lyrics answers `404` with `code: "LYRICS_NOT_FOUND"`                          |
 | `GET /api/tracks/:id/lyrics/translation?lang=ko` | The translation, one element per original line (blank lines stay blank, in place). Kept in the database: the first request translates, the next ones read it |
-| `PUT /api/tracks/:id/lyrics` | Writes (replaces) the lyrics; **admin only**. At most 500 lines, 500 characters a line, 20 000 in all |
+| `PUT /api/tracks/:id/lyrics`                     | Writes (replaces) the lyrics; **admin only**. At most 500 lines, 500 characters a line, 20 000 in all                                                        |
 
-- A translation belongs to a *version* of the lyrics (a hash of the text). Replacing the lyrics deletes the old translations.
+- A translation belongs to a _version_ of the lyrics (a hash of the text). Replacing the lyrics deletes the old translations.
 - Lyrics already in the language asked for are returned as they are (`provider: "original"`), without calling DeepL.
 - Requests that arrive at the same moment for the same song and language share one call; the unique key
   `(lyrics, language, version)` settles the case of two servers.
@@ -375,13 +438,13 @@ lyrics). The AI assistant has no tool for lyrics and the track views never carry
 
 ### Settings
 
-| Variable | Default | Meaning |
-| --- | --- | --- |
-| `DEEPL_API_KEY` | – | DeepL key (a free key ends with `:fx`). Required in production; blank in development switches translating off |
-| `DEEPL_MAX_RETRIES` | `3` | Retries for a `429`, a `5xx` or a network failure (the SDK backs off) |
-| `TRANSLATION_PROVIDER` | deepl | `fake` calls nobody and writes `[<language>] <text>` (tests, offline; refused in production) |
-| `LYRICS_TRANSLATE_THROTTLE_LIMIT`, `_TTL_SECONDS` | `10`, `60` | Translations a user may ask for per window |
-| `LYRICS_TRANSLATION_STOP_AT_PERCENT` | `90` | No new lyrics are translated from this share of the monthly allowance on |
+| Variable                                          | Default    | Meaning                                                                                                       |
+| ------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------- |
+| `DEEPL_API_KEY`                                   | –          | DeepL key (a free key ends with `:fx`). Required in production; blank in development switches translating off |
+| `DEEPL_MAX_RETRIES`                               | `3`        | Retries for a `429`, a `5xx` or a network failure (the SDK backs off)                                         |
+| `TRANSLATION_PROVIDER`                            | deepl      | `fake` calls nobody and writes `[<language>] <text>` (tests, offline; refused in production)                  |
+| `LYRICS_TRANSLATE_THROTTLE_LIMIT`, `_TTL_SECONDS` | `10`, `60` | Translations a user may ask for per window                                                                    |
+| `LYRICS_TRANSLATION_STOP_AT_PERCENT`              | `90`       | No new lyrics are translated from this share of the monthly allowance on                                      |
 
 `GET /api/translation/usage` (admin) shows `{ used, limit, percent }` of the allowance; the log warns from 80%.
 DeepL's `456` (allowance used up) pauses translating for 15 minutes without calling it again. Only counts are logged,
@@ -468,6 +531,11 @@ The backend must be deployed first (any host that runs the Docker image or `npm 
 - **Search by words ignores accents** (`son tung` finds `Sơn Tùng`) through a normalized `searchName` column kept in step by the API; a row changed by hand in SQL keeps its old `searchName` until it is renamed through the API. The match is a substring match without a trigram index, which is fine at this catalog size.
 - **Recommendations** (`GET /api/recommendations/for-you`, `/recommendations/because-you-listened`, `/tracks/:id/similar`) build a taste vector from the vectors of the tracks a user liked (weight 3) and played in the last 30 days (fading), skip what they already know, and pick a varied list (MMR, at most three tracks per artist). A user with no history gets the most played tracks. `similar` and `because-you-listened` answer `503` without embeddings and the app then hides those sections.
 - **Search by meaning** (`GET /api/search/semantic?q=nhạc buồn ngày mưa`) merges the search by words with the nearest vectors (reciprocal rank fusion). It needs the embeddings above; without a provider it answers `503`, and when the provider fails at that moment it answers with the search by words alone and `degraded: true`. There is no similarity cutoff yet, so a question matching nothing still returns the nearest tracks.
+- **The AI assistant needs a key and has limits.** Without `GEMINI_API_KEY` (or `EMBEDDING_API_KEY`) it answers `503` and the app hides it. A user has `AI_DAILY_MESSAGE_LIMIT` (30) messages a day and 12 a minute, and only the last 20 messages go to the model. The "answer being written" lock is in memory, which is right for one API instance. Text sent through Google's free tier may be used by Google.
+- **The assistant knows what a song is like, not what it says.** No tool reads lyrics and it is told never to write them out; it sees the genres, moods, tags and description of a track. Its answers and the search by meaning are only as good as that metadata (`ai:enrich` proposes it, a person has to review it) and can be generic or wrong.
+- **Lyrics are demo texts.** The three tracks that have lyrics carry text written for this project (`source: "demo"`). Real lyrics are protected: they can only be entered by an administrator (`PUT /api/tracks/:id/lyrics`) or come from a licensed source that implements `LyricsSource`; the app never fetches lyrics from the web.
+- **Translations are made by a machine.** DeepL's free plan gives 500 000 characters a month, shared by the app texts and the lyrics; lyrics stop being translated at 90% of it, and the original lyrics stay readable whenever translating is off, busy or used up. A machine translation of a song loses rhyme and nuance, which is why it is labelled. DeepL's free plan may store what it receives.
+- **Not everything is translated.** Messages the server writes (the assistant's replies and its errors) and the permission text in `app.json` are in Vietnamese only. A wrong machine translation of an app text is fixed in `mobile/src/i18n/translate/overrides/<language>.json`.
 - Some videos forbid embedding; they fall back to the R2 file or are reported as above.
 
 ## Testing and CI
@@ -485,18 +553,18 @@ Every push and pull request into `main` and `dev` runs [`.github/workflows/ci.ym
 
 Run these from the `mobile/` folder.
 
-| Script               | Command                | Description                         |
-| -------------------- | ---------------------- | ----------------------------------- |
-| `npm start`          | `expo start`           | Start the development server        |
-| `npm run android`    | `expo start --android` | Start and open on Android           |
-| `npm run ios`        | `expo start --ios`     | Start and open on iOS               |
-| `npm run web`        | `expo start --web`     | Start and open in the browser       |
-| `npm run typecheck`  | `tsc --noEmit`         | Type-check the project              |
-| `npm run lint`       | `expo lint`            | Lint the source code                |
-| `npm run lint:fix`   | `expo lint --fix`      | Lint and auto-fix issues            |
-| `npm run format`     | `prettier --write .`   | Format all files with Prettier      |
-| `npm test`           | `jest`                 | Run the tests                       |
-| `npm run test:watch` | `jest --watch`         | Run the tests again on every change |
+| Script               | Command                   | Description                           |
+| -------------------- | ------------------------- | ------------------------------------- |
+| `npm start`          | `expo start`              | Start the development server          |
+| `npm run android`    | `expo start --android`    | Start and open on Android             |
+| `npm run ios`        | `expo start --ios`        | Start and open on iOS                 |
+| `npm run web`        | `expo start --web`        | Start and open in the browser         |
+| `npm run typecheck`  | `tsc --noEmit`            | Type-check the project                |
+| `npm run lint`       | `expo lint`               | Lint the source code                  |
+| `npm run lint:fix`   | `expo lint --fix`         | Lint and auto-fix issues              |
+| `npm run format`     | `prettier --write .`      | Format all files with Prettier        |
+| `npm test`           | `jest`                    | Run the tests                         |
+| `npm run test:watch` | `jest --watch`            | Run the tests again on every change   |
 | `npm run i18n:check` | `jest src/__tests__/i18n` | Check the translation files (offline) |
 
 Run `npm run typecheck`, `npm run lint` and `npm test` before opening a pull request. The scripts of `backend/` (`start:dev`, `typecheck`, `lint`, `test`, `test:e2e`, `prisma:migrate`, `prisma:seed`, `i18n:translate`) are listed in [Backend](#backend).
