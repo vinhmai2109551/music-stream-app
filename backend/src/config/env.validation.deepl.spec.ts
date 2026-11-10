@@ -67,3 +67,41 @@ describe("the DeepL settings", () => {
     )
   })
 })
+
+describe("the lyrics settings", () => {
+  it("are optional", () => {
+    expect(() => validateEnv(base)).not.toThrow()
+  })
+
+  it.each(["1", "10", "60"])("accept the rate limit %s", (value) => {
+    expect(() =>
+      validateEnv({
+        ...base,
+        LYRICS_TRANSLATE_THROTTLE_LIMIT: value,
+        LYRICS_TRANSLATE_THROTTLE_TTL_SECONDS: value,
+      }),
+    ).not.toThrow()
+  })
+
+  it.each(["0", "-1", "1.5", "many"])("reject the rate limit %p", (value) => {
+    expect(() => validateEnv({ ...base, LYRICS_TRANSLATE_THROTTLE_LIMIT: value })).toThrow(
+      /LYRICS_TRANSLATE_THROTTLE_LIMIT/,
+    )
+    expect(() => validateEnv({ ...base, LYRICS_TRANSLATE_THROTTLE_TTL_SECONDS: value })).toThrow(
+      /LYRICS_TRANSLATE_THROTTLE_TTL_SECONDS/,
+    )
+  })
+
+  it.each(["1", "50", "90", "100"])("accept LYRICS_TRANSLATION_STOP_AT_PERCENT=%s", (value) => {
+    expect(() => validateEnv({ ...base, LYRICS_TRANSLATION_STOP_AT_PERCENT: value })).not.toThrow()
+  })
+
+  it.each(["0", "101", "-5", "90.5", "all", " "])(
+    "reject LYRICS_TRANSLATION_STOP_AT_PERCENT=%p",
+    (value) => {
+      expect(() => validateEnv({ ...base, LYRICS_TRANSLATION_STOP_AT_PERCENT: value })).toThrow(
+        /LYRICS_TRANSLATION_STOP_AT_PERCENT/,
+      )
+    },
+  )
+})

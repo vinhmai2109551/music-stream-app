@@ -30,6 +30,7 @@ Final project for the **Mobile Programming** course — Industrial University of
     - [Installation](#installation)
     - [Run on a device](#run-on-a-device)
   - [Backend](#backend)
+  - [Languages and translation (DeepL)](#languages-and-translation-deepl)
   - [Playback architecture](#playback-architecture)
   - [Release builds (EAS)](#release-builds-eas)
   - [Known limitations](#known-limitations)
@@ -128,9 +129,10 @@ music-stream-app/
 │   ├── src/
 │   │   ├── app/             # Expo Router routes (each file is a screen)
 │   │   ├── components/      # ui/ (base components) and media/ (track rows, player, ...)
-│   │   ├── constants/       # App-wide constants and copy
+│   │   ├── constants/       # App-wide constants
 │   │   ├── data/            # Catalog, images and mock data
 │   │   ├── hooks/           # Custom hooks (fonts, toast, audio engine, ...)
+│   │   ├── i18n/            # i18next setup; locales/vi.json is the source of every text
 │   │   ├── __tests__/       # Jest tests, mocks and helpers (not part of the routes)
 │   │   ├── store/           # Zustand stores (player, library)
 │   │   ├── theme/           # Design tokens
@@ -222,6 +224,8 @@ flowchart LR
     feed --> tracks
     feed --> artists
     feed --> comments
+    lyrics --> tracks
+    lyrics --> translation
   end
   API --> DB[(PostgreSQL)]
   API -.-> R2[(Cloudflare R2)]
@@ -302,6 +306,86 @@ All settings below are optional environment variables with the defaults shown (s
 | **Tracks without a file**  | `audioUrl` is optional (`null`). Commercial tracks only have a `youtubeVideoId`; the seed fills `audioUrl` just for the original demo tracks that are in the bucket. A track must have at least one of the two, or creating / updating it is `400`.                                                                                                                                |                                                                                                                                   |
 | **Comments**               | `GET /comments?trackId=` (or `postId=`) returns top-level comments, newest first, with `cursor` / `limit` (20, max 50): `{ items, nextCursor, total }`. Each comment carries its 3 newest replies (oldest first) and `repliesCount`; `GET /comments/:id/replies?cursor=&limit=` loads older ones. Replies are one level deep: answering a reply attaches to the top-level comment. |                                                                                                                                   |
 | **Refresh token rotation** | Every refresh replaces the token. Presenting a replaced token again is treated as theft and revokes the whole login (`401`), **except** during the grace period: the app may have been killed before it saved the new token, so a token replaced less than 10 s ago gets another new token of the same login.                                                                      | `REFRESH_REUSE_GRACE_SECONDS` (`10`; `0` turns it off)                                                                            |
+
+## Languages and translation (DeepL)
+
+The app speaks five languages: Vietnamese (`vi`, the language every text is written in), English
+(`en-US`), Korean (`ko`), Japanese (`ja`) and Simplified Chinese (`zh-Hans`). DeepL translates two
+different things, and only the **backend** ever talks to it: the key lives in `backend/.env`, never
+in `mobile/` (nothing in the app calls DeepL, and a value in `mobile/.env` must not be there).
+
+| What | When | Where |
+| --- | --- | --- |
+| The texts of the app | While you develop, with a script; the result is committed | `mobile/src/i18n/` |
+| The lyrics of a song | When a person asks for a translation, then kept in the database | `backend/src/modules/lyrics` |
+
+DeepL's free plan allows **500 000 characters a month**, so nothing is translated twice (see below).
+Read DeepL's terms before sending text that is not yours: the free plan may store what it receives.
+
+### The texts of the app
+
+`mobile/src/i18n/locales/vi.json` is the source; keys are grouped by screen (`auth.login.title`) and
+`t("…")` is type-checked against it. `en-US.json`, `ko.json`, `ja.json` and `zh-Hans.json` are
+written by the script; do not edit them by hand. The app starts in the language of the phone (Vietnamese when it has
+none of the five), remembers a choice made in **Account → Language**, and changes every text at once.
+A text a language does not have yet is shown in Vietnamese, then English.
+
+```bash
+cd backend
+npm run i18n:translate -- --dry-run   # what would be translated and how many characters; calls nobody
+npm run i18n:translate                # translate the new and the changed texts
+npm run i18n:translate -- --check     # fail if a translation is missing or out of date; calls nobody (CI runs it)
+npm run i18n:translate -- --lang=ko   # only some languages
+cd ../mobile && npm run i18n:check    # the i18n Jest tests (keys, {{placeholders}}, language store), offline
+```
+
+- **Only what changed is sent.** `translate/lock.json` (committed) records which Vietnamese text each
+  translation was made from; a second run with an unchanged `vi.json` sends 0 characters.
+- **`{{name}}` and `{{count}}` survive.** They are wrapped in XML tags (`tag_handling=xml`) so DeepL leaves
+  them alone, and every answer is checked afterwards; one that lost a placeholder is not used and is tried again next time.
+- **Brand names stay as they are** (`translate/keep-list.json`: Music Stream, Premium, YouTube, …).
+- **Corrections by hand** go in `translate/overrides/<language>.json` (same shape as `vi.json`). An overridden text is never
+  translated again, and an override like `"followers_one"` adds a plural form (`en-US` has some).
+- To add a text: write it in `vi.json`, use `t("group.key")`, run `npm run i18n:translate`, commit the files.
+
+### The lyrics of a song
+
+All endpoints need a login. The lyrics are text that may be stored: your own, or licensed. The demo
+data has three short texts written for the project (`source: "demo"`, and the first line says they are not the real
+lyrics). The AI assistant has no tool for lyrics and the track views never carry them.
+
+| Endpoint | What it does |
+| --- | --- |
+| `GET /api/tracks/:id/lyrics` | The original lyrics: `{ language, lines, timingsMs, source }`. A track without lyrics answers `404` with `code: "LYRICS_NOT_FOUND"` |
+| `GET /api/tracks/:id/lyrics/translation?lang=ko` | The translation, one element per original line (blank lines stay blank, in place). Kept in the database: the first request translates, the next ones read it |
+| `PUT /api/tracks/:id/lyrics` | Writes (replaces) the lyrics; **admin only**. At most 500 lines, 500 characters a line, 20 000 in all |
+
+- A translation belongs to a *version* of the lyrics (a hash of the text). Replacing the lyrics deletes the old translations.
+- Lyrics already in the language asked for are returned as they are (`provider: "original"`), without calling DeepL.
+- Requests that arrive at the same moment for the same song and language share one call; the unique key
+  `(lyrics, language, version)` settles the case of two servers.
+- It is rate limited per user (`LYRICS_TRANSLATE_THROTTLE_*`, 10 a minute) and stops translating at
+  `LYRICS_TRANSLATION_STOP_AT_PERCENT` (90) of the month's allowance, so the rest is left for the app's texts;
+  translations already kept can still be read. Without a key the translation endpoint answers `503 TRANSLATION_NOT_CONFIGURED`
+  and the app stops offering the button; the original lyrics keep working.
+- No lyrics provider is connected. `LyricsSource` (`modules/lyrics/ports.ts`) is the interface to implement for one
+  (provide it as `LYRICS_SOURCE`); until then lyrics come in through the admin endpoint or the seed.
+- In the app the lyrics button is in the player, between comments and share. The translation is only asked for when the
+  person presses "Dịch sang …", can be shown beside the original or alone, and carries the label "Bản dịch tự động".
+
+### Settings
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `DEEPL_API_KEY` | – | DeepL key (a free key ends with `:fx`). Required in production; blank in development switches translating off |
+| `DEEPL_MAX_RETRIES` | `3` | Retries for a `429`, a `5xx` or a network failure (the SDK backs off) |
+| `TRANSLATION_PROVIDER` | deepl | `fake` calls nobody and writes `[<language>] <text>` (tests, offline; refused in production) |
+| `LYRICS_TRANSLATE_THROTTLE_LIMIT`, `_TTL_SECONDS` | `10`, `60` | Translations a user may ask for per window |
+| `LYRICS_TRANSLATION_STOP_AT_PERCENT` | `90` | No new lyrics are translated from this share of the monthly allowance on |
+
+`GET /api/translation/usage` (admin) shows `{ used, limit, percent }` of the allowance; the log warns from 80%.
+DeepL's `456` (allowance used up) pauses translating for 15 minutes without calling it again. Only counts are logged,
+never a text or the key.
 
 ## Playback architecture
 
@@ -413,8 +497,9 @@ Run these from the `mobile/` folder.
 | `npm run format`     | `prettier --write .`   | Format all files with Prettier      |
 | `npm test`           | `jest`                 | Run the tests                       |
 | `npm run test:watch` | `jest --watch`         | Run the tests again on every change |
+| `npm run i18n:check` | `jest src/__tests__/i18n` | Check the translation files (offline) |
 
-Run `npm run typecheck`, `npm run lint` and `npm test` before opening a pull request. The scripts of `backend/` (`start:dev`, `typecheck`, `lint`, `test`, `test:e2e`, `prisma:migrate`, `prisma:seed`) are listed in [Backend](#backend).
+Run `npm run typecheck`, `npm run lint` and `npm test` before opening a pull request. The scripts of `backend/` (`start:dev`, `typecheck`, `lint`, `test`, `test:e2e`, `prisma:migrate`, `prisma:seed`, `i18n:translate`) are listed in [Backend](#backend).
 
 ## Branching Workflow
 

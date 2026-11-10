@@ -75,6 +75,11 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      # Fails when mobile/src/i18n/locales/vi.json has a text that is not translated yet (or whose
+      # source changed): run `npm run i18n:translate` and commit the result. It calls nobody.
+      - name: App translations are up to date
+        run: npm run i18n:translate -- --check
+
       # Builds the API first, then starts it as a separate process for each spec.
       - name: End-to-end tests
         run: npm run test:e2e

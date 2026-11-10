@@ -262,7 +262,7 @@ class EnvironmentVariables {
 
   /** From this share (1-100) of the monthly DeepL allowance on, no new lyrics are translated. */
   @IsOptional()
-  @Matches(/^([1-9]d?|100)$/, {
+  @Matches(/^([1-9]\d?|100)$/, {
     message: "LYRICS_TRANSLATION_STOP_AT_PERCENT must be a whole number from 1 to 100",
   })
   LYRICS_TRANSLATION_STOP_AT_PERCENT?: string

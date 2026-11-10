@@ -10,7 +10,7 @@ import { makeStyles, spacing } from "@/theme"
 import { lyricsFailure } from "@/utils/lyricsErrors"
 import { LyricsContent } from "./LyricsContent"
 
-const SHEET_HEIGHT = "88%"
+const SHEET_HEIGHT = "75%"
 const SKELETON_LINES = [92, 70, 84, 0, 78, 88, 64, 0, 90, 74]
 const LINE_HEIGHT = 18
 
