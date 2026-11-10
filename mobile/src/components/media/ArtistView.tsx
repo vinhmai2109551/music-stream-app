@@ -22,15 +22,14 @@ import { usePlayerStore } from "@/store/playerStore"
 import { showToast } from "@/store/toastStore"
 import { makeStyles, radius, shadows, sizes, spacing } from "@/theme"
 import { formatCount } from "@/utils/formatCount"
-import { plural } from "@/utils/plural"
 import { AlbumCard } from "./AlbumCard"
 import { ArtistAbout } from "./ArtistAbout"
 import { ArtistAvatar } from "./ArtistAvatar"
 import { TrackRow } from "./TrackRow"
+import { useTranslation } from "@/i18n"
 
 const POPULAR_COUNT = 5
 const LIST_LIMIT = 10
-const NO_SONGS = "No songs yet"
 
 const openAlbum = (id: string) => router.push({ pathname: "/album/[id]", params: { id } })
 const openArtist = (id: string) => router.push({ pathname: "/artist/[id]", params: { id } })
@@ -64,6 +63,8 @@ type ArtistViewProps = {
 }
 
 export function ArtistView({ id }: ArtistViewProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   const { state, reload } = useResource(() => loadArtistPage(id), id)
@@ -91,7 +92,7 @@ export function ArtistView({ id }: ArtistViewProps) {
       onToggleFollow={() => void toggleFollow(id)}
       onToggleShuffle={toggleShuffle}
       onPlay={(tracks, source) => {
-        if (tracks.length === 0) return showToast(NO_SONGS)
+        if (tracks.length === 0) return showToast(t("common.empty.songs"))
         playFromList(tracks, 0, source)
         router.push("/player")
       }}
@@ -116,6 +117,8 @@ function ArtistContent({
   onToggleShuffle,
   onPlay,
 }: ArtistContentProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   const insets = useSafeAreaInsets()
@@ -142,25 +145,30 @@ function ArtistContent({
               {artist.name}
             </AppText>
             <AppText variant="caption" color="secondary">
-              {formatCount(followers)} {plural("follower", followers)}
+              {t("common.count.followers", { count: followers, value: formatCount(followers) })}
             </AppText>
           </View>
           <View style={styles.controls}>
             <Button
-              label={followed ? "Following" : "Follow"}
+              label={followed ? t("common.following") : t("common.follow")}
               variant={followed ? "tonal" : "primary"}
               onPress={onToggleFollow}
             />
             <View style={styles.spacer} />
-            <IconButton icon={Shuffle} label="Shuffle" active={shuffle} onPress={onToggleShuffle} />
+            <IconButton
+              icon={Shuffle}
+              label={t("common.shuffle")}
+              active={shuffle}
+              onPress={onToggleShuffle}
+            />
             <PlayButton onPress={() => onPlay(popular, artist.name)} />
           </View>
 
           <View style={styles.section}>
-            <SectionHeader title="Popular" />
+            <SectionHeader title={t("artist.popular")} />
             {popular.length === 0 ? (
               <AppText variant="caption" color="secondary">
-                {NO_SONGS}
+                {t("common.empty.songs")}
               </AppText>
             ) : (
               popular.map((track, index) => (
@@ -179,29 +187,29 @@ function ArtistContent({
 
         <View style={styles.section}>
           <View style={styles.padded}>
-            <SectionHeader title="Albums" />
+            <SectionHeader title={t("artist.albums")} />
           </View>
           <HorizontalList<ApiAlbum>
             data={albums}
             keyExtractor={(album) => album.id}
-            emptyMessage="No albums yet"
+            emptyMessage={t("common.empty.albums")}
             renderItem={({ item }) => <AlbumCard album={item} onPress={openAlbum} />}
           />
         </View>
 
         <View style={[styles.section, styles.padded]}>
-          <SectionHeader title="About" />
+          <SectionHeader title={t("artist.about")} />
           <ArtistAbout bio={artist.bio} />
         </View>
 
         <View style={styles.section}>
           <View style={styles.padded}>
-            <SectionHeader title="Fans also like" />
+            <SectionHeader title={t("artist.fansAlsoLike")} />
           </View>
           <HorizontalList
             data={fansAlsoLike}
             keyExtractor={(item) => item.id}
-            emptyMessage="No other artists yet"
+            emptyMessage={t("common.empty.otherArtists")}
             renderItem={({ item }) => <ArtistAvatar artist={item} onPress={openArtist} />}
           />
         </View>

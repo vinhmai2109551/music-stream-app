@@ -1,5 +1,4 @@
 import { describe, expect, it } from "@jest/globals"
-import { fillCount } from "@/utils/fillCount"
 import { formatConversationTime } from "@/utils/formatConversationTime"
 
 const NOW = new Date(2026, 10, 9, 12, 0, 0).getTime() // 9 Nov 2026, local time
@@ -35,16 +34,5 @@ describe("formatConversationTime", () => {
   it("a date that cannot be read gives nothing", () => {
     expect(formatConversationTime("not a date", NOW)).toBe("")
     expect(formatConversationTime("", NOW)).toBe("")
-  })
-})
-
-describe("fillCount", () => {
-  it("puts the number where {n} is", () => {
-    expect(fillCount("Còn {n} tin nhắn hôm nay", 5)).toBe("Còn 5 tin nhắn hôm nay")
-    expect(fillCount("Xem thêm {n} bài", 0)).toBe("Xem thêm 0 bài")
-  })
-
-  it("leaves a text without {n} alone", () => {
-    expect(fillCount("Hết", 3)).toBe("Hết")
   })
 })

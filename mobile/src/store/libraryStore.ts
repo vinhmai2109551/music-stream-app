@@ -6,9 +6,9 @@ import * as likesApi from "@/api/likes"
 import * as playlistsApi from "@/api/playlists"
 import * as tracksApi from "@/api/tracks"
 import type { ApiPlaylist, LikeKind } from "@/api/types"
-import { copy } from "@/constants/copy"
 import { describeApiError } from "@/utils/apiErrors"
 import { showToast } from "./toastStore"
+import { t } from "@/i18n"
 
 export type LibraryStatus = "idle" | "loading" | "ready" | "error"
 
@@ -148,13 +148,13 @@ export const useLibraryStore = create<LibraryStore>()((set, get) => {
       const playlist = get().playlists.find((item) => item.id === playlistId)
       if (!playlist) return
       if (playlist.trackIds.includes(trackId)) {
-        showToast(`${copy.library.alreadyIn} ${playlist.name}`)
+        showToast(t("playlist.alreadyIn", { name: playlist.name }))
         return
       }
 
       // Playlists keep their order: a new track goes to the end.
       editTrackIds(playlistId, (ids) => [...ids, trackId])
-      showToast(`${copy.library.addedTo} ${playlist.name}`)
+      showToast(t("playlist.addedTo", { name: playlist.name }))
       try {
         await playlistsApi.addTrackToPlaylist(playlistId, trackId)
       } catch (error) {
@@ -171,7 +171,7 @@ export const useLibraryStore = create<LibraryStore>()((set, get) => {
       inFlight.add(lock)
 
       editTrackIds(playlistId, (ids) => ids.filter((id) => id !== trackId))
-      showToast(`${copy.library.removedFrom} ${playlist.name}`)
+      showToast(t("playlist.removedFrom", { name: playlist.name }))
       try {
         await playlistsApi.removeTrackFromPlaylist(playlistId, trackId)
       } catch (error) {

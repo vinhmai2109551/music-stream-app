@@ -1,17 +1,17 @@
 import type { Region } from "@/api/types"
-import { copy } from "./copy"
+import type { TranslationKey } from "@/i18n"
 
 export interface RegionFilter {
   /** `null` is "all regions". */
   region: Region | null
-  label: string
+  labelKey: TranslationKey
 }
 
 /** The region chips of the Home screen, in order. GLOBAL (the sample artists) only shows under "all". */
 export const REGION_FILTERS: readonly RegionFilter[] = [
-  { region: null, label: copy.home.regions.all },
-  { region: "VIETNAM", label: copy.home.regions.vietnam },
-  { region: "KOREA", label: copy.home.regions.korea },
-  { region: "JAPAN", label: copy.home.regions.japan },
-  { region: "CHINA", label: copy.home.regions.china },
+  { region: null, labelKey: "home.regions.all" },
+  { region: "VIETNAM", labelKey: "home.regions.vietnam" },
+  { region: "KOREA", labelKey: "home.regions.korea" },
+  { region: "JAPAN", labelKey: "home.regions.japan" },
+  { region: "CHINA", labelKey: "home.regions.china" },
 ]

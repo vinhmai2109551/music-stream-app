@@ -3,12 +3,10 @@ import { Pencil, Trash2 } from "lucide-react-native"
 import { useState } from "react"
 import { ConfirmSheet } from "@/components/ui/ConfirmSheet"
 import { IconButton } from "@/components/ui/IconButton"
-import { copy } from "@/constants/copy"
+import { useTranslation } from "@/i18n"
 import { useLibraryStore } from "@/store/libraryStore"
 import { showToast } from "@/store/toastStore"
 import { RenamePlaylistSheet } from "./RenamePlaylistSheet"
-
-const text = copy.library
 
 type PlaylistOwnerControlsProps = {
   playlistId: string
@@ -17,6 +15,7 @@ type PlaylistOwnerControlsProps = {
 
 /** Rename and delete buttons for a playlist the user made. Show them for no one else's. */
 export function PlaylistOwnerControls({ playlistId, name }: PlaylistOwnerControlsProps) {
+  const { t } = useTranslation()
   const deletePlaylist = useLibraryStore((state) => state.deletePlaylist)
   const [renaming, setRenaming] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -28,14 +27,14 @@ export function PlaylistOwnerControls({ playlistId, name }: PlaylistOwnerControl
     if (router.canGoBack()) router.back()
     else router.replace("/")
     void deletePlaylist(playlistId).then((deleted) => {
-      if (deleted) showToast(text.deleted)
+      if (deleted) showToast(t("playlist.deleted"))
     })
   }
 
   return (
     <>
-      <IconButton icon={Pencil} label={text.rename} onPress={() => setRenaming(true)} />
-      <IconButton icon={Trash2} label={text.delete} onPress={() => setConfirming(true)} />
+      <IconButton icon={Pencil} label={t("playlist.rename")} onPress={() => setRenaming(true)} />
+      <IconButton icon={Trash2} label={t("playlist.delete")} onPress={() => setConfirming(true)} />
       {renaming ? (
         <RenamePlaylistSheet
           playlistId={playlistId}
@@ -45,10 +44,10 @@ export function PlaylistOwnerControls({ playlistId, name }: PlaylistOwnerControl
       ) : null}
       {confirming ? (
         <ConfirmSheet
-          title={`${text.deleteConfirmTitle} “${name}”`}
-          message={text.deleteConfirmMessage}
-          confirmLabel={text.confirmDelete}
-          cancelLabel={text.cancel}
+          title={`${t("playlist.deleteConfirmTitle")} “${name}”`}
+          message={t("playlist.deleteConfirmMessage")}
+          confirmLabel={t("playlist.confirmDelete")}
+          cancelLabel={t("playlist.cancel")}
           onConfirm={remove}
           onCancel={() => setConfirming(false)}
         />

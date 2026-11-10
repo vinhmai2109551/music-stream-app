@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent } from "@testing-library/react-native"
 import { router } from "expo-router"
@@ -7,7 +8,6 @@ import { AssistantBubble, UserBubble } from "@/components/media/assistant/Bubble
 import { ChatItemView } from "@/components/media/assistant/ChatItemView"
 import { ResultCards } from "@/components/media/assistant/ResultCards"
 import { ToolStep } from "@/components/media/assistant/ToolStep"
-import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import type { ChatItem } from "@/utils/chatState"
@@ -15,7 +15,6 @@ import { makeTrack } from "../helpers/playback"
 
 jest.mock("expo-router", () => ({ router: { push: jest.fn() } }))
 
-const text = copy.assistant
 const mockRouter = jest.mocked(router)
 
 type ActionItem = Extract<ChatItem, { kind: "action" }>
@@ -42,8 +41,8 @@ describe("the person's message", () => {
     await render(<UserBubble text="Gợi ý nhạc buồn" failed={false} onResend={jest.fn()} />)
 
     expect(screen.getByText("Gợi ý nhạc buồn")).toBeOnTheScreen()
-    expect(screen.getByLabelText(`${text.youSaid}: Gợi ý nhạc buồn`)).toBeOnTheScreen()
-    expect(screen.queryByText(text.notSent)).not.toBeOnTheScreen()
+    expect(screen.getByLabelText(`${t("assistant.youSaid")}: Gợi ý nhạc buồn`)).toBeOnTheScreen()
+    expect(screen.queryByText(t("assistant.notSent"))).not.toBeOnTheScreen()
   })
 
   it("a message that was not sent says so, and offers to send it again", async () => {
@@ -51,8 +50,8 @@ describe("the person's message", () => {
     const user = userEvent.setup()
     await render(<UserBubble text="Chào" failed onResend={onResend} />)
 
-    expect(screen.getByText(text.notSent)).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: text.resend }))
+    expect(screen.getByText(t("assistant.notSent"))).toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: t("assistant.resend") }))
 
     expect(onResend).toHaveBeenCalledWith("Chào")
   })
@@ -80,13 +79,13 @@ describe("the assistant's message", () => {
   it("while it has written nothing yet, shows that it is answering", async () => {
     await render(<AssistantBubble text="" streaming truncated={false} />)
 
-    expect(screen.getByLabelText(text.replying)).toBeOnTheScreen()
+    expect(screen.getByLabelText(t("assistant.replying"))).toBeOnTheScreen()
   })
 
   it("says when the answer was cut short", async () => {
     await render(<AssistantBubble text="Dài quá" streaming={false} truncated />)
 
-    expect(screen.getByText(text.truncated)).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.truncated"))).toBeOnTheScreen()
   })
 })
 
@@ -102,17 +101,17 @@ describe("a step of the assistant", () => {
 
   it("while it works, says what it is doing", async () => {
     await render(<ToolStep item={tool()} />)
-    expect(screen.getByText(text.tools.search_catalog)).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.tools.search_catalog"))).toBeOnTheScreen()
   })
 
   it("a tool the app has no words for gets a general line", async () => {
     await render(<ToolStep item={tool({ name: "something_new" })} />)
-    expect(screen.getByText(text.tools.fallback)).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.tools.fallback"))).toBeOnTheScreen()
   })
 
   it("says when a step did not work", async () => {
     await render(<ToolStep item={tool({ status: "failed" })} />)
-    expect(screen.getByText(text.tools.failed)).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.tools.failed"))).toBeOnTheScreen()
   })
 
   it("when it is done, shows what it found", async () => {
@@ -120,7 +119,7 @@ describe("a step of the assistant", () => {
       <ToolStep item={tool({ status: "done", display: { tracks: [makeTrack("a")] } })} />,
     )
     expect(screen.getByText("Title a")).toBeOnTheScreen()
-    expect(screen.queryByText(text.tools.search_catalog)).not.toBeOnTheScreen()
+    expect(screen.queryByText(t("assistant.tools.search_catalog"))).not.toBeOnTheScreen()
   })
 
   it("shows nothing for a step that found nothing", async () => {
@@ -136,12 +135,16 @@ describe("the cards of what was found", () => {
     const user = userEvent.setup()
     await render(<ResultCards display={{ tracks }} />)
 
-    await user.press(screen.getByRole("button", { name: "Play Title 2 by Artist" }))
+    await user.press(
+      screen.getByRole("button", {
+        name: t("track.playNamed", { title: "Title 2", artist: "Artist" }),
+      }),
+    )
 
     const player = usePlayerStore.getState()
     expect(player.currentTrack?.id).toBe("2")
     expect(player.queue).toHaveLength(8)
-    expect(player.queueSource).toBe(text.playSource)
+    expect(player.queueSource).toBe(t("assistant.playSource"))
   })
 
   it("shows the first five tracks, and the rest on request", async () => {
@@ -154,7 +157,7 @@ describe("the cards of what was found", () => {
     await user.press(screen.getByRole("button", { name: "Xem thêm 3 bài" }))
     expect(screen.getByText("Title 7")).toBeOnTheScreen()
 
-    await user.press(screen.getByRole("button", { name: text.fewerTracks }))
+    await user.press(screen.getByRole("button", { name: t("assistant.fewerTracks") }))
     expect(screen.queryByText("Title 7")).not.toBeOnTheScreen()
   })
 
@@ -174,7 +177,7 @@ describe("the cards of what was found", () => {
     } as unknown as ApiPlaylist
     await render(<ResultCards display={{ playlists: [playlist] }} />)
 
-    await user.press(screen.getByRole("button", { name: "Playlist Chạy bộ" }))
+    await user.press(screen.getByRole("button", { name: t("playlist.named", { name: "Chạy bộ" }) }))
 
     expect(mockRouter.push).toHaveBeenCalledWith({
       pathname: "/playlist/[id]",
@@ -187,14 +190,14 @@ describe("the cards of what was found", () => {
       <ResultCards display={{ sources: [{ source: "premium", heading: "Quyền lợi Premium" }] }} />,
     )
 
-    expect(screen.getByText(text.sources)).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.sources"))).toBeOnTheScreen()
     expect(screen.getByText(/Quyền lợi Premium/)).toBeOnTheScreen()
   })
 
   it("shows nothing without cards", async () => {
     await render(<ResultCards display={undefined} />)
     await render(<ResultCards display={{}} />)
-    expect(screen.queryByText(text.sources)).not.toBeOnTheScreen()
+    expect(screen.queryByText(t("assistant.sources"))).not.toBeOnTheScreen()
   })
 })
 
@@ -212,49 +215,55 @@ describe("a change the assistant wants to make", () => {
   it("says what it wants to do, and asks", async () => {
     await setup(action())
 
-    expect(screen.getByText(text.action.heading)).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.action.heading"))).toBeOnTheScreen()
     expect(screen.getByText("Tạo playlist “Chạy bộ” với 12 bài")).toBeOnTheScreen()
-    expect(screen.getByText(text.action.waiting)).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.action.waiting"))).toBeOnTheScreen()
   })
 
   it("Đồng ý and Huỷ answer for that proposal", async () => {
     const { onConfirm, onReject, user } = await setup(action())
 
-    await user.press(screen.getByRole("button", { name: text.action.confirm }))
+    await user.press(screen.getByRole("button", { name: t("assistant.action.confirm") }))
     expect(onConfirm).toHaveBeenCalledWith("a1")
     expect(onReject).not.toHaveBeenCalled()
 
-    await user.press(screen.getByRole("button", { name: text.action.reject }))
+    await user.press(screen.getByRole("button", { name: t("assistant.action.reject") }))
     expect(onReject).toHaveBeenCalledWith("a1")
   })
 
   it("cannot be answered while another answer is being written", async () => {
     const { onConfirm, user } = await setup(action(), true)
 
-    await user.press(screen.getByRole("button", { name: text.action.confirm }))
+    await user.press(screen.getByRole("button", { name: t("assistant.action.confirm") }))
 
     expect(onConfirm).not.toHaveBeenCalled()
-    expect(screen.getByRole("button", { name: text.action.confirm })).toBeDisabled()
+    expect(screen.getByRole("button", { name: t("assistant.action.confirm") })).toBeDisabled()
   })
 
   it("while the answer is on its way, there are no buttons", async () => {
     await setup(action({ status: "BUSY" }))
 
-    expect(screen.getByText(text.action.busy)).toBeOnTheScreen()
-    expect(screen.queryByRole("button", { name: text.action.confirm })).not.toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.action.busy"))).toBeOnTheScreen()
+    expect(
+      screen.queryByRole("button", { name: t("assistant.action.confirm") }),
+    ).not.toBeOnTheScreen()
   })
 
   it.each([
-    ["CONFIRMED", text.action.confirmed],
-    ["REJECTED", text.action.rejected],
-    ["EXPIRED", text.action.expired],
-    ["FAILED", text.action.failed],
+    ["CONFIRMED", t("assistant.action.confirmed")],
+    ["REJECTED", t("assistant.action.rejected")],
+    ["EXPIRED", t("assistant.action.expired")],
+    ["FAILED", t("assistant.action.failed")],
   ] as const)("a proposal that is %s says so and has no buttons", async (status, label) => {
     await setup(action({ status }))
 
     expect(screen.getByText(label)).toBeOnTheScreen()
-    expect(screen.queryByRole("button", { name: text.action.confirm })).not.toBeOnTheScreen()
-    expect(screen.queryByRole("button", { name: text.action.reject })).not.toBeOnTheScreen()
+    expect(
+      screen.queryByRole("button", { name: t("assistant.action.confirm") }),
+    ).not.toBeOnTheScreen()
+    expect(
+      screen.queryByRole("button", { name: t("assistant.action.reject") }),
+    ).not.toBeOnTheScreen()
   })
 
   it("shows what a change made, once it was made", async () => {
@@ -280,7 +289,7 @@ describe("one line of the conversation", () => {
   it.each([
     [0, "Tôi hỏi"],
     [1, "Tôi đáp"],
-    [2, text.tools.get_track],
+    [2, t("assistant.tools.get_track")],
     [3, "Thích 1 bài"],
   ])("line %d shows %s", async (index, expected) => {
     await render(<ChatItemView item={lines[index]} {...props} />)

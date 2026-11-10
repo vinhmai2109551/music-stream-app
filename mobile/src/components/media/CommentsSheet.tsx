@@ -9,12 +9,11 @@ import { EmptyState } from "@/components/ui/EmptyState"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { useComments } from "@/hooks/useComments"
 import { colors, sizes, spacing } from "@/theme"
-import { plural } from "@/utils/plural"
 import { CommentComposer } from "./CommentComposer"
 import { CommentThreadItem } from "./CommentThreadItem"
+import { useTranslation } from "@/i18n"
 
 const SHEET_HEIGHT = "75%"
 const SKELETON_ROWS = 3
@@ -31,6 +30,8 @@ type CommentsSheetProps = {
 
 /** The comments of a track or post in a bottom sheet, with replies and a box to write one. */
 export function CommentsSheet({ target, onClose, onCountChange }: CommentsSheetProps) {
+  const { t } = useTranslation()
+
   const { state, reload, loadMore, loadMoreReplies, post, toggleLike, remove } = useComments(target)
   const [replyTo, setReplyTo] = useState<ApiComment | null>(null)
   /** The comment the user is being asked to confirm the deletion of. */
@@ -65,7 +66,10 @@ export function CommentsSheet({ target, onClose, onCountChange }: CommentsSheetP
     return sent
   }
 
-  const title = total !== null ? `${total} ${plural("comment", total)}` : "Comments"
+  const title =
+    total !== null
+      ? t("common.count.comments", { count: total, value: total })
+      : t("comments.title")
 
   return (
     <BottomSheet visible onClose={onClose} title={title} height={SHEET_HEIGHT}>
@@ -93,8 +97,8 @@ export function CommentsSheet({ target, onClose, onCountChange }: CommentsSheetP
             ListEmptyComponent={
               <EmptyState
                 icon={MessageSquare}
-                title={copy.comments.emptyTitle}
-                description={copy.comments.emptyDescription}
+                title={t("comments.emptyTitle")}
+                description={t("comments.emptyDescription")}
               />
             }
             ListFooterComponent={
@@ -107,7 +111,7 @@ export function CommentsSheet({ target, onClose, onCountChange }: CommentsSheetP
                   style={({ pressed }) => [styles.footer, pressedStyle(pressed)]}
                 >
                   <AppText variant="caption" color="accentText">
-                    {copy.comments.loadMoreFailed}
+                    {t("comments.loadMoreFailed")}
                   </AppText>
                 </Pressable>
               ) : undefined
@@ -126,21 +130,21 @@ export function CommentsSheet({ target, onClose, onCountChange }: CommentsSheetP
         )}
         {deleting ? (
           <ConfirmSheet
-            title={copy.comments.deleteConfirmTitle}
+            title={t("comments.deleteConfirmTitle")}
             message={
               hasReplies
-                ? copy.comments.deleteThreadConfirmMessage
-                : copy.comments.deleteConfirmMessage
+                ? t("comments.deleteThreadConfirmMessage")
+                : t("comments.deleteConfirmMessage")
             }
-            confirmLabel={copy.comments.confirmDelete}
-            cancelLabel={copy.comments.cancel}
+            confirmLabel={t("comments.confirmDelete")}
+            cancelLabel={t("comments.cancel")}
             onConfirm={confirmDelete}
             onCancel={() => setDeleting(null)}
           />
         ) : null}
         <View style={styles.composer}>
           <CommentComposer
-            replyingTo={replyTo?.user?.name ?? (replyTo ? "Deleted user" : null)}
+            replyingTo={replyTo?.user?.name ?? (replyTo ? t("common.deletedUser") : null)}
             onCancelReply={() => setReplyTo(null)}
             onSend={send}
           />

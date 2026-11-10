@@ -6,6 +6,7 @@ import type { OptionalSection } from "@/utils/optionalSection"
 import { usePlayerStore } from "@/store/playerStore"
 import type { Track } from "@/types"
 import { r2Track } from "../helpers/playback"
+import { t } from "@/i18n"
 
 jest.mock("expo-router", () => ({ router: { push: jest.fn() } }))
 jest.mock("@/api/likes", () => ({ setLiked: jest.fn(async () => undefined) }))
@@ -55,7 +56,11 @@ describe("RecommendationSections (Home)", () => {
     await render(<RecommendationSections region={null} />)
 
     expect(screen.getByText("Dành cho bạn")).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: "Title b by Artist" }))
+    await user.press(
+      screen.getByRole("button", {
+        name: t("suggestion.by", { title: "Title b", subtitle: "Artist" }),
+      }),
+    )
 
     const player = usePlayerStore.getState()
     expect(player.currentTrack?.id).toBe("b")
@@ -119,7 +124,11 @@ describe("SimilarTracks (Player)", () => {
     await render(<SimilarTracks trackId="x" />)
     await user.press(screen.getByRole("button", { name: "Xem bài tương tự" }))
 
-    await user.press(screen.getByRole("button", { name: "Play Title b by Artist" }))
+    await user.press(
+      screen.getByRole("button", {
+        name: t("track.playNamed", { title: "Title b", artist: "Artist" }),
+      }),
+    )
 
     expect(usePlayerStore.getState().currentTrack?.id).toBe("b")
     expect(usePlayerStore.getState().queueSource).toBe("Bài tương tự")

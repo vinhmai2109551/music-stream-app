@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
-import { copy } from "@/constants/copy"
 import { TURNSTILE } from "@/constants/turnstile"
 import { sizes } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
 import type { TurnstileWidgetProps } from "./TurnstileWidget.types"
-
-const text = copy.auth.turnstile
+import { useTranslation } from "@/i18n"
 
 /** The part of the Turnstile browser API this view uses. */
 interface TurnstileApi {
@@ -54,6 +52,7 @@ const HOST_STYLE: CSSProperties = { width: "100%", minHeight: TURNSTILE.height }
 
 /** Cloudflare Turnstile on Expo web, using the browser API directly. Renders nothing when disabled. */
 export function TurnstileWidget({ action, onToken }: TurnstileWidgetProps) {
+  const { t } = useTranslation()
   const hostRef = useRef<HTMLDivElement>(null)
   const onTokenRef = useRef(onToken)
   const [reloadKey, setReloadKey] = useState(0)
@@ -112,7 +111,7 @@ export function TurnstileWidget({ action, onToken }: TurnstileWidgetProps) {
 
   return (
     <View>
-      <View accessibilityLabel={text.label}>
+      <View accessibilityLabel={t("auth.turnstile.label")}>
         <div ref={hostRef} style={HOST_STYLE} />
       </View>
       {failed ? (
@@ -122,7 +121,7 @@ export function TurnstileWidget({ action, onToken }: TurnstileWidgetProps) {
           style={({ pressed }) => [styles.retry, pressedStyle(pressed)]}
         >
           <AppText variant="caption" color="white">
-            {text.failed}
+            {t("auth.turnstile.failed")}
           </AppText>
         </Pressable>
       ) : null}

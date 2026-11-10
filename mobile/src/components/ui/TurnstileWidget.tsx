@@ -2,15 +2,13 @@ import { useEffect, useMemo, useState } from "react"
 import { Linking, Pressable, StyleSheet, View } from "react-native"
 import { WebView, type WebViewMessageEvent } from "react-native-webview"
 import type { ShouldStartLoadRequest } from "react-native-webview/lib/WebViewTypes"
-import { copy } from "@/constants/copy"
 import { TURNSTILE, type TurnstileAction } from "@/constants/turnstile"
 import { sizes } from "@/theme"
 import { decideNavigation } from "@/utils/turnstileNavigation"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
 import type { TurnstileMessage, TurnstileWidgetProps } from "./TurnstileWidget.types"
-
-const text = copy.auth.turnstile
+import { useTranslation } from "@/i18n"
 
 /**
  * The page the WebView loads. Turnstile has no native SDK, so the official script runs here and
@@ -61,6 +59,7 @@ function parse(event: WebViewMessageEvent): TurnstileMessage | null {
 
 /** Cloudflare Turnstile on iOS / Android, rendered in a WebView. Renders nothing when disabled. */
 export function TurnstileWidget({ action, onToken }: TurnstileWidgetProps) {
+  const { t } = useTranslation()
   // Changing the key reloads the page, which gives a brand-new challenge.
   const [reloadKey, setReloadKey] = useState(0)
   // Why the check failed: Cloudflare's error code, or "script", "timeout", "webview". Null until it does.
@@ -123,7 +122,7 @@ export function TurnstileWidget({ action, onToken }: TurnstileWidgetProps) {
 
   return (
     <View>
-      <View accessibilityLabel={text.label} style={styles.frame}>
+      <View accessibilityLabel={t("auth.turnstile.label")} style={styles.frame}>
         <WebView
           key={reloadKey}
           source={source}
@@ -148,10 +147,10 @@ export function TurnstileWidget({ action, onToken }: TurnstileWidgetProps) {
           style={({ pressed }) => [styles.retry, pressedStyle(pressed)]}
         >
           <AppText variant="caption" color="white">
-            {text.failed}
+            {t("auth.turnstile.failed")}
           </AppText>
           <AppText variant="caption" color="onDarkMuted">
-            {`${text.errorCode}: ${failure}`}
+            {`${t("auth.turnstile.errorCode")}: ${failure}`}
           </AppText>
         </Pressable>
       ) : null}

@@ -1,13 +1,11 @@
 import { describe, expect, it, jest } from "@jest/globals"
-import { copy } from "@/constants/copy"
 import { toggleId } from "@/utils/collections"
 import { createId } from "@/utils/createId"
 import { formatCount, formatNumber } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
 import { formatTimeAgo } from "@/utils/formatTimeAgo"
-import { greetingFor } from "@/utils/greeting"
+import { greetingKeyFor } from "@/utils/greeting"
 import { hashOf, initialsOf } from "@/utils/initials"
-import { plural } from "@/utils/plural"
 import { createWaveform } from "@/utils/waveform"
 
 const NOW = Date.parse("2026-10-31T12:00:00Z")
@@ -15,33 +13,33 @@ const ago = (seconds: number) => new Date(NOW - seconds * 1000).toISOString()
 
 describe("formatTimeAgo", () => {
   it("uses the short forms of the design", () => {
-    expect(formatTimeAgo(ago(5), NOW)).toBe("now")
-    expect(formatTimeAgo(ago(48 * 60), NOW)).toBe("48m")
-    expect(formatTimeAgo(ago(17 * 3600), NOW)).toBe("17h")
-    expect(formatTimeAgo(ago(3 * 86400), NOW)).toBe("3d")
-    expect(formatTimeAgo(ago(14 * 86400), NOW)).toBe("2w")
-    expect(formatTimeAgo(ago(90 * 86400), NOW)).toBe("3mo")
-    expect(formatTimeAgo(ago(800 * 86400), NOW)).toBe("2y")
+    expect(formatTimeAgo(ago(5), NOW)).toBe("Vừa xong")
+    expect(formatTimeAgo(ago(48 * 60), NOW)).toBe("48 phút")
+    expect(formatTimeAgo(ago(17 * 3600), NOW)).toBe("17 giờ")
+    expect(formatTimeAgo(ago(3 * 86400), NOW)).toBe("3 ngày")
+    expect(formatTimeAgo(ago(14 * 86400), NOW)).toBe("2 tuần")
+    expect(formatTimeAgo(ago(90 * 86400), NOW)).toBe("3 tháng")
+    expect(formatTimeAgo(ago(800 * 86400), NOW)).toBe("2 năm")
   })
 
   it("switches unit exactly at the boundaries", () => {
-    expect(formatTimeAgo(ago(59), NOW)).toBe("now")
-    expect(formatTimeAgo(ago(60), NOW)).toBe("1m")
-    expect(formatTimeAgo(ago(3599), NOW)).toBe("59m")
-    expect(formatTimeAgo(ago(3600), NOW)).toBe("1h")
-    expect(formatTimeAgo(ago(86400), NOW)).toBe("1d")
-    expect(formatTimeAgo(ago(7 * 86400), NOW)).toBe("1w")
+    expect(formatTimeAgo(ago(59), NOW)).toBe("Vừa xong")
+    expect(formatTimeAgo(ago(60), NOW)).toBe("1 phút")
+    expect(formatTimeAgo(ago(3599), NOW)).toBe("59 phút")
+    expect(formatTimeAgo(ago(3600), NOW)).toBe("1 giờ")
+    expect(formatTimeAgo(ago(86400), NOW)).toBe("1 ngày")
+    expect(formatTimeAgo(ago(7 * 86400), NOW)).toBe("1 tuần")
   })
 
   it("copes with the future and with bad dates", () => {
-    expect(formatTimeAgo(ago(-500), NOW)).toBe("now")
+    expect(formatTimeAgo(ago(-500), NOW)).toBe("Vừa xong")
     expect(formatTimeAgo("not a date", NOW)).toBe("")
   })
 
   it("uses the current time by default", () => {
     jest.useFakeTimers({ now: NOW })
 
-    expect(formatTimeAgo(ago(2 * 3600))).toBe("2h")
+    expect(formatTimeAgo(ago(2 * 3600))).toBe("2 giờ")
   })
 })
 
@@ -76,32 +74,24 @@ describe("formatTime", () => {
   })
 })
 
-describe("plural", () => {
-  it("adds an s except for exactly one", () => {
-    expect(plural("like", 1)).toBe("like")
-    expect(plural("like", 0)).toBe("likes")
-    expect(plural("like", 2)).toBe("likes")
-  })
-})
-
-describe("greetingFor", () => {
-  const at = (hour: number) => greetingFor(new Date(2026, 0, 1, hour))
+describe("greetingKeyFor", () => {
+  const at = (hour: number) => greetingKeyFor(new Date(2026, 0, 1, hour))
 
   it("changes with the hour", () => {
-    expect(at(5)).toBe(copy.greeting.morning)
-    expect(at(11)).toBe(copy.greeting.morning)
-    expect(at(12)).toBe(copy.greeting.afternoon)
-    expect(at(17)).toBe(copy.greeting.afternoon)
-    expect(at(18)).toBe(copy.greeting.evening)
-    expect(at(23)).toBe(copy.greeting.evening)
-    expect(at(0)).toBe(copy.greeting.evening)
-    expect(at(4)).toBe(copy.greeting.evening)
+    expect(at(5)).toBe("home.greeting.morning")
+    expect(at(11)).toBe("home.greeting.morning")
+    expect(at(12)).toBe("home.greeting.afternoon")
+    expect(at(17)).toBe("home.greeting.afternoon")
+    expect(at(18)).toBe("home.greeting.evening")
+    expect(at(23)).toBe("home.greeting.evening")
+    expect(at(0)).toBe("home.greeting.evening")
+    expect(at(4)).toBe("home.greeting.evening")
   })
 
   it("uses the current time by default", () => {
     jest.useFakeTimers({ now: new Date(2026, 0, 1, 8) })
 
-    expect(greetingFor()).toBe(copy.greeting.morning)
+    expect(greetingKeyFor()).toBe("home.greeting.morning")
   })
 })
 

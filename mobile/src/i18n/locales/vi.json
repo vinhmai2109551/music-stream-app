@@ -1,0 +1,468 @@
+{
+  "app": {
+    "name": "Music Stream",
+    "defaultSource": "Music Stream"
+  },
+  "common": {
+    "retry": "Thử lại",
+    "close": "Đóng",
+    "back": "Quay lại",
+    "play": "Phát",
+    "pause": "Tạm dừng",
+    "shuffle": "Phát ngẫu nhiên",
+    "moreOptions": "Tuỳ chọn khác",
+    "share": "Chia sẻ",
+    "search": "Tìm kiếm",
+    "follow": "Theo dõi",
+    "following": "Đang theo dõi",
+    "like": "Thích",
+    "unlike": "Bỏ thích",
+    "viewMore": "Xem thêm",
+    "viewLess": "Thu gọn",
+    "seeAll": "Xem tất cả",
+    "deletedUser": "Người dùng đã xoá",
+    "empty": {
+      "generic": "Chưa có gì ở đây",
+      "songs": "Chưa có bài hát nào",
+      "albums": "Chưa có album nào",
+      "artists": "Chưa có nghệ sĩ nào",
+      "otherArtists": "Chưa có nghệ sĩ nào khác",
+      "charts": "Chưa có bảng xếp hạng nào"
+    },
+    "count": {
+      "followers": "{{value}} người theo dõi",
+      "likes": "{{value}} lượt thích",
+      "comments": "{{value}} bình luận",
+      "songs": "{{value}} bài hát"
+    }
+  },
+  "time": {
+    "ago": {
+      "now": "Vừa xong",
+      "minutes": "{{count}} phút",
+      "hours": "{{count}} giờ",
+      "days": "{{count}} ngày",
+      "weeks": "{{count}} tuần",
+      "months": "{{count}} tháng",
+      "years": "{{count}} năm"
+    }
+  },
+  "errors": {
+    "network": "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
+    "timeout": "Máy chủ phản hồi quá lâu. Vui lòng thử lại.",
+    "server": "Máy chủ đang gặp sự cố. Vui lòng thử lại sau.",
+    "tooManyRequests": "Bạn thử quá nhiều lần. Vui lòng đợi một phút rồi thử lại.",
+    "unknown": "Đã có lỗi xảy ra. Vui lòng thử lại.",
+    "notConfigured": "Chưa cấu hình địa chỉ máy chủ (EXPO_PUBLIC_API_URL).",
+    "loadFailedTitle": "Không tải được dữ liệu",
+    "notFoundTitle": "Không tìm thấy",
+    "notFoundDescription": "Nội dung này không còn tồn tại."
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "search": "Tìm kiếm",
+    "feed": "Bảng tin",
+    "library": "Thư viện"
+  },
+  "launch": {
+    "headline": "Âm nhạc của bạn, nghệ sĩ của bạn",
+    "subtitle": "Hàng triệu bài hát từ những nghệ sĩ bạn yêu thích.",
+    "createAccount": "Tạo tài khoản",
+    "haveAccount": "Tôi đã có tài khoản"
+  },
+  "auth": {
+    "login": {
+      "title": "Chào mừng trở lại",
+      "subtitle": "Đăng nhập để tiếp tục nghe nhạc",
+      "submit": "Đăng nhập",
+      "switchPrompt": "Chưa có tài khoản?",
+      "switchAction": "Đăng ký"
+    },
+    "register": {
+      "title": "Tạo tài khoản",
+      "subtitle": "Chỉ mất một phút để bắt đầu",
+      "submit": "Đăng ký",
+      "switchPrompt": "Đã có tài khoản?",
+      "switchAction": "Đăng nhập"
+    },
+    "fields": {
+      "email": {
+        "label": "Email",
+        "placeholder": "ten@email.com"
+      },
+      "name": {
+        "label": "Tên hiển thị",
+        "placeholder": "Tên của bạn"
+      },
+      "password": {
+        "label": "Mật khẩu",
+        "placeholder": "Nhập mật khẩu"
+      }
+    },
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "logout": "Đăng xuất",
+    "validation": {
+      "emailRequired": "Vui lòng nhập email",
+      "emailInvalid": "Email không hợp lệ",
+      "emailTooLong": "Email tối đa {{max}} ký tự",
+      "nameRequired": "Vui lòng nhập tên",
+      "nameTooLong": "Tên tối đa {{max}} ký tự",
+      "passwordRequired": "Vui lòng nhập mật khẩu",
+      "passwordTooShort": "Mật khẩu phải có ít nhất {{min}} ký tự",
+      "passwordTooLong": "Mật khẩu tối đa {{max}} ký tự"
+    },
+    "errors": {
+      "invalidCredentials": "Email hoặc mật khẩu không đúng",
+      "emailTaken": "Email đã được đăng ký",
+      "turnstileFailed": "Xác minh bảo mật thất bại. Vui lòng xác minh lại.",
+      "turnstileUnavailable": "Dịch vụ xác minh tạm thời không khả dụng. Vui lòng thử lại."
+    },
+    "turnstile": {
+      "label": "Xác minh bảo mật Cloudflare",
+      "required": "Vui lòng hoàn tất xác minh bảo mật trước khi đăng nhập",
+      "failed": "Không tải được xác minh bảo mật. Chạm để thử lại.",
+      "errorCode": "Mã lỗi"
+    }
+  },
+  "home": {
+    "greeting": {
+      "morning": "Chào buổi sáng,",
+      "afternoon": "Chào buổi chiều,",
+      "evening": "Chào buổi tối,"
+    },
+    "emptyTitle": "Chưa có gì để nghe",
+    "emptyDescription": "Nhạc mới sẽ xuất hiện ở đây.",
+    "regionsLabel": "Khu vực",
+    "regions": {
+      "all": "Tất cả",
+      "vietnam": "Việt Nam",
+      "korea": "K-Pop",
+      "japan": "J-Pop",
+      "china": "C-Pop"
+    },
+    "sections": {
+      "suggestions": "Gợi ý cho bạn",
+      "charts": "Bảng xếp hạng",
+      "trendingAlbums": "Album thịnh hành",
+      "popularArtists": "Nghệ sĩ nổi tiếng"
+    }
+  },
+  "player": {
+    "viaYoutube": "Phát qua YouTube",
+    "openOnYoutube": "Mở trên YouTube",
+    "cannotPlayInApp": "Bài này không phát được trong app",
+    "noSource": "Bài này chưa có nguồn phát",
+    "networkError": "Không phát được bài này. Kiểm tra kết nối rồi thử lại.",
+    "openPlayerToListen": "Mở trình phát để nghe bài này",
+    "backgroundHint": "YouTube tạm dừng khi bạn rời app. Thử playlist “Phát nền” để nghe cả khi tắt màn hình.",
+    "backgroundBadge": "Phát được khi tắt màn hình",
+    "autoSkip": "Tự chuyển bài sau {{count}} giây",
+    "nothingPlaying": "Chưa phát bài nào",
+    "closePlayer": "Đóng trình phát",
+    "openPlayer": "Mở trình phát",
+    "openPlayerNamed": "Mở trình phát, {{title}} - {{artist}}",
+    "playingFrom": "Đang phát từ",
+    "playing": "Đang phát",
+    "previous": "Bài trước",
+    "next": "Bài tiếp theo",
+    "shuffleOn": "Phát ngẫu nhiên: bật",
+    "shuffleOff": "Phát ngẫu nhiên: tắt",
+    "repeatOff": "Lặp lại: tắt",
+    "repeatAll": "Lặp lại tất cả",
+    "repeatOne": "Lặp lại một bài",
+    "likeTrack": "Thích bài hát",
+    "unlikeTrack": "Bỏ thích bài hát",
+    "trackProgress": "Tiến độ bài hát",
+    "videoPlayer": "Trình phát video",
+    "stopPlayback": "Dừng phát",
+    "likeCount": "Thích, {{count}} lượt thích",
+    "commentCount": "Bình luận, {{count}}"
+  },
+  "recommendations": {
+    "forYou": "Dành cho bạn",
+    "becauseYouListened": "Vì bạn đã nghe",
+    "forYouSource": "Dành cho bạn",
+    "similarTitle": "Bài tương tự",
+    "similarOpen": "Xem bài tương tự",
+    "similarSource": "Bài tương tự",
+    "byMood": "Theo tâm trạng",
+    "byMoodSource": "Theo tâm trạng"
+  },
+  "search": {
+    "placeholder": "Bạn muốn nghe gì?",
+    "recentTitle": "Tìm kiếm gần đây",
+    "clearAll": "Xoá tất cả",
+    "removeRecent": "Xoá khỏi tìm kiếm gần đây",
+    "hintTitle": "Tìm trên Music Stream",
+    "hintDescription": "Tìm bài hát, album và nghệ sĩ.",
+    "noResultsTitle": "Không có kết quả",
+    "noResultsDescription": "Thử từ khác hoặc kiểm tra chính tả.",
+    "results": "Kết quả tìm kiếm",
+    "clear": "Xoá nội dung tìm kiếm",
+    "tabs": {
+      "all": "Tất cả",
+      "tracks": "Bài hát",
+      "albums": "Album",
+      "artists": "Nghệ sĩ"
+    }
+  },
+  "library": {
+    "screen": {
+      "title": "Thư viện của bạn",
+      "likedSongs": "Bài hát đã thích",
+      "chips": {
+        "playlists": "Playlist",
+        "songs": "Bài hát",
+        "albums": "Album",
+        "artists": "Nghệ sĩ"
+      },
+      "emptyTitle": "Thư viện của bạn đang trống",
+      "emptyDescription": "Thích bài hát, lưu album và theo dõi nghệ sĩ để thấy chúng ở đây."
+    },
+    "playlists": {
+      "title": "Playlist",
+      "heading": "Playlist của bạn",
+      "emptyTitle": "Chưa có playlist nào",
+      "emptyDescription": "Chạm + để tạo playlist đầu tiên của bạn.",
+      "create": "Tạo playlist",
+      "created": "Đã tạo playlist"
+    }
+  },
+  "playlist": {
+    "addedTo": "Đã thêm vào {{name}}",
+    "alreadyIn": "Đã có trong {{name}}",
+    "addToPlaylist": "Thêm vào playlist",
+    "noPlaylists": "Bạn chưa có playlist nào",
+    "loadFailed": "Không tải được playlist của bạn",
+    "newPlaylist": "Playlist mới",
+    "playlistNamePlaceholder": "Tên playlist",
+    "createPlaylist": "Tạo",
+    "removeFromPlaylist": "Xoá khỏi playlist này",
+    "removedFrom": "Đã xoá khỏi {{name}}",
+    "rename": "Đổi tên playlist",
+    "renamed": "Đã đổi tên playlist",
+    "save": "Lưu",
+    "delete": "Xoá playlist",
+    "deleted": "Đã xoá playlist",
+    "confirmDelete": "Xoá",
+    "deleteConfirmTitle": "Xoá playlist?",
+    "deleteConfirmMessage": "Playlist sẽ bị xoá khỏi thư viện của bạn. Các bài hát vẫn còn.",
+    "cancel": "Huỷ",
+    "named": "Playlist {{name}}"
+  },
+  "collection": {
+    "addSongsFirst": "Hãy thêm vài bài hát trước",
+    "albumBy": "Album của {{artist}}.",
+    "likePlaylist": "Thích playlist",
+    "saveAlbum": "Lưu album",
+    "noSongsTitle": "Chưa có bài hát nào",
+    "noSongsDescription": "Thêm bài hát từ menu “…” trên bất kỳ bài nào."
+  },
+  "artist": {
+    "popular": "Phổ biến",
+    "albums": "Album",
+    "about": "Giới thiệu",
+    "fansAlsoLike": "Fan cũng thích",
+    "named": "Nghệ sĩ {{name}}"
+  },
+  "track": {
+    "addToLiked": "Thêm vào bài hát đã thích",
+    "removeFromLiked": "Xoá khỏi bài hát đã thích",
+    "playNamed": "Phát {{title}} của {{artist}}"
+  },
+  "feed": {
+    "title": "Bảng tin",
+    "postedTrack": "Đã đăng một bài hát",
+    "emptyTitle": "Chưa có bài đăng nào",
+    "emptyDescription": "Bài hát mới của nghệ sĩ sẽ xuất hiện ở đây.",
+    "artist": "Nghệ sĩ",
+    "artwork": "Ảnh bìa bài đăng",
+    "likePost": "Thích bài đăng",
+    "unlikePost": "Bỏ thích bài đăng",
+    "comments": "Bình luận"
+  },
+  "comments": {
+    "title": "Bình luận",
+    "placeholder": "Viết bình luận...",
+    "send": "Gửi bình luận",
+    "reply": "Trả lời",
+    "replyingTo": "Đang trả lời",
+    "cancelReply": "Huỷ trả lời",
+    "loadMoreFailed": "Không tải thêm được bình luận. Chạm để thử lại.",
+    "loadingReplies": "Đang tải phản hồi...",
+    "emptyTitle": "Chưa có bình luận nào",
+    "emptyDescription": "Hãy là người đầu tiên bình luận.",
+    "likeComment": "Thích bình luận",
+    "unlikeComment": "Bỏ thích bình luận",
+    "delete": "Xoá",
+    "deleteComment": "Xoá bình luận",
+    "confirmDelete": "Xoá",
+    "cancel": "Huỷ",
+    "deleteConfirmTitle": "Xoá bình luận này?",
+    "deleteConfirmMessage": "Hành động này không thể hoàn tác.",
+    "deleteThreadConfirmMessage": "Hành động này không thể hoàn tác. Các phản hồi cũng sẽ bị xoá.",
+    "viewReplies": "Xem thêm {{count}} phản hồi"
+  },
+  "premium": {
+    "welcomeTitle": "Chào mừng đến với\nPremium",
+    "welcomeAction": "Bắt đầu nghe",
+    "plansTitle": "Kho nhạc không giới hạn",
+    "subscribe": "Đăng ký ngay",
+    "currentPlan": "Gói hiện tại của bạn",
+    "backHome": "Về trang chủ",
+    "subscribeFailed": "Không bắt đầu được Premium. Vui lòng thử lại.",
+    "perMonth": "/ tháng",
+    "bannerLabel": "Mở khoá Music Stream Premium",
+    "bannerNote": "Miễn phí một tháng · Huỷ bất cứ lúc nào",
+    "plans": {
+      "individual": {
+        "name": "Premium",
+        "trial": "Miễn phí 1 tháng"
+      },
+      "duo": {
+        "name": "Premium Duo",
+        "trial": "Miễn phí 1 tháng"
+      },
+      "family": {
+        "name": "Premium Family",
+        "trial": "Miễn phí 1 tháng"
+      }
+    },
+    "features": {
+      "adFree": "Nghe nhạc không quảng cáo",
+      "offline": "Tải nhạc để nghe ngoại tuyến",
+      "fullCatalog": "Truy cập toàn bộ kho nhạc Premium",
+      "highQuality": "Chất lượng âm thanh cao",
+      "cancelAnytime": "Huỷ bất cứ lúc nào",
+      "accounts2": "Dành cho 2 tài khoản",
+      "accounts6": "Tối đa 6 tài khoản"
+    }
+  },
+  "settings": {
+    "title": "Tài khoản",
+    "editProfile": "Chỉnh sửa hồ sơ",
+    "edit": {
+      "title": "Chỉnh sửa hồ sơ",
+      "nameLabel": "Tên hiển thị",
+      "changePhoto": "Đổi ảnh đại diện",
+      "save": "Lưu thay đổi",
+      "saved": "Đã cập nhật hồ sơ",
+      "back": "Quay lại",
+      "pickFailed": "Không chọn được ảnh. Vui lòng thử lại.",
+      "readFailed": "Không đọc được ảnh đã chọn. Vui lòng chọn ảnh khác.",
+      "uploadFailed": "Không tải được ảnh lên. Vui lòng thử lại."
+    },
+    "language": {
+      "title": "Ngôn ngữ",
+      "system": "Theo thiết bị",
+      "systemHint": "Dùng ngôn ngữ của điện thoại"
+    }
+  },
+  "assistant": {
+    "name": "Trợ lý AI",
+    "title": "Trợ lý Music Stream",
+    "tabLabel": "Trợ lý",
+    "open": "Mở trợ lý AI",
+    "close": "Đóng trợ lý",
+    "playSource": "Trợ lý AI",
+    "welcomeTitle": "Bạn muốn nghe gì hôm nay?",
+    "welcomeBody": "Kể tâm trạng hoặc việc bạn đang làm. Mình tìm nhạc, tạo playlist và mở bài giúp bạn.",
+    "starters": [
+      "Gợi ý nhạc buồn Việt Nam",
+      "Tạo playlist chạy bộ K-Pop",
+      "Nghệ sĩ giống Sơn Tùng",
+      "Premium có những gì?"
+    ],
+    "startersLabel": "Gợi ý câu hỏi",
+    "composerPlaceholder": "Nhắn cho trợ lý…",
+    "composerLabel": "Tin nhắn gửi trợ lý",
+    "send": "Gửi tin nhắn",
+    "stop": "Dừng trả lời",
+    "replying": "Trợ lý đang trả lời",
+    "youSaid": "Bạn nói",
+    "assistantSaid": "Trợ lý nói",
+    "truncated": "Câu trả lời bị cắt ngắn. Bạn có thể nhờ trợ lý nói tiếp.",
+    "notSent": "Chưa gửi được",
+    "resend": "Gửi lại",
+    "loadingHistory": "Đang mở cuộc trò chuyện",
+    "loadFailedTitle": "Không mở được cuộc trò chuyện",
+    "remaining": "Còn {{count}} tin nhắn hôm nay",
+    "sources": "Nguồn",
+    "moreTracks": "Xem thêm {{count}} bài",
+    "fewerTracks": "Thu gọn",
+    "dismiss": "Ẩn thông báo",
+    "time": {
+      "justNow": "Vừa xong",
+      "minutes": "{{count}} phút trước",
+      "hours": "{{count}} giờ trước",
+      "yesterday": "Hôm qua",
+      "days": "{{count}} ngày trước"
+    },
+    "tools": {
+      "search_catalog": "Đang tìm trong kho nhạc…",
+      "get_track": "Đang xem bài hát…",
+      "get_artist": "Đang xem nghệ sĩ…",
+      "get_album": "Đang xem album…",
+      "get_playlist": "Đang xem playlist…",
+      "get_my_library": "Đang xem thư viện của bạn…",
+      "recommend_tracks": "Đang chọn bài hợp gu bạn…",
+      "similar_tracks": "Đang tìm bài tương tự…",
+      "search_help": "Đang tra cứu hướng dẫn…",
+      "play_tracks": "Đang mở nhạc…",
+      "create_playlist": "Đang chuẩn bị playlist…",
+      "add_tracks_to_playlist": "Đang chuẩn bị thêm bài…",
+      "like_tracks": "Đang chuẩn bị thích bài…",
+      "follow_artist": "Đang chuẩn bị theo dõi…",
+      "fallback": "Đang xử lý…",
+      "failed": "Không làm được bước này"
+    },
+    "action": {
+      "heading": "Trợ lý muốn thực hiện",
+      "confirm": "Đồng ý",
+      "reject": "Huỷ",
+      "busy": "Đang thực hiện…",
+      "confirmed": "Đã thực hiện",
+      "rejected": "Đã huỷ",
+      "expired": "Đã hết hạn",
+      "failed": "Chưa thực hiện được",
+      "waiting": "Cần bạn đồng ý trong 10 phút"
+    },
+    "history": {
+      "open": "Các cuộc trò chuyện",
+      "title": "Cuộc trò chuyện",
+      "newChat": "Cuộc trò chuyện mới",
+      "untitled": "Chưa có tin nhắn",
+      "emptyTitle": "Chưa có cuộc trò chuyện nào",
+      "emptyDescription": "Bắt đầu bằng một câu hỏi về nhạc bạn muốn nghe.",
+      "delete": "Xoá cuộc trò chuyện",
+      "deleteTitle": "Xoá cuộc trò chuyện này?",
+      "deleteMessage": "Toàn bộ tin nhắn sẽ mất. Các tin nhắn đã dùng hôm nay vẫn được tính vào giới hạn ngày.",
+      "confirmDelete": "Xoá",
+      "keep": "Giữ lại",
+      "deleted": "Đã xoá cuộc trò chuyện",
+      "deleteFailed": "Không xoá được cuộc trò chuyện. Vui lòng thử lại.",
+      "createFailed": "Không tạo được cuộc trò chuyện mới. Vui lòng thử lại."
+    },
+    "unavailable": {
+      "title": "Trợ lý chưa sẵn sàng",
+      "description": "Tính năng này đang tạm tắt. Phần còn lại của ứng dụng vẫn dùng bình thường.",
+      "close": "Đóng"
+    },
+    "errors": {
+      "generic": "Có lỗi xảy ra. Bạn thử lại nhé.",
+      "offline": "Không kết nối được máy chủ. Kiểm tra mạng rồi gửi lại.",
+      "quota": "Bạn đã dùng hết tin nhắn hôm nay. Hãy quay lại vào ngày mai nhé.",
+      "unavailable": "Trợ lý đang tạm tắt. Bạn thử lại sau nhé.",
+      "conflict": "Trợ lý đang trả lời tin trước. Đợi một chút nhé.",
+      "expired": "Đề xuất này đã hết hạn (quá 10 phút). Hãy nhờ trợ lý lần nữa.",
+      "gone": "Cuộc trò chuyện này không còn nữa."
+    }
+  },
+  "album": {
+    "named": "Album {{title}} của {{artist}}"
+  },
+  "suggestion": {
+    "by": "{{title}} của {{subtitle}}"
+  }
+}

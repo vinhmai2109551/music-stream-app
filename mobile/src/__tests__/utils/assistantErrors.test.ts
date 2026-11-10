@@ -1,19 +1,17 @@
+import { t } from "@/i18n"
 import { describe, expect, it } from "@jest/globals"
 import { ApiError } from "@/api/client"
-import { copy } from "@/constants/copy"
 import { describeAssistantError, describeStreamError } from "@/utils/assistantErrors"
 
 const http = (status: number, message = "") => new ApiError({ status, kind: "http", message })
-const text = copy.assistant.errors
-
 describe("describeAssistantError", () => {
   it("no network or a slow server: offline", () => {
     expect(
       describeAssistantError(new ApiError({ status: 0, kind: "network", message: "x" })),
-    ).toEqual({ kind: "offline", message: text.offline })
+    ).toEqual({ kind: "offline", message: t("assistant.errors.offline") })
     expect(
       describeAssistantError(new ApiError({ status: 0, kind: "timeout", message: "x" })),
-    ).toEqual({ kind: "offline", message: text.offline })
+    ).toEqual({ kind: "offline", message: t("assistant.errors.offline") })
   })
 
   it("429 gives the message of the server (it says if the day is used up)", () => {
@@ -24,13 +22,16 @@ describe("describeAssistantError", () => {
   })
 
   it("429 without a message falls back to ours", () => {
-    expect(describeAssistantError(http(429))).toEqual({ kind: "quota", message: text.quota })
+    expect(describeAssistantError(http(429))).toEqual({
+      kind: "quota",
+      message: t("assistant.errors.quota"),
+    })
   })
 
   it("503: the assistant is off", () => {
     expect(describeAssistantError(http(503, "Assistant is not configured"))).toEqual({
       kind: "unavailable",
-      message: text.unavailable,
+      message: t("assistant.errors.unavailable"),
     })
   })
 
@@ -40,23 +41,32 @@ describe("describeAssistantError", () => {
   })
 
   it("410: the proposal expired", () => {
-    expect(describeAssistantError(http(410))).toEqual({ kind: "expired", message: text.expired })
+    expect(describeAssistantError(http(410))).toEqual({
+      kind: "expired",
+      message: t("assistant.errors.expired"),
+    })
   })
 
   it("404: the conversation is gone", () => {
-    expect(describeAssistantError(http(404))).toEqual({ kind: "gone", message: text.gone })
+    expect(describeAssistantError(http(404))).toEqual({
+      kind: "gone",
+      message: t("assistant.errors.gone"),
+    })
   })
 
   it("anything else is a generic error, and the server's text is not shown", () => {
     expect(describeAssistantError(http(500, "SQL exploded"))).toEqual({
       kind: "generic",
-      message: text.generic,
+      message: t("assistant.errors.generic"),
     })
     expect(describeAssistantError(new Error("boom"))).toEqual({
       kind: "generic",
-      message: text.generic,
+      message: t("assistant.errors.generic"),
     })
-    expect(describeAssistantError("x")).toEqual({ kind: "generic", message: text.generic })
+    expect(describeAssistantError("x")).toEqual({
+      kind: "generic",
+      message: t("assistant.errors.generic"),
+    })
   })
 })
 
@@ -73,7 +83,7 @@ describe("describeStreamError", () => {
     expect(describeStreamError("boom", "x").kind).toBe("generic")
     expect(describeStreamError("assistant_busy", "")).toEqual({
       kind: "busy",
-      message: text.generic,
+      message: t("assistant.errors.generic"),
     })
   })
 })

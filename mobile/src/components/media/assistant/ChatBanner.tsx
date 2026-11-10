@@ -3,8 +3,8 @@ import { useEffect } from "react"
 import { AccessibilityInfo, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { IconButton } from "@/components/ui/IconButton"
-import { copy } from "@/constants/copy"
 import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 type ChatBannerProps = {
   message: string
@@ -13,6 +13,8 @@ type ChatBannerProps = {
 
 /** Says what went wrong with the last message, above the box where the person writes the next one. */
 export function ChatBanner({ message, onDismiss }: ChatBannerProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -27,7 +29,7 @@ export function ChatBanner({ message, onDismiss }: ChatBannerProps) {
       <AppText variant="caption" style={styles.text}>
         {message}
       </AppText>
-      <IconButton icon={X} label={copy.assistant.dismiss} size={sizes.iconMd} onPress={onDismiss} />
+      <IconButton icon={X} label={t("assistant.dismiss")} size={sizes.iconMd} onPress={onDismiss} />
     </View>
   )
 }

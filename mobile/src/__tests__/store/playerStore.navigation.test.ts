@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
-import { copy } from "@/constants/copy"
 import { RESTART_THRESHOLD_SECONDS } from "@/constants/player"
 import { usePlayerStore } from "@/store/playerStore"
 import { r2Track } from "../helpers/playback"
+import { t } from "@/i18n"
 
 const store = usePlayerStore
 const state = () => store.getState()
@@ -37,7 +37,7 @@ describe("playFromList", () => {
 
     state().playFromList(queue(), 2)
 
-    expect(state().queueSource).toBe(copy.defaultSource)
+    expect(state().queueSource).toBe(t("app.defaultSource"))
     expect(state().error).toBeNull()
     expect(state().skipStreak).toBe(0)
   })
@@ -368,7 +368,7 @@ describe("modes and housekeeping", () => {
       duration: 0,
       shuffle: false,
       repeat: "off",
-      queueSource: copy.defaultSource,
+      queueSource: t("app.defaultSource"),
       source: "none",
       error: null,
       skipStreak: 0,

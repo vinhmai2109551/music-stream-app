@@ -9,6 +9,7 @@ import {
 } from "react-native"
 import { makeStyles, radius, shadows, sizes, spacing, typography, useColors } from "@/theme"
 import { pressedStyle } from "./pressed"
+import { useTranslation } from "@/i18n"
 
 type SearchBarProps = Omit<TextInputProps, "style" | "value"> & {
   value: string
@@ -17,6 +18,8 @@ type SearchBarProps = Omit<TextInputProps, "style" | "value"> & {
 }
 
 export function SearchBar({ value, onClear, ref, onFocus, onBlur, ...props }: SearchBarProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -54,7 +57,7 @@ export function SearchBar({ value, onClear, ref, onFocus, onBlur, ...props }: Se
       {value.length > 0 && (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Clear search"
+          accessibilityLabel={t("search.clear")}
           onPress={onClear}
           hitSlop={8}
           style={({ pressed }) => [styles.clear, pressedStyle(pressed)]}

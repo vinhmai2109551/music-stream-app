@@ -4,6 +4,7 @@ import { memo } from "react"
 import type { ApiAlbum } from "@/api/types"
 import { sizes, useColors } from "@/theme"
 import { MediaRow } from "./MediaRow"
+import { useTranslation } from "@/i18n"
 
 type AlbumRowProps = {
   album: ApiAlbum
@@ -12,6 +13,8 @@ type AlbumRowProps = {
 const openAlbum = (id: string) => router.push({ pathname: "/album/[id]", params: { id } })
 
 function AlbumRowBase({ album }: AlbumRowProps) {
+  const { t } = useTranslation()
+
   const colors = useColors()
 
   return (
@@ -20,7 +23,7 @@ function AlbumRowBase({ album }: AlbumRowProps) {
       imageLabel={album.artist}
       title={album.title}
       subtitle={album.artist}
-      accessibilityLabel={`Album ${album.title} by ${album.artist}`}
+      accessibilityLabel={t("album.named", { title: album.title, artist: album.artist })}
       onPress={() => openAlbum(album.id)}
       trailing={<ChevronRight size={sizes.icon} color={colors.secondary} />}
     />

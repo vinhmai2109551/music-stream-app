@@ -1,8 +1,8 @@
 import { CloudOff, SearchX } from "lucide-react-native"
-import { copy } from "@/constants/copy"
 import { describeApiError, isNotFound } from "@/utils/apiErrors"
 import { Button } from "./Button"
 import { EmptyState } from "./EmptyState"
+import { useTranslation } from "@/i18n"
 
 type ErrorStateProps = {
   error: unknown
@@ -12,21 +12,23 @@ type ErrorStateProps = {
 
 /** What a screen shows when its data could not be loaded. */
 export function ErrorState({ error, onRetry }: ErrorStateProps) {
+  const { t } = useTranslation()
+
   if (isNotFound(error)) {
     return (
       <EmptyState
         icon={SearchX}
-        title={copy.errors.notFoundTitle}
-        description={copy.errors.notFoundDescription}
+        title={t("errors.notFoundTitle")}
+        description={t("errors.notFoundDescription")}
       />
     )
   }
   return (
     <EmptyState
       icon={CloudOff}
-      title={copy.errors.loadFailedTitle}
+      title={t("errors.loadFailedTitle")}
       description={describeApiError(error)}
-      action={onRetry ? <Button label={copy.common.retry} onPress={onRetry} /> : undefined}
+      action={onRetry ? <Button label={t("common.retry")} onPress={onRetry} /> : undefined}
     />
   )
 }

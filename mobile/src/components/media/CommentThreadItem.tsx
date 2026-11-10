@@ -3,10 +3,10 @@ import { Pressable, StyleSheet, View } from "react-native"
 import type { ApiComment } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { sizes, spacing } from "@/theme"
 import type { CommentThread } from "@/utils/commentThreads"
 import { CommentItem } from "./CommentItem"
+import { useTranslation } from "@/i18n"
 
 type CommentThreadItemProps = {
   thread: CommentThread
@@ -27,6 +27,8 @@ function CommentThreadItemBase({
   onToggleLike,
   onDelete,
 }: CommentThreadItemProps) {
+  const { t } = useTranslation()
+
   const { comment, replies, hiddenReplies } = thread
 
   return (
@@ -46,8 +48,8 @@ function CommentThreadItemBase({
         >
           <AppText variant="caption" color="accentText">
             {loadingReplies
-              ? copy.comments.loadingReplies
-              : `View ${hiddenReplies} more ${hiddenReplies === 1 ? "reply" : "replies"}`}
+              ? t("comments.loadingReplies")
+              : t("comments.viewReplies", { count: hiddenReplies })}
           </AppText>
         </Pressable>
       )}

@@ -1,10 +1,10 @@
 import { fetch as streamingFetch } from "expo/fetch"
-import { copy } from "@/constants/copy"
 import type { AssistantEvent } from "@/api/types"
 import { parseAssistantEvent } from "@/utils/assistantEvents"
 import { SseParser, type SseMessage } from "@/utils/sse"
 import { createUtf8Decoder } from "@/utils/utf8"
 import { API_BASE_URL, ApiError, messageFromBody, parseBody, session } from "./client"
+import { t } from "@/i18n"
 
 /** How long to wait for the server to start answering. The answer itself may take longer. */
 const CONNECT_TIMEOUT_MS = 20_000
@@ -63,8 +63,8 @@ async function connect(
     if (signal.aborted) throw error
     throw new ApiError(
       timedOut
-        ? { status: 0, kind: "timeout", message: copy.errors.timeout }
-        : { status: 0, kind: "network", message: copy.errors.network },
+        ? { status: 0, kind: "timeout", message: t("errors.timeout") }
+        : { status: 0, kind: "network", message: t("errors.network") },
     )
   } finally {
     clearTimeout(timer)
@@ -86,7 +86,7 @@ export async function streamEvents(
   signal: AbortSignal,
 ): Promise<void> {
   if (!API_BASE_URL) {
-    throw new ApiError({ status: 0, kind: "network", message: copy.errors.notConfigured })
+    throw new ApiError({ status: 0, kind: "network", message: t("errors.notConfigured") })
   }
 
   const token = session.token()
@@ -112,7 +112,7 @@ export async function streamEvents(
   }
 
   if (!response.body) {
-    throw new ApiError({ status: 0, kind: "network", message: copy.errors.network })
+    throw new ApiError({ status: 0, kind: "network", message: t("errors.network") })
   }
   const reader = response.body.getReader()
   const decoder = createUtf8Decoder()
@@ -148,7 +148,7 @@ export async function streamEvents(
   } catch {
     if (signal.aborted) return
     if (!handler.failed) {
-      throw new ApiError({ status: 0, kind: "network", message: copy.errors.network })
+      throw new ApiError({ status: 0, kind: "network", message: t("errors.network") })
     }
   } finally {
     signal.removeEventListener("abort", cancel)

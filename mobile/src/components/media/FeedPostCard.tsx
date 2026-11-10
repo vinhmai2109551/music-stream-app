@@ -7,7 +7,6 @@ import type { ApiFeedPost } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
 import { CoverImage } from "@/components/ui/CoverImage"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { usePlayerStore } from "@/store/playerStore"
 import { showToast } from "@/store/toastStore"
 import { describeApiError } from "@/utils/apiErrors"
@@ -15,6 +14,7 @@ import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 import { formatCount } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
 import { formatTimeAgo } from "@/utils/formatTimeAgo"
+import { useTranslation } from "@/i18n"
 
 const AUTHOR_AVATAR = 44
 const CAPTION_LINES = 2
@@ -28,6 +28,8 @@ type FeedPostCardProps = {
 
 /** One post of the feed: who posted it, the artwork with its track, and the like / comment row. */
 function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -57,7 +59,7 @@ function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardP
     <View style={styles.card}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={artist ? `Artist ${artist.name}` : "Artist"}
+        accessibilityLabel={artist ? t("artist.named", { name: artist.name }) : t("feed.artist")}
         disabled={!artist}
         onPress={openArtist}
         style={({ pressed }) => [styles.author, pressedStyle(pressed)]}
@@ -71,21 +73,25 @@ function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardP
         <View style={styles.authorText}>
           <View style={styles.nameRow}>
             <AppText variant="subtitle" numberOfLines={1} ellipsizeMode="tail" style={styles.name}>
-              {artist?.name ?? "Music Stream"}
+              {artist?.name ?? t("app.name")}
             </AppText>
             <BadgeCheck size={sizes.iconSm} color={colors.accent} />
           </View>
           <AppText variant="small" color="secondary">
-            {copy.feed.postedTrack} · {formatTimeAgo(post.createdAt)}
+            {t("feed.postedTrack")} · {formatTimeAgo(post.createdAt)}
           </AppText>
         </View>
       </Pressable>
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={track ? `Play ${track.title} by ${track.artist}` : "Post artwork"}
+        accessibilityLabel={
+          track
+            ? t("track.playNamed", { title: track.title, artist: track.artist })
+            : t("feed.artwork")
+        }
         disabled={!track}
-        onPress={() => track && playFromList([track], 0, copy.feed.title)}
+        onPress={() => track && playFromList([track], 0, t("feed.title"))}
         style={({ pressed }) => [styles.artworkWrap, pressedStyle(pressed)]}
       >
         <CoverImage
@@ -117,14 +123,14 @@ function FeedPostCardBase({ post, onOpenComments, commentsCount }: FeedPostCardP
       <View style={styles.actions}>
         <Action
           icon={Heart}
-          label={liked ? "Unlike post" : "Like post"}
+          label={liked ? t("feed.unlikePost") : t("feed.likePost")}
           count={likes}
           active={liked}
           onPress={() => void toggleLike()}
         />
         <Action
           icon={MessageSquare}
-          label="Comments"
+          label={t("feed.comments")}
           count={commentsCount}
           onPress={() => onOpenComments(post)}
         />

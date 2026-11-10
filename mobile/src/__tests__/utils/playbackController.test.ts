@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
-import { copy } from "@/constants/copy"
 import { usePlayerStore } from "@/store/playerStore"
 import { PlaybackController } from "@/utils/playbackController"
 import type { ProbeResult } from "@/utils/probeAudio"
 import { advance, FakeSource, noSourceTrack, r2Track, settle, ytTrack } from "../helpers/playback"
+import { t } from "@/i18n"
 
 const store = usePlayerStore
 
@@ -79,7 +79,7 @@ describe("PlaybackController", () => {
     advance(20)
     expect(store.getState().isPlaying).toBe(false)
     expect(youtube.playing).toBe(false)
-    expect(toasts).toEqual([copy.player.openPlayerToListen])
+    expect(toasts).toEqual([t("player.openPlayerToListen")])
   })
 
   it("keeps a YouTube track playing when the screen opens in time", () => {
@@ -200,7 +200,7 @@ describe("PlaybackController", () => {
     await settle()
     expect(store.getState().error).toBe("blocked")
     expect(store.getState().isPlaying).toBe(false)
-    expect(toasts).toEqual([copy.player.cannotPlayInApp])
+    expect(toasts).toEqual([t("player.cannotPlayInApp")])
     advance(2900, 100)
     expect(store.getState().currentTrack?.id).toBe("a")
     advance(200, 100)
@@ -234,7 +234,7 @@ describe("PlaybackController", () => {
     store.getState().playFromList([r2Track("a"), r2Track("b")], 0)
     r2.emitError("missing")
     expect(store.getState().error).toBe("missing")
-    expect(toasts).toEqual([copy.player.noSource])
+    expect(toasts).toEqual([t("player.noSource")])
     advance(40)
     expect(store.getState().currentTrack?.id).toBe("b")
     expect(r2.calls.filter((call) => call.startsWith("load:"))).toEqual(["load:a", "load:b"])
@@ -247,7 +247,7 @@ describe("PlaybackController", () => {
     expect(r2.loaded).toBe(null)
     expect(youtube.loaded).toBe(null)
     expect(!r2.calls.some((call) => call.startsWith("load:"))).toBeTruthy()
-    expect(toasts).toEqual([copy.player.noSource])
+    expect(toasts).toEqual([t("player.noSource")])
     advance(40)
     expect(store.getState().currentTrack?.id).toBe("b")
     expect(r2.loaded?.id).toBe("b")

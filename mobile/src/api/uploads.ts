@@ -1,7 +1,6 @@
-import { copy } from "@/constants/copy"
 import { ApiError, api } from "./client"
+import { t } from "@/i18n"
 
-const text = copy.account.edit
 const UPLOAD_TIMEOUT_MS = 30_000
 
 /** A picture on the device that is ready to become the avatar. */
@@ -28,7 +27,7 @@ async function readFile(uri: string): Promise<Blob> {
   } catch {
     // Falls through to the same message: the file cannot be used either way.
   }
-  throw new ApiError({ status: 0, kind: "network", message: text.readFailed })
+  throw new ApiError({ status: 0, kind: "network", message: t("settings.edit.readFailed") })
 }
 
 /** One PUT straight to the bucket: no API token (the URL itself is the permission). */
@@ -51,14 +50,18 @@ async function putFile(url: string, blob: Blob, contentType: string): Promise<vo
   } catch {
     throw new ApiError(
       timedOut
-        ? { status: 0, kind: "timeout", message: copy.errors.timeout }
-        : { status: 0, kind: "network", message: copy.errors.network },
+        ? { status: 0, kind: "timeout", message: t("errors.timeout") }
+        : { status: 0, kind: "network", message: t("errors.network") },
     )
   } finally {
     clearTimeout(timer)
   }
   if (!response.ok) {
-    throw new ApiError({ status: response.status, kind: "http", message: text.uploadFailed })
+    throw new ApiError({
+      status: response.status,
+      kind: "http",
+      message: t("settings.edit.uploadFailed"),
+    })
   }
 }
 

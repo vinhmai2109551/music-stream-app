@@ -1,3 +1,4 @@
+import { t } from "@/i18n"
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent, waitFor } from "@testing-library/react-native"
 import { router } from "expo-router"
@@ -6,7 +7,6 @@ import type { ApiPlaylist, ApiPlaylistDetail } from "@/api/types"
 import { CollectionView } from "@/components/media/CollectionView"
 import { PlaylistOwnerControls } from "@/components/media/PlaylistOwnerControls"
 import { TrackMenuSheet } from "@/components/media/TrackMenuSheet"
-import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { useToastStore } from "@/store/toastStore"
@@ -34,7 +34,6 @@ jest.mock("@/api/playlists", () => ({
 /* eslint-disable @typescript-eslint/no-require-imports */
 const playlistsApi = jest.mocked(require("@/api/playlists") as typeof import("@/api/playlists"))
 /* eslint-enable @typescript-eslint/no-require-imports */
-const text = copy.library
 const mockRouter = jest.mocked(router)
 
 const refused = new ApiError({ status: 403, kind: "http", message: "Not allowed" })
@@ -71,10 +70,10 @@ describe("PlaylistOwnerControls: rename", () => {
   const open = async () => {
     const user = userEvent.setup()
     await render(<PlaylistOwnerControls playlistId="p1" name="Road trip" />)
-    await user.press(screen.getByRole("button", { name: text.rename }))
+    await user.press(screen.getByRole("button", { name: t("playlist.rename") }))
     return user
   }
-  const nameInput = () => screen.getByLabelText(text.playlistNamePlaceholder)
+  const nameInput = () => screen.getByLabelText(t("playlist.playlistNamePlaceholder"))
 
   it("opens a sheet with the current name", async () => {
     await open()
@@ -88,12 +87,12 @@ describe("PlaylistOwnerControls: rename", () => {
 
     await user.clear(nameInput())
     await user.type(nameInput(), "  Night drive ")
-    await user.press(screen.getByRole("button", { name: text.save }))
+    await user.press(screen.getByRole("button", { name: t("playlist.save") }))
 
-    await waitFor(() => expect(toast()).toBe(text.renamed))
+    await waitFor(() => expect(toast()).toBe(t("playlist.renamed")))
     expect(playlistsApi.updatePlaylist).toHaveBeenCalledWith("p1", { name: "Night drive" })
     expect(library().playlists[0].name).toBe("Night drive")
-    expect(screen.queryByLabelText(text.playlistNamePlaceholder)).not.toBeOnTheScreen()
+    expect(screen.queryByLabelText(t("playlist.playlistNamePlaceholder"))).not.toBeOnTheScreen()
   })
 
   it("stays open, keeps the old name and says why when the server refuses", async () => {
@@ -102,7 +101,7 @@ describe("PlaylistOwnerControls: rename", () => {
 
     await user.clear(nameInput())
     await user.type(nameInput(), "Night drive")
-    await user.press(screen.getByRole("button", { name: text.save }))
+    await user.press(screen.getByRole("button", { name: t("playlist.save") }))
 
     await waitFor(() => expect(toast()).toBe("Not allowed"))
     expect(library().playlists[0].name).toBe("Road trip")
@@ -112,11 +111,11 @@ describe("PlaylistOwnerControls: rename", () => {
   it("closes without a request when the name was not changed", async () => {
     const user = await open()
 
-    await user.press(screen.getByRole("button", { name: text.save }))
+    await user.press(screen.getByRole("button", { name: t("playlist.save") }))
 
     expect(playlistsApi.updatePlaylist).not.toHaveBeenCalled()
     await waitFor(() =>
-      expect(screen.queryByLabelText(text.playlistNamePlaceholder)).not.toBeOnTheScreen(),
+      expect(screen.queryByLabelText(t("playlist.playlistNamePlaceholder"))).not.toBeOnTheScreen(),
     )
     expect(toast()).toBeNull()
   })
@@ -126,7 +125,7 @@ describe("PlaylistOwnerControls: rename", () => {
 
     await user.clear(nameInput())
 
-    expect(screen.getByRole("button", { name: text.save })).toBeDisabled()
+    expect(screen.getByRole("button", { name: t("playlist.save") })).toBeDisabled()
   })
 })
 
@@ -134,15 +133,15 @@ describe("PlaylistOwnerControls: delete", () => {
   const open = async () => {
     const user = userEvent.setup()
     await render(<PlaylistOwnerControls playlistId="p1" name="Road trip" />)
-    await user.press(screen.getByRole("button", { name: text.delete }))
+    await user.press(screen.getByRole("button", { name: t("playlist.delete") }))
     return user
   }
 
   it("asks first, naming the playlist, and deletes nothing yet", async () => {
     await open()
 
-    expect(screen.getByText(`${text.deleteConfirmTitle} “Road trip”`)).toBeOnTheScreen()
-    expect(screen.getByText(text.deleteConfirmMessage)).toBeOnTheScreen()
+    expect(screen.getByText(`${t("playlist.deleteConfirmTitle")} “Road trip”`)).toBeOnTheScreen()
+    expect(screen.getByText(t("playlist.deleteConfirmMessage"))).toBeOnTheScreen()
     expect(playlistsApi.deletePlaylist).not.toHaveBeenCalled()
     expect(library().playlists).toHaveLength(1)
   })
@@ -150,9 +149,9 @@ describe("PlaylistOwnerControls: delete", () => {
   it("cancel leaves everything as it was", async () => {
     const user = await open()
 
-    await user.press(screen.getByRole("button", { name: text.cancel }))
+    await user.press(screen.getByRole("button", { name: t("playlist.cancel") }))
 
-    await waitFor(() => expect(screen.queryByText(text.deleteConfirmMessage)).toBeNull())
+    await waitFor(() => expect(screen.queryByText(t("playlist.deleteConfirmMessage"))).toBeNull())
     expect(playlistsApi.deletePlaylist).not.toHaveBeenCalled()
     expect(mockRouter.back).not.toHaveBeenCalled()
     expect(library().playlists).toHaveLength(1)
@@ -162,9 +161,9 @@ describe("PlaylistOwnerControls: delete", () => {
     playlistsApi.deletePlaylist.mockResolvedValue(undefined)
     const user = await open()
 
-    await user.press(screen.getByRole("button", { name: text.confirmDelete }))
+    await user.press(screen.getByRole("button", { name: t("playlist.confirmDelete") }))
 
-    await waitFor(() => expect(toast()).toBe(text.deleted))
+    await waitFor(() => expect(toast()).toBe(t("playlist.deleted")))
     expect(playlistsApi.deletePlaylist).toHaveBeenCalledWith("p1")
     expect(mockRouter.back).toHaveBeenCalledTimes(1)
     expect(library().playlists).toEqual([])
@@ -175,7 +174,7 @@ describe("PlaylistOwnerControls: delete", () => {
     playlistsApi.deletePlaylist.mockResolvedValue(undefined)
     const user = await open()
 
-    await user.press(screen.getByRole("button", { name: text.confirmDelete }))
+    await user.press(screen.getByRole("button", { name: t("playlist.confirmDelete") }))
 
     await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith("/"))
     expect(mockRouter.back).not.toHaveBeenCalled()
@@ -185,7 +184,7 @@ describe("PlaylistOwnerControls: delete", () => {
     playlistsApi.deletePlaylist.mockRejectedValue(refused)
     const user = await open()
 
-    await user.press(screen.getByRole("button", { name: text.confirmDelete }))
+    await user.press(screen.getByRole("button", { name: t("playlist.confirmDelete") }))
 
     await waitFor(() => expect(toast()).toBe("Not allowed"))
     expect(library().playlists.map((item) => item.id)).toEqual(["p1"])
@@ -199,26 +198,26 @@ describe("TrackMenuSheet: remove from playlist", () => {
     const user = userEvent.setup()
     await render(<TrackMenuSheet track={tracks[0]} visible onClose={onClose} playlistId="p1" />)
 
-    await user.press(screen.getByText(text.removeFromPlaylist))
+    await user.press(screen.getByText(t("playlist.removeFromPlaylist")))
 
     expect(playlistsApi.removeTrackFromPlaylist).toHaveBeenCalledWith("p1", "a")
     expect(library().playlists[0].trackIds).toEqual(["b"])
-    expect(toast()).toBe(`${text.removedFrom} Road trip`)
+    expect(toast()).toBe(t("playlist.removedFrom", { name: "Road trip" }))
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it("is not there for a track that is not shown in one of the user's playlists", async () => {
     await render(<TrackMenuSheet track={tracks[0]} visible onClose={jest.fn()} />)
 
-    expect(screen.getByText(text.addToPlaylist)).toBeOnTheScreen()
-    expect(screen.queryByText(text.removeFromPlaylist)).not.toBeOnTheScreen()
+    expect(screen.getByText(t("playlist.addToPlaylist"))).toBeOnTheScreen()
+    expect(screen.queryByText(t("playlist.removeFromPlaylist"))).not.toBeOnTheScreen()
   })
 })
 
 describe("CollectionView: who can manage a playlist", () => {
   const openMenuOfFirstTrack = async () => {
     const user = userEvent.setup()
-    await user.press((await screen.findAllByRole("button", { name: "More options" }))[0])
+    await user.press((await screen.findAllByRole("button", { name: t("common.moreOptions") }))[0])
     return user
   }
 
@@ -226,10 +225,10 @@ describe("CollectionView: who can manage a playlist", () => {
     playlistsApi.getPlaylist.mockResolvedValue(detail())
     await render(<CollectionView kind="playlist" id="p1" />)
 
-    expect(await screen.findByRole("button", { name: text.rename })).toBeOnTheScreen()
-    expect(screen.getByRole("button", { name: text.delete })).toBeOnTheScreen()
+    expect(await screen.findByRole("button", { name: t("playlist.rename") })).toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: t("playlist.delete") })).toBeOnTheScreen()
     await openMenuOfFirstTrack()
-    expect(await screen.findByText(text.removeFromPlaylist)).toBeOnTheScreen()
+    expect(await screen.findByText(t("playlist.removeFromPlaylist"))).toBeOnTheScreen()
   })
 
   it("an official playlist, or somebody else's, gets none of them", async () => {
@@ -238,11 +237,11 @@ describe("CollectionView: who can manage a playlist", () => {
     await render(<CollectionView kind="playlist" id="official" />)
 
     expect(await screen.findByText("Road trip")).toBeOnTheScreen()
-    expect(screen.queryByRole("button", { name: text.rename })).not.toBeOnTheScreen()
-    expect(screen.queryByRole("button", { name: text.delete })).not.toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: t("playlist.rename") })).not.toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: t("playlist.delete") })).not.toBeOnTheScreen()
     await openMenuOfFirstTrack()
-    expect(await screen.findByText(text.addToPlaylist)).toBeOnTheScreen()
-    expect(screen.queryByText(text.removeFromPlaylist)).not.toBeOnTheScreen()
+    expect(await screen.findByText(t("playlist.addToPlaylist"))).toBeOnTheScreen()
+    expect(screen.queryByText(t("playlist.removeFromPlaylist"))).not.toBeOnTheScreen()
   })
 
   it("removing a track makes it disappear from the open playlist", async () => {
@@ -253,7 +252,7 @@ describe("CollectionView: who can manage a playlist", () => {
     await render(<CollectionView kind="playlist" id="p1" />)
     const user = await openMenuOfFirstTrack()
 
-    await user.press(await screen.findByText(text.removeFromPlaylist))
+    await user.press(await screen.findByText(t("playlist.removeFromPlaylist")))
 
     await waitFor(() => expect(screen.queryByText("Title a")).not.toBeOnTheScreen())
     expect(screen.getByText("Title b")).toBeOnTheScreen()

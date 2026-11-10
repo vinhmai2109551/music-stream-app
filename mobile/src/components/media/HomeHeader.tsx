@@ -2,10 +2,10 @@ import { Image } from "expo-image"
 import { Pressable, StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
 import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import { useGreeting } from "@/hooks/useGreeting"
+import { useTranslation } from "@/i18n"
 
 type HomeHeaderProps = {
   /** Name of the signed-in user. */
@@ -15,12 +15,14 @@ type HomeHeaderProps = {
 }
 
 export function HomeHeader({ name, avatarUrl, onAccount }: HomeHeaderProps) {
+  const { t } = useTranslation()
+
   const greeting = useGreeting()
   return (
     <View style={styles.row}>
       <View style={styles.greeting}>
         <AppText variant="caption" color="secondary">
-          {greeting}
+          {t(greeting)}
         </AppText>
         <AppText variant="h2" numberOfLines={1} ellipsizeMode="tail">
           {name}
@@ -29,7 +31,7 @@ export function HomeHeader({ name, avatarUrl, onAccount }: HomeHeaderProps) {
       <View style={styles.actions}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={copy.account.title}
+          accessibilityLabel={t("settings.title")}
           onPress={onAccount}
           style={({ pressed }) => [styles.avatarButton, pressedStyle(pressed)]}
         >

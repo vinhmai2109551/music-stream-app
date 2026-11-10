@@ -8,16 +8,17 @@ import { makeStyles, sizes, spacing, useColors } from "@/theme"
 import { AppText } from "./AppText"
 import { AssistantTabButton } from "./AssistantTabButton"
 import { pressedStyle } from "./pressed"
+import { useTranslation, type TranslationKey } from "@/i18n"
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>>[0]
 
-type TabConfig = { label: string; icon: LucideIcon }
+type TabConfig = { labelKey: TranslationKey; icon: LucideIcon }
 
 const TABS: Record<string, TabConfig> = {
-  index: { label: "Home", icon: Home },
-  search: { label: "Search", icon: Search },
-  feed: { label: "Feed", icon: Rss },
-  library: { label: "Library", icon: Library },
+  index: { labelKey: "nav.home", icon: Home },
+  search: { labelKey: "nav.search", icon: Search },
+  feed: { labelKey: "nav.feed", icon: Rss },
+  library: { labelKey: "nav.library", icon: Library },
 }
 
 /** Screens that are not tabs themselves but sit under one. */
@@ -27,6 +28,8 @@ const PARENT_TAB: Record<string, string> = { playlists: "library" }
 const ASSISTANT_AFTER = "search"
 
 export function TabBar({ state, emitter, navigateToTab, insets }: TabBarProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
   // The server can switch the assistant off; its button then disappears.
@@ -56,7 +59,7 @@ export function TabBar({ state, emitter, navigateToTab, insets }: TabBarProps) {
           <Fragment key={route.key}>
             <Pressable
               accessibilityRole="tab"
-              accessibilityLabel={config.label}
+              accessibilityLabel={t(config.labelKey)}
               accessibilityState={{ selected: focused }}
               onPress={onPress}
               style={({ pressed }) => [styles.tab, pressedStyle(pressed)]}
@@ -68,7 +71,7 @@ export function TabBar({ state, emitter, navigateToTab, insets }: TabBarProps) {
                 fill={focused ? tint : "none"}
               />
               <AppText variant="micro" numberOfLines={1} style={{ color: tint }}>
-                {config.label}
+                {t(config.labelKey)}
               </AppText>
             </Pressable>
             {assistantOn && route.name === ASSISTANT_AFTER && <AssistantTabButton />}

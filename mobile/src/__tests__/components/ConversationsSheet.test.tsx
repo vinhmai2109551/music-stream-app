@@ -3,9 +3,9 @@ import { render, screen, userEvent, waitFor } from "@testing-library/react-nativ
 import { ApiError } from "@/api/client"
 import type { AssistantConversation } from "@/api/types"
 import { ConversationsSheet } from "@/components/media/assistant/ConversationsSheet"
-import { copy } from "@/constants/copy"
 import { useAssistantStore } from "@/store/assistantStore"
 import { useToastStore } from "@/store/toastStore"
+import { t } from "@/i18n"
 
 jest.mock("@/api/assistant", () => ({
   getAssistantUsage: jest.fn(),
@@ -17,8 +17,6 @@ jest.mock("@/api/assistant", () => ({
 /* eslint-disable @typescript-eslint/no-require-imports */
 const api = jest.mocked(require("@/api/assistant") as typeof import("@/api/assistant"))
 /* eslint-enable @typescript-eslint/no-require-imports */
-
-const text = copy.assistant.history
 
 const conversation = (id: string, title: string): AssistantConversation => ({
   id,
@@ -55,7 +53,7 @@ describe("the list", () => {
     await open()
 
     expect(await screen.findByText("Nhạc buồn Việt Nam")).toBeOnTheScreen()
-    expect(screen.getByText(text.untitled, { exact: true })).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.history.untitled"), { exact: true })).toBeOnTheScreen()
     expect(screen.getAllByText("Vừa xong")).toHaveLength(2)
   })
 
@@ -70,15 +68,15 @@ describe("the list", () => {
     api.listConversations.mockResolvedValue([])
     await open()
 
-    expect(await screen.findByText(text.emptyTitle)).toBeOnTheScreen()
-    expect(screen.getByText(text.emptyDescription)).toBeOnTheScreen()
+    expect(await screen.findByText(t("assistant.history.emptyTitle"))).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.history.emptyDescription"))).toBeOnTheScreen()
   })
 
   it("does not say it is empty while it is still loading", async () => {
     api.listConversations.mockReturnValue(new Promise(() => undefined))
     await open()
 
-    expect(screen.queryByText(text.emptyTitle)).not.toBeOnTheScreen()
+    expect(screen.queryByText(t("assistant.history.emptyTitle"))).not.toBeOnTheScreen()
   })
 
   it("says it could not load, and loads again on request", async () => {
@@ -86,9 +84,9 @@ describe("the list", () => {
       new ApiError({ status: 0, kind: "network", message: "x" }),
     )
     const { user } = await open()
-    await screen.findByText(copy.errors.loadFailedTitle)
+    await screen.findByText(t("errors.loadFailedTitle"))
 
-    await user.press(screen.getByRole("button", { name: copy.common.retry }))
+    await user.press(screen.getByRole("button", { name: t("common.retry") }))
 
     expect(await screen.findByText("Nhạc buồn Việt Nam")).toBeOnTheScreen()
   })
@@ -114,7 +112,7 @@ describe("choosing", () => {
 
   it("a new chat closes the sheet and starts one", async () => {
     const { user, onNewChat, onClose } = await open()
-    await user.press(screen.getByRole("button", { name: text.newChat }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.newChat") }))
 
     expect(onNewChat).toHaveBeenCalledTimes(1)
     expect(onClose).toHaveBeenCalled()
@@ -126,7 +124,7 @@ describe("deleting", () => {
     const opened = await open({ currentId: "a" })
     await screen.findByText("Nhạc buồn Việt Nam")
     await opened.user.press(
-      screen.getByRole("button", { name: `${text.delete}: Nhạc buồn Việt Nam` }),
+      screen.getByRole("button", { name: `${t("assistant.history.delete")}: Nhạc buồn Việt Nam` }),
     )
     return opened
   }
@@ -134,15 +132,15 @@ describe("deleting", () => {
   it("asks first, in the same sheet, and what it says is true", async () => {
     await askToDelete()
 
-    expect(screen.getByText(text.deleteTitle)).toBeOnTheScreen()
-    expect(screen.getByText(text.deleteMessage)).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.history.deleteTitle"))).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.history.deleteMessage"))).toBeOnTheScreen()
     expect(api.deleteConversation).not.toHaveBeenCalled()
   })
 
   it("'Giữ lại' goes back to the list and deletes nothing", async () => {
     const { user } = await askToDelete()
 
-    await user.press(screen.getByRole("button", { name: text.keep }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.keep") }))
 
     expect(screen.getByText("Nhạc buồn Việt Nam")).toBeOnTheScreen()
     expect(api.deleteConversation).not.toHaveBeenCalled()
@@ -152,11 +150,11 @@ describe("deleting", () => {
     api.deleteConversation.mockResolvedValue(undefined)
     const { user, onDeleted } = await askToDelete()
 
-    await user.press(screen.getByRole("button", { name: text.confirmDelete }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.confirmDelete") }))
 
     await waitFor(() => expect(onDeleted).toHaveBeenCalledWith("a"))
     expect(api.deleteConversation).toHaveBeenCalledWith("a")
-    expect(useToastStore.getState().message).toBe(text.deleted)
+    expect(useToastStore.getState().message).toBe(t("assistant.history.deleted"))
     expect(screen.queryByText("Nhạc buồn Việt Nam")).not.toBeOnTheScreen()
   })
 
@@ -166,11 +164,13 @@ describe("deleting", () => {
     )
     const { user, onDeleted } = await askToDelete()
 
-    await user.press(screen.getByRole("button", { name: text.confirmDelete }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.confirmDelete") }))
 
-    await waitFor(() => expect(useToastStore.getState().message).toBe(text.deleteFailed))
+    await waitFor(() =>
+      expect(useToastStore.getState().message).toBe(t("assistant.history.deleteFailed")),
+    )
     expect(onDeleted).not.toHaveBeenCalled()
-    expect(screen.getByText(text.deleteTitle)).toBeOnTheScreen() // still asking
+    expect(screen.getByText(t("assistant.history.deleteTitle"))).toBeOnTheScreen() // still asking
     expect(
       useAssistantStore.getState().conversations.map((conversation) => conversation.id),
     ).toContain("a")

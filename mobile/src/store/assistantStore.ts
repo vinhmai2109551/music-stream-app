@@ -2,8 +2,8 @@ import { create } from "zustand"
 import * as assistantApi from "@/api/assistant"
 import { ApiError } from "@/api/client"
 import type { AssistantConversation, AssistantUsage } from "@/api/types"
-import { copy } from "@/constants/copy"
 import { showToast } from "./toastStore"
+import { t } from "@/i18n"
 
 /** Whether the server has the assistant switched on. Unknown until the first answer. */
 export type AssistantAvailability = "unknown" | "available" | "unavailable"
@@ -96,7 +96,7 @@ export const useAssistantStore = create<AssistantStore>()((set, get) => ({
     } catch (error) {
       if (mine !== generation) return null
       if (isOff(error)) get().markUnavailable()
-      else showToast(copy.assistant.history.createFailed)
+      else showToast(t("assistant.history.createFailed"))
       return null
     }
   },
@@ -121,7 +121,7 @@ export const useAssistantStore = create<AssistantStore>()((set, get) => ({
           ...state.conversations.slice(index),
         ],
       }))
-      showToast(copy.assistant.history.deleteFailed)
+      showToast(t("assistant.history.deleteFailed"))
       return false
     }
   },

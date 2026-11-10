@@ -3,12 +3,11 @@ import { render, screen, userEvent, waitFor } from "@testing-library/react-nativ
 import { router } from "expo-router"
 import LoginScreen from "@/app/(auth)/login"
 import { ApiError } from "@/api/client"
-import { copy } from "@/constants/copy"
 import { useAuthStore } from "@/store/authStore"
+import { t } from "@/i18n"
 
 jest.mock("expo-router", () => ({ router: { replace: jest.fn() } }))
 
-const text = copy.auth
 const login = jest.fn<(input: { email: string; password: string }) => Promise<void>>()
 
 const http = (status: number, message = "server message") =>
@@ -17,15 +16,15 @@ const http = (status: number, message = "server message") =>
 /** Types into a field the way a person would, then presses the login button. */
 async function fillAndSubmit(email: string, password: string) {
   const user = userEvent.setup()
-  if (email) await user.type(screen.getByLabelText(text.fields.email.label), email)
-  if (password) await user.type(screen.getByLabelText(text.fields.password.label), password)
-  await user.press(screen.getByRole("button", { name: text.login.submit }))
+  if (email) await user.type(screen.getByLabelText(t("auth.fields.email.label")), email)
+  if (password) await user.type(screen.getByLabelText(t("auth.fields.password.label")), password)
+  await user.press(screen.getByRole("button", { name: t("auth.login.submit") }))
   await settled()
 }
 
 /** Waits until the button is no longer busy, so every state update of the submit has landed. */
 const settled = () =>
-  waitFor(() => expect(screen.getByRole("button", { name: text.login.submit })).not.toBeBusy())
+  waitFor(() => expect(screen.getByRole("button", { name: t("auth.login.submit") })).not.toBeBusy())
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -39,8 +38,8 @@ describe("LoginScreen validation", () => {
 
     await fillAndSubmit("", "")
 
-    expect(screen.getByText(text.validation.emailRequired)).toBeOnTheScreen()
-    expect(screen.getByText(text.validation.passwordRequired)).toBeOnTheScreen()
+    expect(screen.getByText(t("auth.validation.emailRequired"))).toBeOnTheScreen()
+    expect(screen.getByText(t("auth.validation.passwordRequired"))).toBeOnTheScreen()
     expect(login).not.toHaveBeenCalled()
   })
 
@@ -49,8 +48,8 @@ describe("LoginScreen validation", () => {
 
     await fillAndSubmit("not-an-email", "secret123")
 
-    expect(screen.getByText(text.validation.emailInvalid)).toBeOnTheScreen()
-    expect(screen.queryByText(text.validation.passwordRequired)).not.toBeOnTheScreen()
+    expect(screen.getByText(t("auth.validation.emailInvalid"))).toBeOnTheScreen()
+    expect(screen.queryByText(t("auth.validation.passwordRequired"))).not.toBeOnTheScreen()
     expect(login).not.toHaveBeenCalled()
   })
 
@@ -58,12 +57,12 @@ describe("LoginScreen validation", () => {
     const user = userEvent.setup()
     await render(<LoginScreen />)
     await fillAndSubmit("", "")
-    expect(screen.getByText(text.validation.emailRequired)).toBeOnTheScreen()
+    expect(screen.getByText(t("auth.validation.emailRequired"))).toBeOnTheScreen()
 
-    await user.type(screen.getByLabelText(text.fields.email.label), "a")
+    await user.type(screen.getByLabelText(t("auth.fields.email.label")), "a")
 
-    expect(screen.queryByText(text.validation.emailRequired)).not.toBeOnTheScreen()
-    expect(screen.getByText(text.validation.passwordRequired)).toBeOnTheScreen()
+    expect(screen.queryByText(t("auth.validation.emailRequired"))).not.toBeOnTheScreen()
+    expect(screen.getByText(t("auth.validation.passwordRequired"))).toBeOnTheScreen()
   })
 })
 
@@ -91,31 +90,31 @@ describe("LoginScreen submit", () => {
 
     await fillAndSubmit("a@b.co", "wrong-password")
 
-    expect(await screen.findByText(text.errors.invalidCredentials)).toBeOnTheScreen()
+    expect(await screen.findByText(t("auth.errors.invalidCredentials"))).toBeOnTheScreen()
   })
 
   it("tells the user when the security check failed or is unavailable", async () => {
     login.mockRejectedValueOnce(http(400, "Security check failed"))
     await render(<LoginScreen />)
     await fillAndSubmit("a@b.co", "secret123")
-    expect(await screen.findByText(text.errors.turnstileFailed)).toBeOnTheScreen()
+    expect(await screen.findByText(t("auth.errors.turnstileFailed"))).toBeOnTheScreen()
 
     login.mockRejectedValueOnce(http(503, "unavailable"))
     await userEventPressLogin()
-    expect(await screen.findByText(text.errors.turnstileUnavailable)).toBeOnTheScreen()
+    expect(await screen.findByText(t("auth.errors.turnstileUnavailable"))).toBeOnTheScreen()
   })
 
   it("shows a message for rate limiting and for connection problems", async () => {
     login.mockRejectedValueOnce(http(429, "ThrottlerException"))
     await render(<LoginScreen />)
     await fillAndSubmit("a@b.co", "secret123")
-    expect(await screen.findByText(copy.errors.tooManyRequests)).toBeOnTheScreen()
+    expect(await screen.findByText(t("errors.tooManyRequests"))).toBeOnTheScreen()
 
     login.mockRejectedValueOnce(
-      new ApiError({ status: 0, kind: "network", message: copy.errors.network }),
+      new ApiError({ status: 0, kind: "network", message: t("errors.network") }),
     )
     await userEventPressLogin()
-    expect(await screen.findByText(copy.errors.network)).toBeOnTheScreen()
+    expect(await screen.findByText(t("errors.network"))).toBeOnTheScreen()
   })
 
   it("ignores a second press while the first request is still running", async () => {
@@ -128,11 +127,11 @@ describe("LoginScreen submit", () => {
     )
     const user = userEvent.setup()
     await render(<LoginScreen />)
-    await user.type(screen.getByLabelText(text.fields.email.label), "a@b.co")
-    await user.type(screen.getByLabelText(text.fields.password.label), "secret123")
+    await user.type(screen.getByLabelText(t("auth.fields.email.label")), "a@b.co")
+    await user.type(screen.getByLabelText(t("auth.fields.password.label")), "secret123")
 
-    await user.press(screen.getByRole("button", { name: text.login.submit }))
-    await user.press(screen.getByRole("button", { name: text.login.submit }))
+    await user.press(screen.getByRole("button", { name: t("auth.login.submit") }))
+    await user.press(screen.getByRole("button", { name: t("auth.login.submit") }))
 
     expect(login).toHaveBeenCalledTimes(1)
     finish()
@@ -143,7 +142,7 @@ describe("LoginScreen submit", () => {
     const user = userEvent.setup()
     await render(<LoginScreen />)
 
-    await user.press(screen.getByRole("link", { name: text.login.switchAction }))
+    await user.press(screen.getByRole("link", { name: t("auth.login.switchAction") }))
 
     expect(router.replace).toHaveBeenCalledWith("/register")
   })
@@ -151,6 +150,6 @@ describe("LoginScreen submit", () => {
 
 async function userEventPressLogin() {
   const user = userEvent.setup()
-  await user.press(screen.getByRole("button", { name: text.login.submit }))
+  await user.press(screen.getByRole("button", { name: t("auth.login.submit") }))
   await settled()
 }

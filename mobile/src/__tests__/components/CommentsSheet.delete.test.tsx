@@ -1,9 +1,9 @@
+import { t } from "@/i18n"
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent, waitFor } from "@testing-library/react-native"
 import { ApiError } from "@/api/client"
 import type { ApiComment, ApiCommentPage, ApiCommentThread } from "@/api/types"
 import { CommentsSheet } from "@/components/media/CommentsSheet"
-import { copy } from "@/constants/copy"
 import { useAuthStore } from "@/store/authStore"
 import { useToastStore } from "@/store/toastStore"
 
@@ -19,8 +19,6 @@ jest.mock("@/api/comments", () => ({
 /* eslint-disable @typescript-eslint/no-require-imports */
 const api = jest.mocked(require("@/api/comments") as typeof import("@/api/comments"))
 /* eslint-enable @typescript-eslint/no-require-imports */
-const text = copy.comments
-
 const ME = { id: "u1", name: "Me", avatarUrl: null }
 const OTHER = { id: "u2", name: "Someone", avatarUrl: null }
 const at = (minute: number) => new Date(Date.UTC(2026, 0, 1, 0, minute)).toISOString()
@@ -54,7 +52,7 @@ const page = (): ApiCommentPage => ({
 
 const refused = new ApiError({ status: 403, kind: "http", message: "Not allowed" })
 const toast = () => useToastStore.getState().message
-const deleteButtons = () => screen.getAllByRole("button", { name: text.deleteComment })
+const deleteButtons = () => screen.getAllByRole("button", { name: t("comments.deleteComment") })
 
 beforeEach(async () => {
   jest.clearAllMocks()
@@ -84,10 +82,10 @@ describe("deleting your own comments", () => {
     const { user } = await open()
 
     await user.press(deleteButtons()[1])
-    expect(screen.getByText(text.deleteConfirmTitle)).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: text.cancel }))
+    expect(screen.getByText(t("comments.deleteConfirmTitle"))).toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: t("comments.cancel") }))
 
-    await waitFor(() => expect(screen.queryByText(text.deleteConfirmTitle)).toBeNull())
+    await waitFor(() => expect(screen.queryByText(t("comments.deleteConfirmTitle"))).toBeNull())
     expect(api.deleteComment).not.toHaveBeenCalled()
     expect(screen.getByText(/says r-mine/)).toBeOnTheScreen()
   })
@@ -97,8 +95,8 @@ describe("deleting your own comments", () => {
     await waitFor(() => expect(onCountChange).toHaveBeenLastCalledWith(4))
 
     await user.press(deleteButtons()[1])
-    expect(screen.getByText(text.deleteConfirmMessage)).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: text.confirmDelete }))
+    expect(screen.getByText(t("comments.deleteConfirmMessage"))).toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: t("comments.confirmDelete") }))
 
     await waitFor(() => expect(screen.queryByText(/says r-mine/)).toBeNull())
     expect(api.deleteComment).toHaveBeenCalledWith("r-mine")
@@ -110,8 +108,8 @@ describe("deleting your own comments", () => {
     const { user, onCountChange } = await open()
 
     await user.press(deleteButtons()[0])
-    expect(screen.getByText(text.deleteThreadConfirmMessage)).toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: text.confirmDelete }))
+    expect(screen.getByText(t("comments.deleteThreadConfirmMessage"))).toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: t("comments.confirmDelete") }))
 
     await waitFor(() => expect(screen.queryByText(/says mine/)).toBeNull())
     expect(api.deleteComment).toHaveBeenCalledWith("mine")
@@ -125,7 +123,7 @@ describe("deleting your own comments", () => {
     const { user, onCountChange } = await open()
 
     await user.press(deleteButtons()[0])
-    await user.press(screen.getByRole("button", { name: text.confirmDelete }))
+    await user.press(screen.getByRole("button", { name: t("comments.confirmDelete") }))
 
     await waitFor(() => expect(toast()).toBe("Not allowed"))
     expect(await screen.findByText(/says mine/)).toBeOnTheScreen()
@@ -135,13 +133,13 @@ describe("deleting your own comments", () => {
 
   it("stops answering a comment that has just been deleted", async () => {
     const { user } = await open()
-    await user.press(screen.getAllByRole("button", { name: `${text.reply} Me` })[0])
-    expect(screen.getByText(`${text.replyingTo} Me`)).toBeOnTheScreen()
+    await user.press(screen.getAllByRole("button", { name: `${t("comments.reply")} Me` })[0])
+    expect(screen.getByText(`${t("comments.replyingTo")} Me`)).toBeOnTheScreen()
 
     await user.press(deleteButtons()[0])
-    await user.press(screen.getByRole("button", { name: text.confirmDelete }))
+    await user.press(screen.getByRole("button", { name: t("comments.confirmDelete") }))
 
-    await waitFor(() => expect(screen.queryByText(`${text.replyingTo} Me`)).toBeNull())
+    await waitFor(() => expect(screen.queryByText(`${t("comments.replyingTo")} Me`)).toBeNull())
   })
 
   it("shows no Delete to someone who is not signed in as the author", async () => {

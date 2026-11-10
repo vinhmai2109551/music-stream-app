@@ -1,0 +1,32 @@
+{
+  "common": {
+    "count": {
+      "followers_one": "{{value}} follower",
+      "likes_one": "{{value}} like",
+      "comments_one": "{{value}} comment",
+      "songs_one": "{{value}} song"
+    }
+  },
+  "time": {
+    "ago": {
+      "minutes_one": "{{count}} minute",
+      "hours_one": "{{count}} hour",
+      "days_one": "{{count}} day",
+      "weeks_one": "{{count}} week",
+      "months_one": "{{count}} month",
+      "years_one": "{{count}} year"
+    }
+  },
+  "assistant": {
+    "remaining_one": "{{count}} message left today",
+    "moreTracks_one": "See {{count}} more song",
+    "time": {
+      "minutes_one": "{{count}} minute ago",
+      "hours_one": "{{count}} hour ago",
+      "days_one": "{{count}} day ago"
+    }
+  },
+  "comments": {
+    "viewReplies_one": "View {{count}} more reply"
+  }
+}

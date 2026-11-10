@@ -4,16 +4,19 @@ import { Pressable, StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { pressedStyle } from "@/components/ui/pressed"
 import { colors, radius, shadows, sizes, spacing } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 type PremiumBannerProps = {
   onPress: () => void
 }
 
 export function PremiumBanner({ onPress }: PremiumBannerProps) {
+  const { t } = useTranslation()
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Unlock Music Stream Premium"
+      accessibilityLabel={t("premium.bannerLabel")}
       onPress={onPress}
       style={({ pressed }) => [styles.wrapper, pressedStyle(pressed)]}
     >
@@ -28,10 +31,10 @@ export function PremiumBanner({ onPress }: PremiumBannerProps) {
         </View>
         <View style={styles.text}>
           <AppText variant="subtitle" color="white" numberOfLines={1} ellipsizeMode="tail">
-            Unlock Music Stream Premium
+            {t("premium.bannerLabel")}
           </AppText>
           <AppText variant="small" color="onDarkMuted" numberOfLines={1} ellipsizeMode="tail">
-            One month free · Cancel anytime
+            {t("premium.bannerNote")}
           </AppText>
         </View>
       </LinearGradient>

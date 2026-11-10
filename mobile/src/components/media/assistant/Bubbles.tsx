@@ -3,10 +3,10 @@ import { memo } from "react"
 import { View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 import { RichText } from "./RichText"
 import { TypingDots } from "./TypingDots"
+import { useTranslation } from "@/i18n"
 
 type UserBubbleProps = {
   text: string
@@ -16,6 +16,8 @@ type UserBubbleProps = {
 }
 
 function UserBubbleBase({ text, failed, onResend }: UserBubbleProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -23,7 +25,7 @@ function UserBubbleBase({ text, failed, onResend }: UserBubbleProps) {
     <View style={styles.userSide}>
       <View
         accessible
-        accessibilityLabel={`${copy.assistant.youSaid}: ${text}`}
+        accessibilityLabel={`${t("assistant.youSaid")}: ${text}`}
         style={[styles.bubble, styles.user]}
       >
         <AppText color="onAccent" selectable>
@@ -34,11 +36,11 @@ function UserBubbleBase({ text, failed, onResend }: UserBubbleProps) {
         <View style={styles.failed}>
           <CircleAlert size={sizes.iconSm} color={colors.like} />
           <AppText variant="caption" color="secondary">
-            {copy.assistant.notSent}
+            {t("assistant.notSent")}
           </AppText>
           <Button
             compact
-            label={copy.assistant.resend}
+            label={t("assistant.resend")}
             variant="tonal"
             onPress={() => onResend(text)}
           />
@@ -57,6 +59,8 @@ type AssistantBubbleProps = {
 }
 
 function AssistantBubbleBase({ text, streaming, truncated }: AssistantBubbleProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   const waiting = streaming && text.length === 0
@@ -64,14 +68,14 @@ function AssistantBubbleBase({ text, streaming, truncated }: AssistantBubbleProp
     <View style={styles.assistantSide}>
       <View
         accessible={waiting}
-        accessibilityLabel={waiting ? copy.assistant.replying : undefined}
+        accessibilityLabel={waiting ? t("assistant.replying") : undefined}
         style={[styles.bubble, styles.assistant]}
       >
         {waiting ? <TypingDots /> : <RichText text={text} />}
       </View>
       {truncated && (
         <AppText variant="small" color="secondary" style={styles.note}>
-          {copy.assistant.truncated}
+          {t("assistant.truncated")}
         </AppText>
       )}
     </View>

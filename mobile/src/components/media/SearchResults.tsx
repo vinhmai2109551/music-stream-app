@@ -5,7 +5,6 @@ import { EmptyState } from "@/components/ui/EmptyState"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { UnderlineTabs, type TabItem } from "@/components/ui/UnderlineTabs"
-import { copy } from "@/constants/copy"
 import { useTracksByMeaning } from "@/hooks/useRecommendations"
 import { useSearchResults, type SearchResults as Results } from "@/hooks/useSearch"
 import { sizes, spacing } from "@/theme"
@@ -13,21 +12,21 @@ import { AppText } from "@/components/ui/AppText"
 import { AlbumRow } from "./AlbumRow"
 import { ArtistRow } from "./ArtistRow"
 import { TrackRow } from "./TrackRow"
+import { useTranslation, type TranslationKey } from "@/i18n"
 
 type Tab = "all" | "tracks" | "albums" | "artists"
 
-const TABS: readonly TabItem<Tab>[] = [
-  { key: "all", label: copy.search.tabs.all },
-  { key: "tracks", label: copy.search.tabs.tracks },
-  { key: "albums", label: copy.search.tabs.albums },
-  { key: "artists", label: copy.search.tabs.artists },
+const TABS: readonly { key: Tab; labelKey: TranslationKey }[] = [
+  { key: "all", labelKey: "search.tabs.all" },
+  { key: "tracks", labelKey: "search.tabs.tracks" },
+  { key: "albums", labelKey: "search.tabs.albums" },
+  { key: "artists", labelKey: "search.tabs.artists" },
 ]
 
 /** "All" shows the best artist first, then songs, then a few albums. */
 const ALL_TRACKS = 8
 const ALL_ALBUMS = 3
 const SKELETON_ROWS = 5
-const SOURCE = "Search results"
 
 type Item =
   | { key: string; kind: "artist"; artist: ApiArtist }
@@ -43,11 +42,11 @@ const trackItems = (tracks: ApiTrack[]): Item[] =>
 const albumItems = (albums: ApiAlbum[]): Item[] =>
   albums.map((album) => ({ key: `album:${album.id}`, kind: "album", album }))
 
-const meaningItems = (tracks: ApiTrack[]): Item[] =>
+const meaningItems = (tracks: ApiTrack[], title: string): Item[] =>
   tracks.length === 0
     ? []
     : [
-        { key: "header:meaning", kind: "header", title: copy.recommendations.byMood },
+        { key: "header:meaning", kind: "header", title },
         ...tracks.map((track, index): Item => ({
           key: `meaning:${track.id}`,
           kind: "meaning",
@@ -56,7 +55,7 @@ const meaningItems = (tracks: ApiTrack[]): Item[] =>
         })),
       ]
 
-function itemsFor(tab: Tab, results: Results, byMeaning: ApiTrack[]): Item[] {
+function itemsFor(tab: Tab, results: Results, byMeaning: ApiTrack[], meaningTitle: string): Item[] {
   switch (tab) {
     case "tracks":
       return trackItems(results.tracks)
@@ -69,7 +68,7 @@ function itemsFor(tab: Tab, results: Results, byMeaning: ApiTrack[]): Item[] {
         ...artistItems(results.artists.slice(0, 1)),
         ...trackItems(results.tracks).slice(0, ALL_TRACKS),
         ...albumItems(results.albums.slice(0, ALL_ALBUMS)),
-        ...meaningItems(byMeaning),
+        ...meaningItems(byMeaning, meaningTitle),
       ]
   }
 }
@@ -81,6 +80,8 @@ type SearchResultsProps = {
 
 /** Tabs (All, Tracks, Albums, Artists) over the matches of one search. */
 export function SearchResults({ query }: SearchResultsProps) {
+  const { t } = useTranslation()
+
   const { state, reload } = useSearchResults(query)
   const [tab, setTab] = useState<Tab>("all")
   // Tracks found by meaning that the words did not find; the section is left out when empty or off.
@@ -90,10 +91,11 @@ export function SearchResults({ query }: SearchResultsProps) {
     state.status === "ready" ? state.data.tracks.slice(0, ALL_TRACKS) : [],
   )
   const byMeaning = meaning.status === "ready" ? meaning.items : []
+  const tabs: TabItem<Tab>[] = TABS.map(({ key, labelKey }) => ({ key, label: t(labelKey) }))
 
   return (
     <View style={styles.container}>
-      <UnderlineTabs tabs={TABS} selected={tab} onSelect={setTab} />
+      <UnderlineTabs tabs={tabs} selected={tab} onSelect={setTab} />
       {state.status === "loading" && (
         <View style={styles.skeleton}>
           {Array.from({ length: SKELETON_ROWS }, (_, index) => (
@@ -104,15 +106,15 @@ export function SearchResults({ query }: SearchResultsProps) {
       {state.status === "error" && <ErrorState error={state.error} onRetry={() => void reload()} />}
       {state.status === "ready" && (
         <FlatList
-          data={itemsFor(tab, state.data, byMeaning)}
+          data={itemsFor(tab, state.data, byMeaning, t("recommendations.byMood"))}
           keyExtractor={(item) => item.key}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <EmptyState
-              title={copy.search.noResultsTitle}
-              description={copy.search.noResultsDescription}
+              title={t("search.noResultsTitle")}
+              description={t("search.noResultsDescription")}
             />
           }
           renderItem={({ item }) => {
@@ -133,7 +135,7 @@ export function SearchResults({ query }: SearchResultsProps) {
                     track={item.track}
                     index={item.index}
                     list={byMeaning}
-                    source={copy.recommendations.byMoodSource}
+                    source={t("recommendations.byMoodSource")}
                   />
                 )
               case "track":
@@ -142,7 +144,7 @@ export function SearchResults({ query }: SearchResultsProps) {
                     track={item.track}
                     index={item.index}
                     list={state.data.tracks}
-                    source={SOURCE}
+                    source={t("search.results")}
                   />
                 )
             }

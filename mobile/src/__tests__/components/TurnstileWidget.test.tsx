@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import { Linking } from "react-native"
 import { TurnstileWidget } from "@/components/ui/TurnstileWidget"
-import { copy } from "@/constants/copy"
 import { sizes } from "@/theme"
+import { t } from "@/i18n"
 
 const STALL_MS = 25_000
 
@@ -43,8 +43,8 @@ jest.mock("react-native-webview", () => {
 })
 
 const onToken = jest.fn<(token: string | null) => void>()
-const failedText = () => screen.queryByText(copy.auth.turnstile.failed)
-const codeText = (code: string) => `${copy.auth.turnstile.errorCode}: ${code}`
+const failedText = () => screen.queryByText(t("auth.turnstile.failed"))
+const codeText = (code: string) => `${t("auth.turnstile.errorCode")}: ${code}`
 
 /** What the page inside the WebView would post. */
 async function post(message: object) {

@@ -4,6 +4,7 @@ import { TrackRow } from "@/components/media/TrackRow"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { r2Track } from "../helpers/playback"
+import { t } from "@/i18n"
 
 jest.mock("@/api/likes", () => ({ setLiked: jest.fn(async () => undefined) }))
 jest.mock("@/api/tracks", () => ({ listLikedTracks: jest.fn() }))
@@ -41,7 +42,11 @@ describe("TrackRow", () => {
     const user = userEvent.setup()
     await render(<TrackRow track={tracks[1]} index={1} list={tracks} source="My list" />)
 
-    await user.press(screen.getByRole("button", { name: "Play Title b by Artist" }))
+    await user.press(
+      screen.getByRole("button", {
+        name: t("track.playNamed", { title: "Title b", artist: "Artist" }),
+      }),
+    )
 
     const player = usePlayerStore.getState()
     expect(player.currentTrack?.id).toBe("b")
@@ -55,7 +60,10 @@ describe("TrackRow", () => {
     await render(<TrackRow track={tracks[0]} index={0} list={tracks} />)
 
     expect(
-      screen.getByRole("button", { name: "Play Title a by Artist", selected: true }),
+      screen.getByRole("button", {
+        name: t("track.playNamed", { title: "Title a", artist: "Artist" }),
+        selected: true,
+      }),
     ).toBeOnTheScreen()
   })
 
@@ -64,11 +72,11 @@ describe("TrackRow", () => {
       const user = userEvent.setup()
       await render(<TrackRow track={tracks[0]} index={0} list={tracks} trailing="like" />)
 
-      await user.press(screen.getByRole("button", { name: "Like" }))
+      await user.press(screen.getByRole("button", { name: t("common.like") }))
 
       expect(useLibraryStore.getState().likedTrackIds).toEqual(["a"])
       expect(likesApi.setLiked).toHaveBeenCalledWith("tracks", "a", true)
-      expect(screen.getByRole("button", { name: "Unlike" })).toBeOnTheScreen()
+      expect(screen.getByRole("button", { name: t("common.unlike") })).toBeOnTheScreen()
     })
 
     it("an already liked track offers Unlike, and pressing it removes the like", async () => {
@@ -76,7 +84,7 @@ describe("TrackRow", () => {
       const user = userEvent.setup()
       await render(<TrackRow track={tracks[0]} index={0} list={tracks} trailing="like" />)
 
-      await user.press(screen.getByRole("button", { name: "Unlike" }))
+      await user.press(screen.getByRole("button", { name: t("common.unlike") }))
 
       expect(useLibraryStore.getState().likedTrackIds).toEqual([])
       expect(likesApi.setLiked).toHaveBeenCalledWith("tracks", "a", false)
@@ -87,20 +95,20 @@ describe("TrackRow", () => {
     it("has no menu open at first and opens it from the More options button", async () => {
       const user = userEvent.setup()
       await render(<TrackRow track={tracks[0]} index={0} list={tracks} />)
-      expect(screen.queryByText("Add to liked songs")).not.toBeOnTheScreen()
+      expect(screen.queryByText(t("track.addToLiked"))).not.toBeOnTheScreen()
 
-      await user.press(screen.getByRole("button", { name: "More options" }))
+      await user.press(screen.getByRole("button", { name: t("common.moreOptions") }))
 
-      expect(await screen.findByText("Add to liked songs")).toBeOnTheScreen()
+      expect(await screen.findByText(t("track.addToLiked"))).toBeOnTheScreen()
     })
 
     it("likes the track from the menu once the library has loaded", async () => {
       useLibraryStore.setState({ status: "ready" })
       const user = userEvent.setup()
       await render(<TrackRow track={tracks[0]} index={0} list={tracks} />)
-      await user.press(screen.getByRole("button", { name: "More options" }))
+      await user.press(screen.getByRole("button", { name: t("common.moreOptions") }))
 
-      await user.press(await screen.findByText("Add to liked songs"))
+      await user.press(await screen.findByText(t("track.addToLiked")))
 
       expect(useLibraryStore.getState().likedTrackIds).toEqual(["a"])
       expect(likesApi.setLiked).toHaveBeenCalledWith("tracks", "a", true)
@@ -110,9 +118,9 @@ describe("TrackRow", () => {
       useLibraryStore.setState({ status: "loading" })
       const user = userEvent.setup()
       await render(<TrackRow track={tracks[0]} index={0} list={tracks} />)
-      await user.press(screen.getByRole("button", { name: "More options" }))
+      await user.press(screen.getByRole("button", { name: t("common.moreOptions") }))
 
-      await user.press(await screen.findByText("Add to liked songs"))
+      await user.press(await screen.findByText(t("track.addToLiked")))
 
       expect(useLibraryStore.getState().likedTrackIds).toEqual([])
       expect(likesApi.setLiked).not.toHaveBeenCalled()

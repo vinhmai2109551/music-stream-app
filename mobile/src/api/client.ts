@@ -1,4 +1,4 @@
-import { copy } from "@/constants/copy"
+import { t } from "@/i18n"
 
 const REQUEST_TIMEOUT_MS = 15_000
 const BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/+$/, "")
@@ -74,7 +74,7 @@ export function messageFromBody(body: unknown, status: number): string {
       return message
     }
   }
-  return status >= 500 ? copy.errors.server : copy.errors.unknown
+  return status >= 500 ? t("errors.server") : t("errors.unknown")
 }
 
 /** One HTTP round trip with the given token. Throws ApiError for anything but a 2xx answer. */
@@ -85,7 +85,7 @@ async function send<T>(
   token: string | null,
 ): Promise<T> {
   if (!BASE_URL) {
-    throw new ApiError({ status: 0, kind: "network", message: copy.errors.notConfigured })
+    throw new ApiError({ status: 0, kind: "network", message: t("errors.notConfigured") })
   }
 
   const headers: Record<string, string> = { Accept: "application/json" }
@@ -115,8 +115,8 @@ async function send<T>(
   } catch {
     throw new ApiError(
       timedOut
-        ? { status: 0, kind: "timeout", message: copy.errors.timeout }
-        : { status: 0, kind: "network", message: copy.errors.network },
+        ? { status: 0, kind: "timeout", message: t("errors.timeout") }
+        : { status: 0, kind: "network", message: t("errors.network") },
     )
   } finally {
     clearTimeout(timer)

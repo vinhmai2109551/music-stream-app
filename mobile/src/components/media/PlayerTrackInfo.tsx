@@ -5,6 +5,7 @@ import { IconButton } from "@/components/ui/IconButton"
 import type { Track } from "@/types"
 import { spacing } from "@/theme"
 import { BackgroundBadge } from "./BackgroundBadge"
+import { useTranslation } from "@/i18n"
 
 type PlayerTrackInfoProps = {
   title: string
@@ -22,6 +23,8 @@ export function PlayerTrackInfo({
   liked,
   onToggleLike,
 }: PlayerTrackInfoProps) {
+  const { t } = useTranslation()
+
   return (
     <View style={styles.row}>
       <View style={styles.text}>
@@ -43,7 +46,7 @@ export function PlayerTrackInfo({
       </View>
       <IconButton
         icon={Heart}
-        label={liked ? "Unlike track" : "Like track"}
+        label={liked ? t("player.unlikeTrack") : t("player.likeTrack")}
         active={liked}
         color="white"
         activeColor="like"

@@ -12,14 +12,16 @@ import { RegionChips } from "@/components/media/RegionChips"
 import { AppText } from "@/components/ui/AppText"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { useHomeData } from "@/hooks/useHomeData"
 import { useAuthStore } from "@/store/authStore"
 import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const openSearch = () => router.navigate({ pathname: "/search", params: { focus: "1" } })
 
 export default function HomeScreen() {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -43,13 +45,13 @@ export default function HomeScreen() {
           />
           <Pressable
             accessibilityRole="search"
-            accessibilityLabel={copy.searchPlaceholder}
+            accessibilityLabel={t("search.placeholder")}
             onPress={openSearch}
             style={({ pressed }) => [styles.search, pressedStyle(pressed)]}
           >
             <Search size={sizes.iconMd} color={colors.tertiary} />
             <AppText color="secondary" numberOfLines={1}>
-              {copy.searchPlaceholder}
+              {t("search.placeholder")}
             </AppText>
           </Pressable>
         </View>

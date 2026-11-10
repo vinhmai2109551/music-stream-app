@@ -5,12 +5,12 @@ import type { ApiFeedPost, ApiTrack } from "@/api/types"
 import { FeedPostCard } from "@/components/media/FeedPostCard"
 import { HomeHeader } from "@/components/media/HomeHeader"
 import PlayerScreen from "@/app/player"
-import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { useToastStore } from "@/store/toastStore"
 import { trackShareMessage } from "@/utils/shareTrack"
 import { r2Track, ytTrack } from "../helpers/playback"
+import { t } from "@/i18n"
 
 jest.mock("expo-router", () => ({
   router: { back: jest.fn(), push: jest.fn(), navigate: jest.fn() },
@@ -43,7 +43,7 @@ describe("the Home header", () => {
     await render(<HomeHeader name="Vinh" avatarUrl={null} onAccount={onAccount} />)
 
     expect(screen.queryByRole("button", { name: "Notifications" })).not.toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: copy.account.title }))
+    await user.press(screen.getByRole("button", { name: t("settings.title") }))
 
     expect(onAccount).toHaveBeenCalledTimes(1)
     expect(toast()).toBeNull()
@@ -66,11 +66,15 @@ describe("a feed post", () => {
   it("keeps like, comments and play, and has no Repost or More buttons", async () => {
     await render(<FeedPostCard post={post()} onOpenComments={jest.fn()} commentsCount={2} />)
 
-    expect(screen.getByRole("button", { name: "Like post" })).toBeOnTheScreen()
-    expect(screen.getByRole("button", { name: "Comments" })).toBeOnTheScreen()
-    expect(screen.getByRole("button", { name: "Play Title a by Artist" })).toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: t("feed.likePost") })).toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: t("feed.comments") })).toBeOnTheScreen()
+    expect(
+      screen.getByRole("button", {
+        name: t("track.playNamed", { title: "Title a", artist: "Artist" }),
+      }),
+    ).toBeOnTheScreen()
     expect(screen.queryByRole("button", { name: "Repost" })).not.toBeOnTheScreen()
-    expect(screen.queryByRole("button", { name: "More options" })).not.toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: t("common.moreOptions") })).not.toBeOnTheScreen()
   })
 })
 
@@ -88,7 +92,7 @@ describe("the player screen", () => {
     const user = userEvent.setup()
     await render(<PlayerScreen />)
 
-    await user.press(screen.getByRole("button", { name: "Share" }))
+    await user.press(screen.getByRole("button", { name: t("common.share") }))
 
     expect(share).toHaveBeenCalledWith({ message: trackShareMessage(track), title: track.title })
     expect(toast()).toBeNull()
@@ -100,22 +104,22 @@ describe("the player screen", () => {
     const user = userEvent.setup()
     await render(<PlayerScreen />)
 
-    await user.press(screen.getByRole("button", { name: "Share" }))
+    await user.press(screen.getByRole("button", { name: t("common.share") }))
 
-    await screen.findByRole("button", { name: "Share" })
-    expect(toast()).toBe(copy.errors.unknown)
+    await screen.findByRole("button", { name: t("common.share") })
+    expect(toast()).toBe(t("errors.unknown"))
   })
 
   it("More opens the menu of the track that is playing", async () => {
     play()
     const user = userEvent.setup()
     await render(<PlayerScreen />)
-    expect(screen.queryByText("Add to liked songs")).not.toBeOnTheScreen()
+    expect(screen.queryByText(t("track.addToLiked"))).not.toBeOnTheScreen()
 
-    await user.press(screen.getByRole("button", { name: "More options" }))
+    await user.press(screen.getByRole("button", { name: t("common.moreOptions") }))
 
-    expect(await screen.findByText("Add to liked songs")).toBeOnTheScreen()
-    expect(screen.getByText(copy.library.addToPlaylist)).toBeOnTheScreen()
+    expect(await screen.findByText(t("track.addToLiked"))).toBeOnTheScreen()
+    expect(screen.getByText(t("playlist.addToPlaylist"))).toBeOnTheScreen()
     expect(toast()).toBeNull()
   })
 })

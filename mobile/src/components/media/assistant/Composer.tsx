@@ -2,8 +2,8 @@ import { ArrowUp, Square } from "lucide-react-native"
 import { useState } from "react"
 import { Pressable, TextInput, View } from "react-native"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 /** Same limit as the server (a message is at most 2000 characters). */
 const MAX_LENGTH = 2000
@@ -20,6 +20,8 @@ type ComposerProps = {
 
 /** The box at the bottom: a text field that grows to a few lines, and Send / Stop. */
 export function Composer({ streaming, disabled, onSend, onStop }: ComposerProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -41,19 +43,19 @@ export function Composer({ streaming, disabled, onSend, onStop }: ComposerProps)
       <TextInput
         value={text}
         onChangeText={setText}
-        placeholder={copy.assistant.composerPlaceholder}
+        placeholder={t("assistant.composerPlaceholder")}
         placeholderTextColor={colors.secondary}
         selectionColor={colors.accent}
         maxLength={MAX_LENGTH}
         multiline
         editable={!disabled}
-        accessibilityLabel={copy.assistant.composerLabel}
+        accessibilityLabel={t("assistant.composerLabel")}
         style={styles.input}
       />
       {streaming ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={copy.assistant.stop}
+          accessibilityLabel={t("assistant.stop")}
           onPress={stop}
           style={({ pressed }) => [styles.button, styles.stop, pressedStyle(pressed)]}
         >
@@ -62,7 +64,7 @@ export function Composer({ streaming, disabled, onSend, onStop }: ComposerProps)
       ) : (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={copy.assistant.send}
+          accessibilityLabel={t("assistant.send")}
           accessibilityState={{ disabled: !canSend }}
           disabled={!canSend}
           onPress={send}

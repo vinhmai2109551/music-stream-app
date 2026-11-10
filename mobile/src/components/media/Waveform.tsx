@@ -5,6 +5,7 @@ import Svg, { Rect } from "react-native-svg"
 import { WAVEFORM_BARS } from "@/constants/player"
 import { colors, radius, sizes } from "@/theme"
 import { createWaveform } from "@/utils/waveform"
+import { useTranslation } from "@/i18n"
 
 const ACTIVATION_OFFSET = 8
 const FAIL_OFFSET_Y = 16
@@ -21,6 +22,8 @@ const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 
 /** Bar waveform that doubles as a seek bar: tap or drag to jump to a position. */
 export function Waveform({ seed, progress, onSeek }: WaveformProps) {
+  const { t } = useTranslation()
+
   const [width, setWidth] = useState(0)
   const [dragRatio, setDragRatio] = useState<number | null>(null)
   const bars = useMemo(() => createWaveform(seed, WAVEFORM_BARS), [seed])
@@ -54,7 +57,7 @@ export function Waveform({ seed, progress, onSeek }: WaveformProps) {
       <View
         accessible
         accessibilityRole="adjustable"
-        accessibilityLabel="Track progress"
+        accessibilityLabel={t("player.trackProgress")}
         accessibilityValue={{ min: 0, max: 100, now: Math.round(shown * 100) }}
         onLayout={onLayout}
         style={styles.container}

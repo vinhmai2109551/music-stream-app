@@ -2,11 +2,11 @@ import { useState } from "react"
 import { TextInput, View } from "react-native"
 import { BottomSheet } from "@/components/ui/BottomSheet"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { MAX_PLAYLIST_NAME } from "@/constants/playlist"
 import { useLibraryStore } from "@/store/libraryStore"
 import { showToast } from "@/store/toastStore"
 import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 type CreatePlaylistSheetProps = {
   onClose: () => void
@@ -14,6 +14,8 @@ type CreatePlaylistSheetProps = {
 
 /** Asks for a name and creates an empty playlist of the user. */
 export function CreatePlaylistSheet({ onClose }: CreatePlaylistSheetProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -27,29 +29,29 @@ export function CreatePlaylistSheet({ onClose }: CreatePlaylistSheetProps) {
     const playlist = await createPlaylist(name)
     setSaving(false)
     if (!playlist) return
-    showToast(copy.playlistsScreen.created)
+    showToast(t("library.playlists.created"))
     onClose()
   }
 
   return (
-    <BottomSheet visible onClose={onClose} title={copy.library.newPlaylist}>
+    <BottomSheet visible onClose={onClose} title={t("playlist.newPlaylist")}>
       <View style={styles.form}>
         <TextInput
           autoFocus
           value={name}
           onChangeText={setName}
           onSubmitEditing={() => void create()}
-          placeholder={copy.library.playlistNamePlaceholder}
+          placeholder={t("playlist.playlistNamePlaceholder")}
           placeholderTextColor={colors.secondary}
           selectionColor={colors.accent}
           maxLength={MAX_PLAYLIST_NAME}
           returnKeyType="done"
           editable={!saving}
-          accessibilityLabel={copy.library.playlistNamePlaceholder}
+          accessibilityLabel={t("playlist.playlistNamePlaceholder")}
           style={styles.input}
         />
         <Button
-          label={copy.library.createPlaylist}
+          label={t("playlist.createPlaylist")}
           loading={saving}
           disabled={!name.trim()}
           onPress={() => void create()}

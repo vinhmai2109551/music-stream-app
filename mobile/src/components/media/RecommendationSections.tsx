@@ -3,13 +3,13 @@ import { StyleSheet, View } from "react-native"
 import type { ApiTrack, Region } from "@/api/types"
 import { HorizontalList } from "@/components/ui/HorizontalList"
 import { SectionHeader } from "@/components/ui/SectionHeader"
-import { copy } from "@/constants/copy"
 import { useBecauseYouListened, useForYou } from "@/hooks/useRecommendations"
 import { usePlayerStore } from "@/store/playerStore"
 import { spacing } from "@/theme"
 import type { Suggestion } from "@/types"
 import { toSuggestion } from "@/utils/homeMappers"
 import { SuggestionCard } from "./SuggestionCard"
+import { useTranslation } from "@/i18n"
 
 type RecommendationSectionsProps = {
   region: Region | null
@@ -21,6 +21,8 @@ type RecommendationSectionsProps = {
  * jump when they turn out to be missing.
  */
 export function RecommendationSections({ region }: RecommendationSectionsProps) {
+  const { t } = useTranslation()
+
   const forYou = useForYou(region)
   const because = useBecauseYouListened(region)
 
@@ -28,16 +30,16 @@ export function RecommendationSections({ region }: RecommendationSectionsProps) 
     <>
       {forYou.status === "ready" && (
         <TrackSection
-          title={copy.recommendations.forYou}
+          title={t("recommendations.forYou")}
           tracks={forYou.items}
-          source={copy.recommendations.forYouSource}
+          source={t("recommendations.forYouSource")}
         />
       )}
       {because.status === "ready" && (
         <TrackSection
-          title={`${copy.recommendations.becauseYouListened} ${because.items[0].basedOn.title}`}
+          title={`${t("recommendations.becauseYouListened")} ${because.items[0].basedOn.title}`}
           tracks={because.items[0].tracks}
-          source={copy.recommendations.becauseYouListened}
+          source={t("recommendations.becauseYouListened")}
         />
       )}
     </>

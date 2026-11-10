@@ -14,20 +14,19 @@ import { EmptyState } from "@/components/ui/EmptyState"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { IconButton } from "@/components/ui/IconButton"
 import { Skeleton } from "@/components/ui/Skeleton"
-import { copy } from "@/constants/copy"
 import { useLibraryLists, type LibraryLists } from "@/hooks/useLibraryLists"
 import { useLibraryStore } from "@/store/libraryStore"
 import { makeStyles, sizes, spacing } from "@/theme"
+import { useTranslation, type TranslationKey } from "@/i18n"
 
 type Filter = "songs" | "albums" | "artists"
 
-const CHIPS: readonly { filter: Filter; label: string }[] = [
-  { filter: "songs", label: copy.libraryScreen.chips.songs },
-  { filter: "albums", label: copy.libraryScreen.chips.albums },
-  { filter: "artists", label: copy.libraryScreen.chips.artists },
+const CHIPS: readonly { filter: Filter; labelKey: TranslationKey }[] = [
+  { filter: "songs", labelKey: "library.screen.chips.songs" },
+  { filter: "albums", labelKey: "library.screen.chips.albums" },
+  { filter: "artists", labelKey: "library.screen.chips.artists" },
 ]
 const SKELETON_ROWS = 6
-const SOURCE = "Liked songs"
 
 type Item =
   | { key: string; kind: "playlist"; playlist: ApiPlaylist }
@@ -70,6 +69,8 @@ function buildItems(
 }
 
 export default function LibraryScreen() {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   const insets = useSafeAreaInsets()
@@ -90,22 +91,22 @@ export default function LibraryScreen() {
     <View style={[styles.screen, { paddingTop: insets.top + spacing.lg }]}>
       <View style={[styles.padded, styles.header]}>
         <AppText variant="h2" accessibilityRole="header" style={styles.title}>
-          {copy.libraryScreen.title}
+          {t("library.screen.title")}
         </AppText>
-        <IconButton icon={Search} label="Search" color="text" onPress={openSearch} />
+        <IconButton icon={Search} label={t("common.search")} color="text" onPress={openSearch} />
       </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        accessibilityLabel={copy.libraryScreen.title}
+        accessibilityLabel={t("library.screen.title")}
         style={styles.chipsScroll}
         contentContainerStyle={styles.chips}
       >
-        <Chip label={copy.libraryScreen.chips.playlists} onPress={openPlaylists} />
+        <Chip label={t("library.screen.chips.playlists")} onPress={openPlaylists} />
         {CHIPS.map((chip) => (
           <Chip
             key={chip.filter}
-            label={chip.label}
+            label={t(chip.labelKey)}
             selected={filter === chip.filter}
             onPress={() => setFilter(filter === chip.filter ? null : chip.filter)}
           />
@@ -128,8 +129,8 @@ export default function LibraryScreen() {
           ListEmptyComponent={
             <EmptyState
               icon={Library}
-              title={copy.libraryScreen.emptyTitle}
-              description={copy.libraryScreen.emptyDescription}
+              title={t("library.screen.emptyTitle")}
+              description={t("library.screen.emptyDescription")}
             />
           }
           renderItem={({ item }) => {
@@ -146,7 +147,7 @@ export default function LibraryScreen() {
                     track={item.track}
                     index={item.index}
                     list={state.data.tracks}
-                    source={SOURCE}
+                    source={t("library.screen.likedSongs")}
                     trailing="like"
                   />
                 )

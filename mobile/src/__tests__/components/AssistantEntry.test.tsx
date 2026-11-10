@@ -4,7 +4,7 @@ import { router } from "expo-router"
 import type { ComponentProps } from "react"
 import { AccountSheet } from "@/components/media/AccountSheet"
 import { TabBar } from "@/components/ui/TabBar"
-import { copy } from "@/constants/copy"
+import { t } from "@/i18n"
 import { useAssistantStore } from "@/store/assistantStore"
 
 jest.mock("expo-router", () => ({ router: { push: jest.fn() } }))
@@ -36,25 +36,35 @@ describe("the button in the middle of the tab bar", () => {
     await render(<TabBar {...tabBarProps()} />)
 
     const labels = screen
-      .getAllByLabelText(/^(Home|Search|Feed|Library|Mở trợ lý AI)$/)
+      .getAllByLabelText(
+        new RegExp(
+          `^(${[t("nav.home"), t("nav.search"), t("nav.feed"), t("nav.library"), t("assistant.open")].join("|")})$`,
+        ),
+      )
       .map((element) => element.props.accessibilityLabel)
-    expect(labels).toEqual(["Home", "Search", copy.assistant.open, "Feed", "Library"])
+    expect(labels).toEqual([
+      t("nav.home"),
+      t("nav.search"),
+      t("assistant.open"),
+      t("nav.feed"),
+      t("nav.library"),
+    ])
   })
 
   it("is there before the server has been asked, and when it says the assistant is on", async () => {
     await render(<TabBar {...tabBarProps()} />)
-    expect(screen.getByRole("button", { name: copy.assistant.open })).toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: t("assistant.open") })).toBeOnTheScreen()
 
     useAssistantStore.setState({ availability: "available" })
     await render(<TabBar {...tabBarProps()} />)
-    expect(screen.getAllByRole("button", { name: copy.assistant.open }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole("button", { name: t("assistant.open") }).length).toBeGreaterThan(0)
   })
 
   it("goes away when the server says the assistant is off, and the four tabs stay", async () => {
     useAssistantStore.setState({ availability: "unavailable" })
     await render(<TabBar {...tabBarProps()} />)
 
-    expect(screen.queryByRole("button", { name: copy.assistant.open })).not.toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: t("assistant.open") })).not.toBeOnTheScreen()
     expect(screen.getAllByRole("tab")).toHaveLength(4)
   })
 
@@ -62,7 +72,7 @@ describe("the button in the middle of the tab bar", () => {
     const user = userEvent.setup()
     await render(<TabBar {...tabBarProps()} />)
 
-    await user.press(screen.getByRole("button", { name: copy.assistant.open }))
+    await user.press(screen.getByRole("button", { name: t("assistant.open") }))
 
     expect(mockRouter.push).toHaveBeenCalledWith("/assistant")
   })
@@ -72,7 +82,7 @@ describe("the button in the middle of the tab bar", () => {
     const user = userEvent.setup()
     await render(<TabBar {...props} />)
 
-    await user.press(screen.getByRole("button", { name: copy.assistant.open }))
+    await user.press(screen.getByRole("button", { name: t("assistant.open") }))
 
     expect(props.navigateToTab).not.toHaveBeenCalled()
   })
@@ -96,7 +106,7 @@ describe("the entry in the account sheet", () => {
     const user = userEvent.setup()
     await sheet(onClose)
 
-    await user.press(screen.getByRole("button", { name: copy.assistant.open }))
+    await user.press(screen.getByRole("button", { name: t("assistant.open") }))
 
     expect(onClose).toHaveBeenCalledTimes(1)
     await waitFor(() => expect(mockRouter.push).toHaveBeenCalledWith("/assistant"))
@@ -106,7 +116,7 @@ describe("the entry in the account sheet", () => {
     useAssistantStore.setState({ availability: "unavailable" })
     await sheet()
 
-    expect(screen.queryByRole("button", { name: copy.assistant.open })).not.toBeOnTheScreen()
-    expect(screen.getByRole("button", { name: copy.account.editProfile })).toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: t("assistant.open") })).not.toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: t("settings.editProfile") })).toBeOnTheScreen()
   })
 })

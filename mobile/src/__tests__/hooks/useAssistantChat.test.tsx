@@ -2,12 +2,12 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { act, renderHook, waitFor } from "@testing-library/react-native"
 import { ApiError } from "@/api/client"
 import type { AssistantConversation, AssistantEvent, AssistantMessageLine } from "@/api/types"
-import { copy } from "@/constants/copy"
 import { useAssistantChat } from "@/hooks/useAssistantChat"
 import { useAssistantStore } from "@/store/assistantStore"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { makeTrack } from "../helpers/playback"
+import { t } from "@/i18n"
 
 jest.mock("@/api/assistant", () => ({
   getAssistantUsage: jest.fn(),
@@ -179,7 +179,7 @@ describe("a new chat", () => {
     expect(result.current.items).toMatchObject([{ kind: "user", failed: true }])
     expect(result.current.error).toEqual({
       kind: "generic",
-      message: copy.assistant.history.createFailed,
+      message: t("assistant.history.createFailed"),
     })
     expect(result.current.streaming).toBe(false)
   })
@@ -328,7 +328,7 @@ describe("what the answer makes the app do", () => {
     const player = usePlayerStore.getState()
     expect(player.currentTrack?.id).toBe("a")
     expect(player.queue.map((track) => track.id)).toEqual(["a", "b"])
-    expect(player.queueSource).toBe(copy.assistant.playSource)
+    expect(player.queueSource).toBe(t("assistant.playSource"))
   })
 
   it("plays nothing when no track was found", async () => {
@@ -520,7 +520,7 @@ describe("when it goes wrong", () => {
     expect(result.current.items).toMatchObject([{ kind: "user", failed: true, text: "chào" }])
     expect(result.current.error).toEqual({
       kind: "offline",
-      message: copy.assistant.errors.offline,
+      message: t("assistant.errors.offline"),
     })
     expect(result.current.streaming).toBe(false)
   })
@@ -600,7 +600,7 @@ describe("when it goes wrong", () => {
     expect(kinds(result.current.items)).toEqual(["user"])
     expect(result.current.error).toEqual({
       kind: "generic",
-      message: copy.assistant.errors.generic,
+      message: t("assistant.errors.generic"),
     })
   })
 

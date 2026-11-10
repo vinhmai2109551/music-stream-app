@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { ApiError, configureApi } from "@/api/client"
 import { uploadAvatar } from "@/api/uploads"
-import { copy } from "@/constants/copy"
+import { t } from "@/i18n"
 
 const FILE = { uri: "file:///cache/avatar.jpg", contentType: "image/jpeg" }
 const UPLOAD_URL =
@@ -117,7 +117,7 @@ describe("uploadAvatar", () => {
       await expect(uploadAvatar(FILE)).rejects.toMatchObject({
         status: 403,
         kind: "http",
-        message: copy.account.edit.uploadFailed,
+        message: t("settings.edit.uploadFailed"),
       })
     })
 
@@ -130,7 +130,7 @@ describe("uploadAvatar", () => {
 
       await expect(uploadAvatar(FILE)).rejects.toMatchObject({
         kind: "network",
-        message: copy.errors.network,
+        message: t("errors.network"),
       })
     })
 
@@ -146,7 +146,7 @@ describe("uploadAvatar", () => {
       const result = uploadAvatar(FILE)
       const assertion = expect(result).rejects.toMatchObject({
         kind: "timeout",
-        message: copy.errors.timeout,
+        message: t("errors.timeout"),
       })
       await jest.advanceTimersByTimeAsync(30_000)
 
@@ -162,7 +162,7 @@ describe("uploadAvatar", () => {
       const error: unknown = await uploadAvatar(FILE).catch((caught: unknown) => caught)
 
       expect(error).toBeInstanceOf(ApiError)
-      expect((error as ApiError).message).toBe(copy.account.edit.readFailed)
+      expect((error as ApiError).message).toBe(t("settings.edit.readFailed"))
       expect(calls).toHaveLength(1)
     })
   })

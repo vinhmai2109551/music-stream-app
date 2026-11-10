@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native"
 import { YOUTUBE_MIN_SIZE } from "@/constants/player"
 import { useVideoSlotStore } from "@/store/videoSlotStore"
 import { colors, radius, sizes } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 /** Measured again once the screen has finished sliding in (the first measure may be mid-slide). */
 const REMEASURE_DELAY_MS = 450
@@ -14,6 +15,8 @@ const REMEASURE_DELAY_MS = 450
  * screen is left.
  */
 export function YouTubeSlot() {
+  const { t } = useTranslation()
+
   const ref = useRef<ComponentRef<typeof View>>(null)
   const focused = useRef(false)
 
@@ -38,7 +41,14 @@ export function YouTubeSlot() {
     }, [measure]),
   )
 
-  return <View ref={ref} accessibilityLabel="Video player" onLayout={measure} style={styles.slot} />
+  return (
+    <View
+      ref={ref}
+      accessibilityLabel={t("player.videoPlayer")}
+      onLayout={measure}
+      style={styles.slot}
+    />
+  )
 }
 
 const styles = StyleSheet.create({

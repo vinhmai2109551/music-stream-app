@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react"
 import * as assistantApi from "@/api/assistant"
 import type { AssistantEvent } from "@/api/types"
-import { copy } from "@/constants/copy"
 import { useAssistantStore } from "@/store/assistantStore"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { describeAssistantError, describeStreamError } from "@/utils/assistantErrors"
 import { chatReducer, initialChatState, type ChatError } from "@/utils/chatState"
+import { t } from "@/i18n"
 
 export type HistoryStatus = "loading" | "ready" | "error"
 
@@ -116,7 +116,7 @@ export function useAssistantChat() {
   const handleEvent = useCallback((event: AssistantEvent) => {
     dispatch({ type: "event", event })
     if (event.type === "client_action" && event.tracks.length > 0) {
-      usePlayerStore.getState().playFromList(event.tracks, 0, copy.assistant.playSource)
+      usePlayerStore.getState().playFromList(event.tracks, 0, t("assistant.playSource"))
     }
     if (event.type === "tool_result" && event.action?.status === "CONFIRMED" && event.ok) {
       void useLibraryStore.getState().load() // the change touched the library: show it
@@ -146,7 +146,7 @@ export function useAssistantChat() {
         }, controller.signal)
         // A stream that ends with neither "done" nor "error" was cut: the answer is not complete.
         if (!finished && !streamError) {
-          streamError = { kind: "generic", message: copy.assistant.errors.generic }
+          streamError = { kind: "generic", message: t("assistant.errors.generic") }
         }
       } catch (error) {
         streamError = describeAssistantError(error)
@@ -183,7 +183,7 @@ export function useAssistantChat() {
           if (!created) {
             dispatch({
               type: "failed",
-              error: { kind: "generic", message: copy.assistant.history.createFailed },
+              error: { kind: "generic", message: t("assistant.history.createFailed") },
             })
             return
           }

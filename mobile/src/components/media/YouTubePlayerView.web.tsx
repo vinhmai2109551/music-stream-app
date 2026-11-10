@@ -4,6 +4,7 @@ import { YOUTUBE_MIN_SIZE } from "@/constants/player"
 import { usePlayerStore } from "@/store/playerStore"
 import { colors, radius, shadows, sizes } from "@/theme"
 import { youTubeSource, type YouTubePlayerHandle } from "@/utils/youtubeSource"
+import { useTranslation } from "@/i18n"
 
 /** The part of the YouTube IFrame API this view uses. */
 interface WebYouTubePlayer {
@@ -84,6 +85,8 @@ function loadYouTubeApi(): Promise<YouTubeApi> {
  * preview the app). Same job as the phone's view: `youTubeSource` decides what plays.
  */
 export function YouTubePlayerView() {
+  const { t } = useTranslation()
+
   const view = useSyncExternalStore(youTubeSource.subscribeView, youTubeSource.getViewState)
   const hostRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<WebYouTubePlayer | null>(null)
@@ -159,7 +162,7 @@ export function YouTubePlayerView() {
 
   return (
     <View style={styles.shadow}>
-      <View accessibilityLabel="Video player" style={styles.frame}>
+      <View accessibilityLabel={t("player.videoPlayer")} style={styles.frame}>
         <div ref={hostRef} style={HOST_STYLE} />
       </View>
     </View>

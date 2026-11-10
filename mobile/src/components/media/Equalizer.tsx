@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated"
 import { makeStyles, radius, sizes, spacing } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const BAR_DELAYS_MS = [0, 120, 240]
 const BAR_DURATION_MS = 700
@@ -36,10 +37,12 @@ function Bar({ delay }: { delay: number }) {
 
 /** Animated "now playing" bars. */
 export function Equalizer() {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   return (
-    <View accessibilityLabel="Playing" style={styles.container}>
+    <View accessibilityLabel={t("player.playing")} style={styles.container}>
       {BAR_DELAYS_MS.map((delay) => (
         <Bar key={delay} delay={delay} />
       ))}

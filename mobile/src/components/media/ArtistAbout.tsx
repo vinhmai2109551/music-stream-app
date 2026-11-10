@@ -5,6 +5,7 @@ import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
 import { images } from "@/data/images"
 import { radius, sizes, spacing } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const COLLAPSED_LINES = 3
 
@@ -13,6 +14,8 @@ type ArtistAboutProps = {
 }
 
 export function ArtistAbout({ bio }: ArtistAboutProps) {
+  const { t } = useTranslation()
+
   const [expanded, setExpanded] = useState(false)
   return (
     <View>
@@ -27,7 +30,7 @@ export function ArtistAbout({ bio }: ArtistAboutProps) {
       </AppText>
       <Button
         variant="text"
-        label={expanded ? "View less" : "View more"}
+        label={expanded ? t("common.viewLess") : t("common.viewMore")}
         onPress={() => setExpanded((value) => !value)}
         style={styles.toggle}
       />

@@ -3,13 +3,12 @@ import { View } from "react-native"
 import type { AssistantDisplay } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { makeStyles, radius, sizes, spacing } from "@/theme"
-import { fillCount } from "@/utils/fillCount"
 import { AlbumRow } from "../AlbumRow"
 import { ArtistRow } from "../ArtistRow"
 import { PlaylistRow } from "../PlaylistRow"
 import { TrackRow } from "../TrackRow"
+import { useTranslation } from "@/i18n"
 
 /** Tracks shown before "Xem thêm": a long answer must not push the conversation off screen. */
 const PREVIEW_TRACKS = 5
@@ -20,6 +19,8 @@ type ResultCardsProps = {
 
 /** What a tool found, with the app's own rows (tap to play or open). Nothing when it found nothing. */
 function ResultCardsBase({ display }: ResultCardsProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   const [expanded, setExpanded] = useState(false)
@@ -39,7 +40,7 @@ function ResultCardsBase({ display }: ResultCardsProps) {
           track={track}
           index={index}
           list={tracks}
-          source={copy.assistant.playSource}
+          source={t("assistant.playSource")}
         />
       ))}
       {(hidden > 0 || (expanded && tracks.length > PREVIEW_TRACKS)) && (
@@ -47,7 +48,7 @@ function ResultCardsBase({ display }: ResultCardsProps) {
           compact
           variant="text"
           label={
-            expanded ? copy.assistant.fewerTracks : fillCount(copy.assistant.moreTracks, hidden)
+            expanded ? t("assistant.fewerTracks") : t("assistant.moreTracks", { count: hidden })
           }
           onPress={() => setExpanded((open) => !open)}
           style={styles.toggle}
@@ -65,7 +66,7 @@ function ResultCardsBase({ display }: ResultCardsProps) {
       {sources.length > 0 && (
         <View style={styles.sources}>
           <AppText variant="small" color="secondary">
-            {copy.assistant.sources}
+            {t("assistant.sources")}
           </AppText>
           {sources.map((source) => (
             <AppText

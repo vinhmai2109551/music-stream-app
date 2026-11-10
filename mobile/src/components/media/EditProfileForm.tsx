@@ -6,17 +6,15 @@ import { ActivityIndicator, TextInput, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
 import { AUTH_LIMITS } from "@/constants/auth"
-import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
 import { useAsyncSubmit } from "@/hooks/useAsyncSubmit"
 import { useAuthStore } from "@/store/authStore"
 import { showToast } from "@/store/toastStore"
 import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 import { prepareAvatar, type PreparedAvatar } from "@/utils/avatarImage"
 import { describeProfileError } from "@/utils/profileErrors"
 import { validateProfile } from "@/utils/validation"
-
-const text = copy.account.edit
 
 type EditProfileFormProps = {
   /** Called after the changes are saved, or when the user goes back. */
@@ -25,6 +23,7 @@ type EditProfileFormProps = {
 
 /** Edits the name and the avatar of the signed-in user. */
 export function EditProfileForm({ onDone }: EditProfileFormProps) {
+  const { t } = useTranslation()
   const styles = useStyles()
   const colors = useColors()
 
@@ -54,7 +53,7 @@ export function EditProfileForm({ onDone }: EditProfileFormProps) {
       setPreparing(true)
       setPhoto(await prepareAvatar(asset))
     } catch {
-      showToast(text.pickFailed)
+      showToast(t("settings.edit.pickFailed"))
     } finally {
       setPreparing(false)
     }
@@ -68,7 +67,7 @@ export function EditProfileForm({ onDone }: EditProfileFormProps) {
           ...(nameChanged ? { name: name.trim() } : {}),
           ...(photo ? { photo } : {}),
         })
-        showToast(text.saved)
+        showToast(t("settings.edit.saved"))
         onDone()
       },
       (error) => {
@@ -97,7 +96,7 @@ export function EditProfileForm({ onDone }: EditProfileFormProps) {
           ) : null}
         </View>
         <Button
-          label={text.changePhoto}
+          label={t("settings.edit.changePhoto")}
           variant="tonal"
           compact
           disabled={busy}
@@ -107,7 +106,7 @@ export function EditProfileForm({ onDone }: EditProfileFormProps) {
 
       <View style={styles.field}>
         <AppText variant="caption" color="secondary">
-          {text.nameLabel}
+          {t("settings.edit.nameLabel")}
         </AppText>
         <TextInput
           value={name}
@@ -118,7 +117,7 @@ export function EditProfileForm({ onDone }: EditProfileFormProps) {
           editable={!submitting}
           placeholderTextColor={colors.secondary}
           selectionColor={colors.accent}
-          accessibilityLabel={text.nameLabel}
+          accessibilityLabel={t("settings.edit.nameLabel")}
           accessibilityHint={nameError}
           style={styles.input}
         />
@@ -132,8 +131,18 @@ export function EditProfileForm({ onDone }: EditProfileFormProps) {
         ) : null}
       </View>
 
-      <Button label={text.save} loading={submitting} disabled={!canSave} onPress={save} />
-      <Button label={text.back} variant="text" disabled={submitting} onPress={onDone} />
+      <Button
+        label={t("settings.edit.save")}
+        loading={submitting}
+        disabled={!canSave}
+        onPress={save}
+      />
+      <Button
+        label={t("settings.edit.back")}
+        variant="text"
+        disabled={submitting}
+        onPress={onDone}
+      />
     </View>
   )
 }

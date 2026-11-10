@@ -2,11 +2,11 @@ import { useState } from "react"
 import { TextInput, View } from "react-native"
 import { BottomSheet } from "@/components/ui/BottomSheet"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { MAX_PLAYLIST_NAME } from "@/constants/playlist"
 import { useLibraryStore } from "@/store/libraryStore"
 import { showToast } from "@/store/toastStore"
 import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 type RenamePlaylistSheetProps = {
   playlistId: string
@@ -20,6 +20,8 @@ export function RenamePlaylistSheet({
   currentName,
   onClose,
 }: RenamePlaylistSheetProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -39,12 +41,12 @@ export function RenamePlaylistSheet({
     setSaving(false)
     // When the server refuses, the store has already said why; the sheet stays for another try.
     if (!renamed) return
-    showToast(copy.library.renamed)
+    showToast(t("playlist.renamed"))
     onClose()
   }
 
   return (
-    <BottomSheet visible onClose={onClose} title={copy.library.rename}>
+    <BottomSheet visible onClose={onClose} title={t("playlist.rename")}>
       <View style={styles.form}>
         <TextInput
           autoFocus
@@ -52,17 +54,17 @@ export function RenamePlaylistSheet({
           value={name}
           onChangeText={setName}
           onSubmitEditing={() => void save()}
-          placeholder={copy.library.playlistNamePlaceholder}
+          placeholder={t("playlist.playlistNamePlaceholder")}
           placeholderTextColor={colors.secondary}
           selectionColor={colors.accent}
           maxLength={MAX_PLAYLIST_NAME}
           returnKeyType="done"
           editable={!saving}
-          accessibilityLabel={copy.library.playlistNamePlaceholder}
+          accessibilityLabel={t("playlist.playlistNamePlaceholder")}
           style={styles.input}
         />
         <Button
-          label={copy.library.save}
+          label={t("playlist.save")}
           loading={saving}
           disabled={!name.trim()}
           onPress={() => void save()}

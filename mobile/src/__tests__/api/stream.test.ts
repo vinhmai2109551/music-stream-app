@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { ApiError, configureApi } from "@/api/client"
 import { streamEvents } from "@/api/stream"
 import type { AssistantEvent } from "@/api/types"
-import { copy } from "@/constants/copy"
+import { t } from "@/i18n"
 
 jest.mock("expo/fetch", () => ({ fetch: jest.fn() }))
 
@@ -192,7 +192,7 @@ describe("errors before the stream starts", () => {
 
     await expect(collect()).rejects.toMatchObject({
       kind: "network",
-      message: copy.errors.network,
+      message: t("errors.network"),
     })
   })
 
@@ -210,7 +210,7 @@ describe("errors before the stream starts", () => {
     const pending = collect()
     const assertion = expect(pending).rejects.toMatchObject({
       kind: "timeout",
-      message: copy.errors.timeout,
+      message: t("errors.timeout"),
     })
     await jest.advanceTimersByTimeAsync(20_000)
     await assertion

@@ -8,14 +8,16 @@ import { SearchResults } from "@/components/media/SearchResults"
 import { SearchSuggestions } from "@/components/media/SearchSuggestions"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { SearchBar } from "@/components/ui/SearchBar"
-import { copy } from "@/constants/copy"
 import { useDebouncedValue } from "@/hooks/useDebouncedValue"
 import { useSearchHistoryStore } from "@/store/searchHistoryStore"
 import { makeStyles, spacing } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const SUGGESTION_DELAY_MS = 250
 
 export default function SearchScreen() {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   const insets = useSafeAreaInsets()
@@ -65,8 +67,8 @@ export default function SearchScreen() {
             inputRef.current?.focus()
           }}
           onSubmitEditing={() => submit(query)}
-          placeholder={copy.searchPlaceholder}
-          accessibilityLabel={copy.searchPlaceholder}
+          placeholder={t("search.placeholder")}
+          accessibilityLabel={t("search.placeholder")}
         />
       </View>
       <View style={[styles.padded, styles.content]}>
@@ -81,8 +83,8 @@ export default function SearchScreen() {
           ) : (
             <EmptyState
               icon={Search}
-              title={copy.search.hintTitle}
-              description={copy.search.hintDescription}
+              title={t("search.hintTitle")}
+              description={t("search.hintDescription")}
             />
           ))}
         {typed !== "" && showResults && <SearchResults query={submitted} />}

@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/Button"
 import { FormError } from "@/components/ui/FormError"
 import { TextField } from "@/components/ui/TextField"
 import { AUTH_LIMITS } from "@/constants/auth"
-import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
+import { useTranslation } from "@/i18n"
 import { useAsyncSubmit } from "@/hooks/useAsyncSubmit"
 import { useAuthStore } from "@/store/authStore"
 import { describeAuthError } from "@/utils/authErrors"
@@ -19,9 +19,8 @@ import {
   type RegisterField,
 } from "@/utils/validation"
 
-const text = copy.auth
-
 export default function RegisterScreen() {
+  const { t } = useTranslation()
   const register = useAuthStore((state) => state.register)
   const { submitting, error, run } = useAsyncSubmit()
   const [name, setName] = useState("")
@@ -51,20 +50,20 @@ export default function RegisterScreen() {
 
   return (
     <AuthScreenLayout
-      title={text.register.title}
-      subtitle={text.register.subtitle}
+      title={t("auth.register.title")}
+      subtitle={t("auth.register.subtitle")}
       background={images.onboarding.launch}
       footer={{
-        prompt: text.register.switchPrompt,
-        action: text.register.switchAction,
+        prompt: t("auth.register.switchPrompt"),
+        action: t("auth.register.switchAction"),
         disabled: submitting,
         onPress: () => router.replace("/login"),
       }}
     >
       <TextField
         ref={nameRef}
-        label={text.fields.name.label}
-        placeholder={text.fields.name.placeholder}
+        label={t("auth.fields.name.label")}
+        placeholder={t("auth.fields.name.placeholder")}
         value={name}
         onChangeText={(value) => {
           setName(value)
@@ -82,8 +81,8 @@ export default function RegisterScreen() {
       />
       <TextField
         ref={emailRef}
-        label={text.fields.email.label}
-        placeholder={text.fields.email.placeholder}
+        label={t("auth.fields.email.label")}
+        placeholder={t("auth.fields.email.placeholder")}
         value={email}
         onChangeText={(value) => {
           setEmail(value)
@@ -103,8 +102,8 @@ export default function RegisterScreen() {
       <TextField
         ref={passwordRef}
         password
-        label={text.fields.password.label}
-        placeholder={text.fields.password.placeholder}
+        label={t("auth.fields.password.label")}
+        placeholder={t("auth.fields.password.placeholder")}
         value={password}
         onChangeText={(value) => {
           setPassword(value)
@@ -120,7 +119,7 @@ export default function RegisterScreen() {
         maxLength={AUTH_LIMITS.passwordMax}
       />
       {error ? <FormError message={error} /> : null}
-      <Button label={text.register.submit} loading={submitting} onPress={submit} />
+      <Button label={t("auth.register.submit")} loading={submitting} onPress={submit} />
     </AuthScreenLayout>
   )
 }

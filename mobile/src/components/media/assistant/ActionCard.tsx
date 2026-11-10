@@ -3,21 +3,21 @@ import { memo } from "react"
 import { ActivityIndicator, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { type ColorToken, makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 import type { ChatItem } from "@/utils/chatState"
 import { ResultCards } from "./ResultCards"
+import { useTranslation, type TranslationKey } from "@/i18n"
 
 type ActionItem = Extract<ChatItem, { kind: "action" }>
 
-type Outcome = { icon: LucideIcon; label: string; tint: ColorToken }
+type Outcome = { icon: LucideIcon; labelKey: TranslationKey; tint: ColorToken }
 
 /** How a decided proposal is shown. The text stays in a readable colour; only the icon is tinted. */
 const OUTCOMES: Partial<Record<ActionItem["status"], Outcome>> = {
-  CONFIRMED: { icon: Check, label: copy.assistant.action.confirmed, tint: "success" },
-  REJECTED: { icon: X, label: copy.assistant.action.rejected, tint: "secondary" },
-  EXPIRED: { icon: Clock, label: copy.assistant.action.expired, tint: "secondary" },
-  FAILED: { icon: CircleAlert, label: copy.assistant.action.failed, tint: "like" },
+  CONFIRMED: { icon: Check, labelKey: "assistant.action.confirmed", tint: "success" },
+  REJECTED: { icon: X, labelKey: "assistant.action.rejected", tint: "secondary" },
+  EXPIRED: { icon: Clock, labelKey: "assistant.action.expired", tint: "secondary" },
+  FAILED: { icon: CircleAlert, labelKey: "assistant.action.failed", tint: "like" },
 }
 
 type ActionCardProps = {
@@ -30,6 +30,8 @@ type ActionCardProps = {
 
 /** A change the assistant wants to make to the person's library. Nothing happens before "Đồng ý". */
 function ActionCardBase({ item, locked, onConfirm, onReject }: ActionCardProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -39,7 +41,7 @@ function ActionCardBase({ item, locked, onConfirm, onReject }: ActionCardProps) 
       <View style={styles.heading}>
         <Sparkles size={sizes.iconSm} strokeWidth={2} color={colors.accentText} />
         <AppText variant="caption" color="accentText">
-          {copy.assistant.action.heading}
+          {t("assistant.action.heading")}
         </AppText>
       </View>
       <AppText variant="subtitle">{item.summary}</AppText>
@@ -48,13 +50,13 @@ function ActionCardBase({ item, locked, onConfirm, onReject }: ActionCardProps) 
         <>
           <View style={styles.buttons}>
             <Button
-              label={copy.assistant.action.confirm}
+              label={t("assistant.action.confirm")}
               disabled={locked}
               onPress={() => onConfirm(item.actionId)}
               style={styles.button}
             />
             <Button
-              label={copy.assistant.action.reject}
+              label={t("assistant.action.reject")}
               variant="tonal"
               disabled={locked}
               onPress={() => onReject(item.actionId)}
@@ -62,7 +64,7 @@ function ActionCardBase({ item, locked, onConfirm, onReject }: ActionCardProps) 
             />
           </View>
           <AppText variant="small" color="secondary">
-            {copy.assistant.action.waiting}
+            {t("assistant.action.waiting")}
           </AppText>
         </>
       )}
@@ -71,12 +73,12 @@ function ActionCardBase({ item, locked, onConfirm, onReject }: ActionCardProps) 
         <View
           accessible
           accessibilityLiveRegion="polite"
-          accessibilityLabel={copy.assistant.action.busy}
+          accessibilityLabel={t("assistant.action.busy")}
           style={styles.status}
         >
           <ActivityIndicator size="small" color={colors.accentText} />
           <AppText variant="caption" color="secondary">
-            {copy.assistant.action.busy}
+            {t("assistant.action.busy")}
           </AppText>
         </View>
       )}
@@ -85,11 +87,11 @@ function ActionCardBase({ item, locked, onConfirm, onReject }: ActionCardProps) 
         <View
           accessible
           accessibilityLiveRegion="polite"
-          accessibilityLabel={outcome.label}
+          accessibilityLabel={t(outcome.labelKey)}
           style={styles.status}
         >
           <outcome.icon size={sizes.iconMd} strokeWidth={2} color={colors[outcome.tint]} />
-          <AppText variant="caption">{outcome.label}</AppText>
+          <AppText variant="caption">{t(outcome.labelKey)}</AppText>
         </View>
       )}
 

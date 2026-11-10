@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { ApiError } from "@/api/client"
 import type { AssistantConversation } from "@/api/types"
-import { copy } from "@/constants/copy"
 import { useAssistantStore } from "@/store/assistantStore"
 import { useToastStore } from "@/store/toastStore"
+import { t } from "@/i18n"
 
 jest.mock("@/api/assistant", () => ({
   getAssistantUsage: jest.fn(),
@@ -120,7 +120,7 @@ describe("conversations", () => {
     api.createConversation.mockRejectedValue(offline())
 
     expect(await state().createConversation()).toBeNull()
-    expect(useToastStore.getState().message).toBe(copy.assistant.history.createFailed)
+    expect(useToastStore.getState().message).toBe(t("assistant.history.createFailed"))
   })
 
   it("503 when creating switches the feature off, without a toast", async () => {
@@ -159,7 +159,7 @@ describe("deleting", () => {
 
     expect(await state().removeConversation("b")).toBe(false)
     expect(state().conversations.map((item) => item.id)).toEqual(["a", "b", "c"])
-    expect(useToastStore.getState().message).toBe(copy.assistant.history.deleteFailed)
+    expect(useToastStore.getState().message).toBe(t("assistant.history.deleteFailed"))
   })
 
   it("a conversation that is already gone (404) is deleted as far as the person cares", async () => {

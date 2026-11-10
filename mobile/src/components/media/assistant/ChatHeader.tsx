@@ -5,9 +5,8 @@ import type { AssistantUsage } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
 import { IconButton } from "@/components/ui/IconButton"
 import { MascotTile } from "@/components/ui/MascotTile"
-import { copy } from "@/constants/copy"
 import { makeStyles, radius, sizes, spacing } from "@/theme"
-import { fillCount } from "@/utils/fillCount"
+import { useTranslation } from "@/i18n"
 
 type ChatHeaderProps = {
   usage: AssistantUsage | null
@@ -20,13 +19,15 @@ type ChatHeaderProps = {
 
 /** Close, the assistant's name with what is left of today's messages, conversations, new chat. */
 export function ChatHeader({ usage, isNew, onClose, onHistory, onNewChat }: ChatHeaderProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   const insets = useSafeAreaInsets()
   const left = usage ? Math.max(0, usage.limit - usage.used) : null
   return (
     <View style={[styles.bar, { paddingTop: insets.top, height: insets.top + sizes.topBarHeight }]}>
-      <IconButton icon={ChevronDown} label={copy.assistant.close} color="text" onPress={onClose} />
+      <IconButton icon={ChevronDown} label={t("assistant.close")} color="text" onPress={onClose} />
       <MascotTile
         size={sizes.mascotHeader}
         mascotSize={sizes.mascotHeader - spacing.sm}
@@ -40,23 +41,23 @@ export function ChatHeader({ usage, isNew, onClose, onHistory, onNewChat }: Chat
           ellipsizeMode="tail"
           accessibilityRole="header"
         >
-          {copy.assistant.title}
+          {t("assistant.title")}
         </AppText>
         {left !== null && (
           <AppText variant="small" color="secondary" numberOfLines={1}>
-            {fillCount(copy.assistant.remaining, left)}
+            {t("assistant.remaining", { count: left })}
           </AppText>
         )}
       </View>
       <IconButton
         icon={History}
-        label={copy.assistant.history.open}
+        label={t("assistant.history.open")}
         color="text"
         onPress={onHistory}
       />
       <IconButton
         icon={SquarePen}
-        label={copy.assistant.history.newChat}
+        label={t("assistant.history.newChat")}
         color="text"
         disabled={isNew}
         style={isNew ? styles.off : undefined}

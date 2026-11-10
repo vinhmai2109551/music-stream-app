@@ -1,14 +1,15 @@
+import viMessages from "@/i18n/locales/vi.json"
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent, waitFor } from "@testing-library/react-native"
 import { router } from "expo-router"
 import { ApiError } from "@/api/client"
 import type { AssistantConversation, AssistantEvent, AssistantMessageLine } from "@/api/types"
 import AssistantScreen from "@/app/assistant"
-import { copy } from "@/constants/copy"
 import { useAssistantStore } from "@/store/assistantStore"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { makeTrack } from "../helpers/playback"
+import { t } from "@/i18n"
 
 jest.mock("expo-router", () => ({ router: { back: jest.fn(), push: jest.fn() } }))
 jest.mock("@/store/toastStore", () => ({ showToast: jest.fn() }))
@@ -26,7 +27,6 @@ jest.mock("@/api/assistant", () => ({
 const api = jest.mocked(require("@/api/assistant") as typeof import("@/api/assistant"))
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-const text = copy.assistant
 const mockRouter = jest.mocked(router)
 
 type Emit = (event: AssistantEvent) => void
@@ -56,8 +56,8 @@ async function openScreen() {
   return user
 }
 const write = async (user: ReturnType<typeof userEvent.setup>, message: string) => {
-  await user.type(screen.getByLabelText(text.composerLabel), message)
-  await user.press(screen.getByRole("button", { name: text.send }))
+  await user.type(screen.getByLabelText(t("assistant.composerLabel")), message)
+  await user.press(screen.getByRole("button", { name: t("assistant.send") }))
 }
 
 beforeEach(() => {
@@ -76,12 +76,12 @@ describe("a new chat", () => {
   it("welcomes the person and offers the four starters", async () => {
     await openScreen()
 
-    expect(screen.getByText(text.welcomeTitle)).toBeOnTheScreen()
-    expect(screen.getByText(text.welcomeBody)).toBeOnTheScreen()
-    for (const starter of text.starters) {
+    expect(screen.getByText(t("assistant.welcomeTitle"))).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.welcomeBody"))).toBeOnTheScreen()
+    for (const starter of viMessages.assistant.starters) {
       expect(screen.getByRole("button", { name: starter })).toBeOnTheScreen()
     }
-    expect(screen.getByText(text.title)).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.title"))).toBeOnTheScreen()
   })
 
   it("says how many messages are left today", async () => {
@@ -91,12 +91,12 @@ describe("a new chat", () => {
 
   it("does not offer 'new chat' when the chat is already new", async () => {
     await openScreen()
-    expect(screen.getByRole("button", { name: text.history.newChat })).toBeDisabled()
+    expect(screen.getByRole("button", { name: t("assistant.history.newChat") })).toBeDisabled()
   })
 
   it("closing goes back", async () => {
     const user = await openScreen()
-    await user.press(screen.getByRole("button", { name: text.close }))
+    await user.press(screen.getByRole("button", { name: t("assistant.close") }))
     expect(mockRouter.back).toHaveBeenCalledTimes(1)
   })
 
@@ -110,18 +110,20 @@ describe("a new chat", () => {
     )
     const user = await openScreen()
 
-    await user.press(screen.getByRole("button", { name: text.starters[0] }))
+    await user.press(screen.getByRole("button", { name: viMessages.assistant.starters[0] }))
 
     expect(await screen.findByText("Lạc Trôi")).toBeOnTheScreen()
-    expect(screen.getByLabelText(`${text.youSaid}: ${text.starters[0]}`)).toBeOnTheScreen()
+    expect(
+      screen.getByLabelText(`${t("assistant.youSaid")}: ${viMessages.assistant.starters[0]}`),
+    ).toBeOnTheScreen()
     expect(api.sendAssistantMessage).toHaveBeenCalledWith(
       "c1",
-      text.starters[0],
+      viMessages.assistant.starters[0],
       expect.any(Function),
       expect.any(AbortSignal),
     )
     // The welcome gives way to the conversation.
-    expect(screen.queryByText(text.welcomeTitle)).not.toBeOnTheScreen()
+    expect(screen.queryByText(t("assistant.welcomeTitle"))).not.toBeOnTheScreen()
   })
 
   it("a typed message is sent and the box is emptied", async () => {
@@ -133,7 +135,7 @@ describe("a new chat", () => {
     await write(user, "xin chào")
 
     expect(await screen.findByText("Chào!")).toBeOnTheScreen()
-    expect(screen.getByLabelText(text.composerLabel).props.value).toBe("")
+    expect(screen.getByLabelText(t("assistant.composerLabel")).props.value).toBe("")
   })
 
   it("shows the tracks the assistant found, and plays one when it is tapped", async () => {
@@ -154,10 +156,14 @@ describe("a new chat", () => {
     const user = await openScreen()
     await write(user, "nhạc buồn")
 
-    await user.press(await screen.findByRole("button", { name: "Play Title b by Artist" }))
+    await user.press(
+      await screen.findByRole("button", {
+        name: t("track.playNamed", { title: "Title b", artist: "Artist" }),
+      }),
+    )
 
     expect(usePlayerStore.getState().currentTrack?.id).toBe("b")
-    expect(usePlayerStore.getState().queueSource).toBe(text.playSource)
+    expect(usePlayerStore.getState().queueSource).toBe(t("assistant.playSource"))
   })
 
   it("asks before it changes the library, and does it on 'Đồng ý'", async () => {
@@ -194,9 +200,9 @@ describe("a new chat", () => {
     expect(await screen.findByText("Tạo playlist “Chạy bộ”")).toBeOnTheScreen()
     expect(api.answerAssistantAction).not.toHaveBeenCalled()
 
-    await user.press(screen.getByRole("button", { name: text.action.confirm }))
+    await user.press(screen.getByRole("button", { name: t("assistant.action.confirm") }))
 
-    expect(await screen.findByText(text.action.confirmed)).toBeOnTheScreen()
+    expect(await screen.findByText(t("assistant.action.confirmed"))).toBeOnTheScreen()
     expect(screen.getByText("Xong rồi nhé.")).toBeOnTheScreen()
     expect(useLibraryStore.getState().load).toHaveBeenCalledTimes(1)
   })
@@ -209,8 +215,8 @@ describe("a new chat", () => {
 
     await write(user, "kể chuyện")
 
-    expect(await screen.findByRole("button", { name: text.stop })).toBeOnTheScreen()
-    expect(screen.queryByRole("button", { name: text.send })).not.toBeOnTheScreen()
+    expect(await screen.findByRole("button", { name: t("assistant.stop") })).toBeOnTheScreen()
+    expect(screen.queryByRole("button", { name: t("assistant.send") })).not.toBeOnTheScreen()
   })
 
   it("pressing Stop takes the turn back and puts the question in the box", async () => {
@@ -223,13 +229,13 @@ describe("a new chat", () => {
     const user = await openScreen()
     await write(user, "kể chuyện")
 
-    await user.press(await screen.findByRole("button", { name: text.stop }))
+    await user.press(await screen.findByRole("button", { name: t("assistant.stop") }))
 
     await waitFor(() =>
-      expect(screen.getByLabelText(text.composerLabel).props.value).toBe("kể chuyện"),
+      expect(screen.getByLabelText(t("assistant.composerLabel")).props.value).toBe("kể chuyện"),
     )
-    expect(screen.queryByLabelText(`${text.youSaid}: kể chuyện`)).not.toBeOnTheScreen()
-    expect(screen.getByRole("button", { name: text.send })).toBeOnTheScreen()
+    expect(screen.queryByLabelText(`${t("assistant.youSaid")}: kể chuyện`)).not.toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: t("assistant.send") })).toBeOnTheScreen()
   })
 })
 
@@ -241,28 +247,28 @@ describe("when it goes wrong", () => {
     const user = await openScreen()
     await write(user, "chào")
 
-    expect(await screen.findByText(text.errors.offline)).toBeOnTheScreen()
-    expect(screen.getByText(text.notSent)).toBeOnTheScreen()
+    expect(await screen.findByText(t("assistant.errors.offline"))).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.notSent"))).toBeOnTheScreen()
 
     api.sendAssistantMessage.mockImplementation(
       streams([{ type: "text_delta", text: "Xin chào!" }, done()]),
     )
-    await user.press(screen.getByRole("button", { name: text.resend }))
+    await user.press(screen.getByRole("button", { name: t("assistant.resend") }))
 
     expect(await screen.findByText("Xin chào!")).toBeOnTheScreen()
-    expect(screen.queryByText(text.notSent)).not.toBeOnTheScreen()
-    expect(screen.queryByText(text.errors.offline)).not.toBeOnTheScreen()
+    expect(screen.queryByText(t("assistant.notSent"))).not.toBeOnTheScreen()
+    expect(screen.queryByText(t("assistant.errors.offline"))).not.toBeOnTheScreen()
   })
 
   it("the message can be dismissed", async () => {
     api.sendAssistantMessage.mockRejectedValue(http(500))
     const user = await openScreen()
     await write(user, "chào")
-    await screen.findByText(text.errors.generic)
+    await screen.findByText(t("assistant.errors.generic"))
 
-    await user.press(screen.getByRole("button", { name: text.dismiss }))
+    await user.press(screen.getByRole("button", { name: t("assistant.dismiss") }))
 
-    expect(screen.queryByText(text.errors.generic)).not.toBeOnTheScreen()
+    expect(screen.queryByText(t("assistant.errors.generic"))).not.toBeOnTheScreen()
   })
 
   it("the day is used up: says so with the server's words and locks the box", async () => {
@@ -271,15 +277,15 @@ describe("when it goes wrong", () => {
     await write(user, "chào")
 
     expect(await screen.findByText("Bạn đã dùng hết 30 tin nhắn hôm nay")).toBeOnTheScreen()
-    expect(screen.getByLabelText(text.composerLabel).props.editable).toBe(false)
+    expect(screen.getByLabelText(t("assistant.composerLabel")).props.editable).toBe(false)
   })
 
   it("starts with the box locked when the day's messages are already used", async () => {
     useAssistantStore.setState({ usage: { used: 30, limit: 30 } })
     await openScreen()
 
-    expect(screen.getByLabelText(text.composerLabel).props.editable).toBe(false)
-    expect(screen.getByRole("button", { name: text.starters[0] })).toBeDisabled()
+    expect(screen.getByLabelText(t("assistant.composerLabel")).props.editable).toBe(false)
+    expect(screen.getByRole("button", { name: viMessages.assistant.starters[0] })).toBeDisabled()
     expect(screen.getByText("Còn 0 tin nhắn hôm nay")).toBeOnTheScreen()
   })
 
@@ -288,10 +294,10 @@ describe("when it goes wrong", () => {
     const user = await openScreen()
     await write(user, "chào")
 
-    expect(await screen.findByText(text.unavailable.title)).toBeOnTheScreen()
+    expect(await screen.findByText(t("assistant.unavailable.title"))).toBeOnTheScreen()
     expect(useAssistantStore.getState().availability).toBe("unavailable")
 
-    await user.press(screen.getByRole("button", { name: text.unavailable.close }))
+    await user.press(screen.getByRole("button", { name: t("assistant.unavailable.close") }))
     expect(mockRouter.back).toHaveBeenCalled()
   })
 
@@ -299,9 +305,9 @@ describe("when it goes wrong", () => {
     useAssistantStore.setState({ availability: "unavailable" })
     await openScreen()
 
-    expect(screen.getByText(text.unavailable.title)).toBeOnTheScreen()
-    expect(screen.getByText(text.unavailable.description)).toBeOnTheScreen()
-    expect(screen.queryByLabelText(text.composerLabel)).not.toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.unavailable.title"))).toBeOnTheScreen()
+    expect(screen.getByText(t("assistant.unavailable.description"))).toBeOnTheScreen()
+    expect(screen.queryByLabelText(t("assistant.composerLabel"))).not.toBeOnTheScreen()
   })
 })
 
@@ -316,25 +322,25 @@ describe("conversations", () => {
     api.listAssistantMessages.mockResolvedValue(history)
     const user = await openScreen()
 
-    await user.press(screen.getByRole("button", { name: text.history.open }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.open") }))
     await user.press(await screen.findByRole("button", { name: /^Nhạc cũ/ }))
 
     expect(await screen.findByText("Câu trả lời cũ")).toBeOnTheScreen()
     expect(api.listAssistantMessages).toHaveBeenCalledWith("old")
-    expect(screen.queryByText(text.welcomeTitle)).not.toBeOnTheScreen()
-    expect(screen.getByRole("button", { name: text.history.newChat })).toBeEnabled()
+    expect(screen.queryByText(t("assistant.welcomeTitle"))).not.toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: t("assistant.history.newChat") })).toBeEnabled()
   })
 
   it("says it could not open the conversation, and tries again", async () => {
     api.listConversations.mockResolvedValue([conversation("old", "Nhạc cũ")])
     api.listAssistantMessages.mockRejectedValueOnce(http(500))
     const user = await openScreen()
-    await user.press(screen.getByRole("button", { name: text.history.open }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.open") }))
     await user.press(await screen.findByRole("button", { name: /^Nhạc cũ/ }))
-    await screen.findByText(copy.errors.loadFailedTitle)
+    await screen.findByText(t("errors.loadFailedTitle"))
 
     api.listAssistantMessages.mockResolvedValue(history)
-    await user.press(screen.getByRole("button", { name: copy.common.retry }))
+    await user.press(screen.getByRole("button", { name: t("common.retry") }))
 
     expect(await screen.findByText("Câu hỏi cũ")).toBeOnTheScreen()
   })
@@ -343,13 +349,13 @@ describe("conversations", () => {
     api.listConversations.mockResolvedValue([conversation("old", "Nhạc cũ")])
     api.listAssistantMessages.mockResolvedValue(history)
     const user = await openScreen()
-    await user.press(screen.getByRole("button", { name: text.history.open }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.open") }))
     await user.press(await screen.findByRole("button", { name: /^Nhạc cũ/ }))
     await screen.findByText("Câu hỏi cũ")
 
-    await user.press(screen.getByRole("button", { name: text.history.newChat }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.newChat") }))
 
-    expect(await screen.findByText(text.welcomeTitle)).toBeOnTheScreen()
+    expect(await screen.findByText(t("assistant.welcomeTitle"))).toBeOnTheScreen()
     expect(screen.queryByText("Câu hỏi cũ")).not.toBeOnTheScreen()
   })
 
@@ -358,15 +364,17 @@ describe("conversations", () => {
     api.listAssistantMessages.mockResolvedValue(history)
     api.deleteConversation.mockResolvedValue(undefined)
     const user = await openScreen()
-    await user.press(screen.getByRole("button", { name: text.history.open }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.open") }))
     await user.press(await screen.findByRole("button", { name: /^Nhạc cũ/ }))
     await screen.findByText("Câu hỏi cũ")
 
-    await user.press(screen.getByRole("button", { name: text.history.open }))
-    await user.press(await screen.findByRole("button", { name: `${text.history.delete}: Nhạc cũ` }))
-    await user.press(screen.getByRole("button", { name: text.history.confirmDelete }))
+    await user.press(screen.getByRole("button", { name: t("assistant.history.open") }))
+    await user.press(
+      await screen.findByRole("button", { name: `${t("assistant.history.delete")}: Nhạc cũ` }),
+    )
+    await user.press(screen.getByRole("button", { name: t("assistant.history.confirmDelete") }))
 
-    await waitFor(() => expect(screen.getByText(text.welcomeTitle)).toBeOnTheScreen())
+    await waitFor(() => expect(screen.getByText(t("assistant.welcomeTitle"))).toBeOnTheScreen())
     expect(api.deleteConversation).toHaveBeenCalledWith("old")
   })
 })

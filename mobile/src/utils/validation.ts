@@ -1,9 +1,7 @@
 import { AUTH_LIMITS } from "@/constants/auth"
-import { copy } from "@/constants/copy"
+import { t } from "@/i18n"
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const messages = copy.auth.validation
-
 export type FieldErrors<Field extends string> = Partial<Record<Field, string>>
 
 export const normalizeEmail = (value: string): string => value.trim().toLowerCase()
@@ -12,24 +10,28 @@ export const hasErrors = (errors: object): boolean => Object.values(errors).some
 
 function emailError(raw: string): string | undefined {
   const email = raw.trim()
-  if (!email) return messages.emailRequired
-  if (email.length > AUTH_LIMITS.emailMax) return messages.emailTooLong
-  if (!EMAIL_PATTERN.test(email)) return messages.emailInvalid
+  if (!email) return t("auth.validation.emailRequired")
+  if (email.length > AUTH_LIMITS.emailMax)
+    return t("auth.validation.emailTooLong", { max: AUTH_LIMITS.emailMax })
+  if (!EMAIL_PATTERN.test(email)) return t("auth.validation.emailInvalid")
   return undefined
 }
 
 function nameError(raw: string): string | undefined {
   const name = raw.trim()
-  if (!name) return messages.nameRequired
-  if (name.length > AUTH_LIMITS.nameMax) return messages.nameTooLong
+  if (!name) return t("auth.validation.nameRequired")
+  if (name.length > AUTH_LIMITS.nameMax)
+    return t("auth.validation.nameTooLong", { max: AUTH_LIMITS.nameMax })
   return undefined
 }
 
 /** Passwords are never trimmed. */
 function passwordError(password: string, checkMinimum: boolean): string | undefined {
-  if (!password) return messages.passwordRequired
-  if (password.length > AUTH_LIMITS.passwordMax) return messages.passwordTooLong
-  if (checkMinimum && password.length < AUTH_LIMITS.passwordMin) return messages.passwordTooShort
+  if (!password) return t("auth.validation.passwordRequired")
+  if (password.length > AUTH_LIMITS.passwordMax)
+    return t("auth.validation.passwordTooLong", { max: AUTH_LIMITS.passwordMax })
+  if (checkMinimum && password.length < AUTH_LIMITS.passwordMin)
+    return t("auth.validation.passwordTooShort", { min: AUTH_LIMITS.passwordMin })
   return undefined
 }
 

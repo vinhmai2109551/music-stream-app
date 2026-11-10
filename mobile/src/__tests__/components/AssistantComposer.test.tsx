@@ -1,9 +1,7 @@
+import { t } from "@/i18n"
 import { describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent } from "@testing-library/react-native"
 import { Composer } from "@/components/media/assistant/Composer"
-import { copy } from "@/constants/copy"
-
-const text = copy.assistant
 
 type Props = Partial<React.ComponentProps<typeof Composer>>
 
@@ -14,7 +12,7 @@ async function setup(props: Props = {}) {
   await render(
     <Composer streaming={false} disabled={false} onSend={onSend} onStop={onStop} {...props} />,
   )
-  const input = screen.getByLabelText(text.composerLabel)
+  const input = screen.getByLabelText(t("assistant.composerLabel"))
   return { onSend, onStop, user, input }
 }
 
@@ -22,8 +20,8 @@ describe("writing and sending", () => {
   it("has a field with a hint and a send button that waits for words", async () => {
     await setup()
 
-    expect(screen.getByPlaceholderText(text.composerPlaceholder)).toBeOnTheScreen()
-    expect(screen.getByRole("button", { name: text.send })).toBeDisabled()
+    expect(screen.getByPlaceholderText(t("assistant.composerPlaceholder"))).toBeOnTheScreen()
+    expect(screen.getByRole("button", { name: t("assistant.send") })).toBeDisabled()
   })
 
   it("a message of only spaces is not a message", async () => {
@@ -31,7 +29,7 @@ describe("writing and sending", () => {
 
     await user.type(input, "    ")
 
-    expect(screen.getByRole("button", { name: text.send })).toBeDisabled()
+    expect(screen.getByRole("button", { name: t("assistant.send") })).toBeDisabled()
     expect(onSend).not.toHaveBeenCalled()
   })
 
@@ -39,12 +37,12 @@ describe("writing and sending", () => {
     const { user, input, onSend } = await setup()
 
     await user.type(input, "  Gợi ý nhạc buồn  ")
-    await user.press(screen.getByRole("button", { name: text.send }))
+    await user.press(screen.getByRole("button", { name: t("assistant.send") }))
 
     expect(onSend).toHaveBeenCalledTimes(1)
     expect(onSend).toHaveBeenCalledWith("Gợi ý nhạc buồn")
     expect(input.props.value).toBe("")
-    expect(screen.getByRole("button", { name: text.send })).toBeDisabled()
+    expect(screen.getByRole("button", { name: t("assistant.send") })).toBeDisabled()
   })
 
   it("stops the person from writing more than the server takes", async () => {
@@ -57,8 +55,8 @@ describe("while the assistant is answering", () => {
   it("the button stops the answer instead of sending", async () => {
     const { onStop, user } = await setup({ streaming: true })
 
-    expect(screen.queryByRole("button", { name: text.send })).not.toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: text.stop }))
+    expect(screen.queryByRole("button", { name: t("assistant.send") })).not.toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: t("assistant.stop") }))
 
     expect(onStop).toHaveBeenCalledTimes(1)
   })
@@ -67,7 +65,7 @@ describe("while the assistant is answering", () => {
     const { onStop, user, input } = await setup({ streaming: true })
     onStop.mockReturnValue("kể chuyện cổ tích")
 
-    await user.press(screen.getByRole("button", { name: text.stop }))
+    await user.press(screen.getByRole("button", { name: t("assistant.stop") }))
 
     expect(input.props.value).toBe("kể chuyện cổ tích")
   })
@@ -77,7 +75,7 @@ describe("while the assistant is answering", () => {
     onStop.mockReturnValue("câu cũ")
 
     await user.type(input, "câu mới")
-    await user.press(screen.getByRole("button", { name: text.stop }))
+    await user.press(screen.getByRole("button", { name: t("assistant.stop") }))
 
     expect(input.props.value).toBe("câu mới")
   })
@@ -85,7 +83,7 @@ describe("while the assistant is answering", () => {
   it("puts nothing back when the answer was to a proposal", async () => {
     const { user, input } = await setup({ streaming: true })
 
-    await user.press(screen.getByRole("button", { name: text.stop }))
+    await user.press(screen.getByRole("button", { name: t("assistant.stop") }))
 
     expect(input.props.value).toBe("")
   })
@@ -105,7 +103,7 @@ describe("when nothing can be sent", () => {
     const { input, onSend } = await setup({ disabled: true })
 
     expect(input.props.editable).toBe(false)
-    expect(screen.getByRole("button", { name: text.send })).toBeDisabled()
+    expect(screen.getByRole("button", { name: t("assistant.send") })).toBeDisabled()
     expect(onSend).not.toHaveBeenCalled()
   })
 })

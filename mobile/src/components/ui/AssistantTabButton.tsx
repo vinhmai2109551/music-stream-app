@@ -1,10 +1,10 @@
 import { router } from "expo-router"
 import { Sparkles } from "lucide-react-native"
 import { Pressable, View } from "react-native"
-import { copy } from "@/constants/copy"
 import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 import { MascotTile } from "./MascotTile"
 import { pressedStyle } from "./pressed"
+import { useTranslation } from "@/i18n"
 
 const BADGE_ICON_SIZE = 12
 const GLOW_INSET = spacing.xs
@@ -14,13 +14,15 @@ const GLOW_INSET = spacing.xs
  * bar's own box (raised only as far as the bar's top edge), so it never covers the mini player.
  */
 export function AssistantTabButton() {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={copy.assistant.open}
+      accessibilityLabel={t("assistant.open")}
       onPress={() => router.push("/assistant")}
       style={styles.slot}
     >

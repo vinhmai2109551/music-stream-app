@@ -6,6 +6,7 @@ import { CoverImage } from "@/components/ui/CoverImage"
 import { pressedStyle } from "@/components/ui/pressed"
 import { colors, radius, shadows, sizes, spacing } from "@/theme"
 import type { Suggestion } from "@/types"
+import { useTranslation } from "@/i18n"
 
 const WIDTH_RATIO = 0.72
 
@@ -15,11 +16,16 @@ type SuggestionCardProps = {
 }
 
 function SuggestionCardBase({ suggestion, onPress }: SuggestionCardProps) {
+  const { t } = useTranslation()
+
   const { width } = useWindowDimensions()
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${suggestion.title} by ${suggestion.subtitle}`}
+      accessibilityLabel={t("suggestion.by", {
+        title: suggestion.title,
+        subtitle: suggestion.subtitle,
+      })}
       onPress={() => onPress(suggestion)}
       style={({ pressed }) => [styles.card, { width: width * WIDTH_RATIO }, pressedStyle(pressed)]}
     >

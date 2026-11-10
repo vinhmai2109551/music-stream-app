@@ -3,9 +3,9 @@ import { memo } from "react"
 import { View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import type { PremiumPlan } from "@/constants/premium"
 import { makeStyles, radius, shadows, sizes, spacing, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 type PlanCardProps = {
   plan: PremiumPlan
@@ -19,36 +19,38 @@ type PlanCardProps = {
 
 /** One subscription plan: name, price, what it includes and the button to start it. */
 function PlanCardBase({ plan, width, subscribed, loading, onSubscribe }: PlanCardProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
   return (
     <View style={[styles.card, { width }]}>
       <AppText variant="h2" numberOfLines={1} ellipsizeMode="tail">
-        {plan.name}
+        {t(plan.nameKey)}
       </AppText>
       <View style={styles.priceRow}>
         <View style={styles.pill}>
           <AppText variant="small" color="premiumText" numberOfLines={1}>
-            {plan.trial}
+            {t(plan.trialKey)}
           </AppText>
         </View>
         <AppText variant="subtitle" numberOfLines={1} style={styles.price}>
-          {plan.price}/ month
+          {plan.price} {t("premium.perMonth")}
         </AppText>
       </View>
       <View style={styles.features}>
-        {plan.features.map((feature) => (
+        {plan.featureKeys.map((feature) => (
           <View key={feature} style={styles.feature}>
             <Check size={sizes.iconMd} strokeWidth={2} color={colors.premiumCheck} />
             <AppText variant="body" color="secondary" style={styles.featureText}>
-              {feature}
+              {t(feature)}
             </AppText>
           </View>
         ))}
       </View>
       <Button
-        label={subscribed ? copy.premium.currentPlan : copy.premium.subscribe}
+        label={subscribed ? t("premium.currentPlan") : t("premium.subscribe")}
         variant="dark"
         loading={loading}
         disabled={subscribed}

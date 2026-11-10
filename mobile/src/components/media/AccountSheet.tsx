@@ -5,14 +5,24 @@ import { StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { BottomSheet } from "@/components/ui/BottomSheet"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
+import { LANGUAGE_NAMES, useTranslation, type TranslationKey } from "@/i18n"
 import { useAssistantStore } from "@/store/assistantStore"
+import { useLanguageStore } from "@/store/languageStore"
 import { radius, sizes, spacing } from "@/theme"
 import { EditProfileForm } from "./EditProfileForm"
+import { LanguagePicker } from "./LanguagePicker"
 
 /** A little longer than the sheet takes to slide away (BottomSheet: 200 ms). */
 const SHEET_CLOSE_MS = 300
+
+type SheetView = "main" | "edit" | "language"
+
+const TITLES: Record<SheetView, TranslationKey> = {
+  main: "settings.title",
+  edit: "settings.edit.title",
+  language: "settings.language.title",
+}
 
 type AccountSheetProps = {
   visible: boolean
@@ -32,23 +42,26 @@ export function AccountSheet({
   avatarUrl,
   onLogout,
 }: AccountSheetProps) {
-  // The form lives in this sheet (not in a second one): two modals cannot be swapped reliably on iOS.
-  const [editing, setEditing] = useState(false)
+  const { t } = useTranslation()
+
+  // The form and the language list live in this sheet (not in a second one): two modals cannot be
+  // swapped reliably on iOS.
+  const [view, setView] = useState<SheetView>("main")
   const assistantOn = useAssistantStore((store) => store.availability !== "unavailable")
+  const language = useLanguageStore((store) => store.choice)
 
   const close = () => {
-    setEditing(false)
+    setView("main")
     onClose()
   }
+  const back = () => setView("main")
 
   return (
-    <BottomSheet
-      visible={visible}
-      onClose={close}
-      title={editing ? copy.account.edit.title : copy.account.title}
-    >
-      {editing ? (
-        <EditProfileForm onDone={() => setEditing(false)} />
+    <BottomSheet visible={visible} onClose={close} title={t(TITLES[view])}>
+      {view === "edit" ? (
+        <EditProfileForm onDone={back} />
+      ) : view === "language" ? (
+        <LanguagePicker onDone={back} />
       ) : (
         <>
           <View style={styles.profile}>
@@ -70,7 +83,7 @@ export function AccountSheet({
           <View style={styles.actions}>
             {assistantOn && (
               <Button
-                label={copy.assistant.open}
+                label={t("assistant.open")}
                 variant="tonal"
                 onPress={() => {
                   close()
@@ -80,12 +93,19 @@ export function AccountSheet({
               />
             )}
             <Button
-              label={copy.account.editProfile}
+              label={t("settings.editProfile")}
               variant="tonal"
-              onPress={() => setEditing(true)}
+              onPress={() => setView("edit")}
             />
             <Button
-              label={copy.auth.logout}
+              label={`${t("settings.language.title")}: ${
+                language ? LANGUAGE_NAMES[language] : t("settings.language.system")
+              }`}
+              variant="tonal"
+              onPress={() => setView("language")}
+            />
+            <Button
+              label={t("auth.logout")}
               variant="secondary"
               onPress={() => {
                 close()

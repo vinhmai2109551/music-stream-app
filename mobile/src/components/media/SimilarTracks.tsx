@@ -2,10 +2,10 @@ import { useState } from "react"
 import { FlatList, StyleSheet, View } from "react-native"
 import { BottomSheet } from "@/components/ui/BottomSheet"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { useSimilarTracks } from "@/hooks/useRecommendations"
 import { spacing } from "@/theme"
 import { TrackRow } from "./TrackRow"
+import { useTranslation } from "@/i18n"
 
 const SHEET_HEIGHT = "70%"
 
@@ -19,6 +19,8 @@ type SimilarTracksProps = {
  * with nothing to show, or when the AI features are off, there is no button at all.
  */
 export function SimilarTracks({ trackId }: SimilarTracksProps) {
+  const { t } = useTranslation()
+
   const similar = useSimilarTracks(trackId)
   // Remembers which track the sheet was opened for, so it closes by itself when the track changes.
   const [openFor, setOpenFor] = useState<string | null>(null)
@@ -29,7 +31,7 @@ export function SimilarTracks({ trackId }: SimilarTracksProps) {
   return (
     <View style={styles.container}>
       <Button
-        label={copy.recommendations.similarOpen}
+        label={t("recommendations.similarOpen")}
         variant="glass"
         compact
         onPress={() => setOpenFor(trackId)}
@@ -37,7 +39,7 @@ export function SimilarTracks({ trackId }: SimilarTracksProps) {
       <BottomSheet
         visible={openFor === trackId}
         onClose={() => setOpenFor(null)}
-        title={copy.recommendations.similarTitle}
+        title={t("recommendations.similarTitle")}
         height={SHEET_HEIGHT}
       >
         <FlatList
@@ -49,7 +51,7 @@ export function SimilarTracks({ trackId }: SimilarTracksProps) {
               track={item}
               index={index}
               list={tracks}
-              source={copy.recommendations.similarSource}
+              source={t("recommendations.similarSource")}
             />
           )}
         />

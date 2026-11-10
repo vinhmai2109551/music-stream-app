@@ -12,6 +12,7 @@ import { useAppFonts } from "@/hooks/useAppFonts"
 import { useAppStore } from "@/store/appStore"
 import { useAssistantStore } from "@/store/assistantStore"
 import { useAuthStore } from "@/store/authStore"
+import { useLanguageStore } from "@/store/languageStore"
 import { useLibraryStore } from "@/store/libraryStore"
 import { makeStyles, useColors } from "@/theme"
 
@@ -22,6 +23,8 @@ export default function RootLayout() {
   const colors = useColors()
 
   const fontsReady = useAppFonts()
+  // The saved language is read before the first screen, so nothing is shown in the wrong one.
+  const languageReady = useLanguageStore((state) => state.ready)
   const status = useAuthStore((state) => state.status)
   const hasStarted = useAppStore((state) => state.hasStarted)
   const authIntent = useAppStore((state) => state.authIntent)
@@ -41,8 +44,8 @@ export default function RootLayout() {
     void useAssistantStore.getState().probe()
   }, [isAuthenticated])
 
-  // Keep the splash screen up until fonts are loaded and the saved session has been checked.
-  const ready = fontsReady && status !== "loading"
+  // Keep the splash screen up until fonts and language are loaded and the saved session has been checked.
+  const ready = fontsReady && languageReady && status !== "loading"
   useEffect(() => {
     if (ready) void SplashScreen.hideAsync()
   }, [ready])

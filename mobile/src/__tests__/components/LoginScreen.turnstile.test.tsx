@@ -1,8 +1,8 @@
+import { t } from "@/i18n"
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { render, screen, userEvent, waitFor } from "@testing-library/react-native"
 import LoginScreen from "@/app/(auth)/login"
 import { ApiError } from "@/api/client"
-import { copy } from "@/constants/copy"
 import { useAuthStore } from "@/store/authStore"
 
 jest.mock("expo-router", () => ({ router: { replace: jest.fn() } }))
@@ -24,16 +24,15 @@ jest.mock("@/components/ui/TurnstileWidget", () => {
   }
 })
 
-const text = copy.auth
 const login = jest.fn<(input: { turnstileToken?: string }) => Promise<void>>()
 
 const waitUntilIdle = () =>
-  waitFor(() => expect(screen.getByRole("button", { name: text.login.submit })).not.toBeBusy())
+  waitFor(() => expect(screen.getByRole("button", { name: t("auth.login.submit") })).not.toBeBusy())
 
 async function typeCredentials() {
   const user = userEvent.setup()
-  await user.type(screen.getByLabelText(text.fields.email.label), "a@b.co")
-  await user.type(screen.getByLabelText(text.fields.password.label), "secret123")
+  await user.type(screen.getByLabelText(t("auth.fields.email.label")), "a@b.co")
+  await user.type(screen.getByLabelText(t("auth.fields.password.label")), "secret123")
   return user
 }
 
@@ -48,21 +47,21 @@ describe("LoginScreen with Cloudflare Turnstile switched on", () => {
     await render(<LoginScreen />)
     const user = await typeCredentials()
 
-    await user.press(screen.getByRole("button", { name: text.login.submit }))
+    await user.press(screen.getByRole("button", { name: t("auth.login.submit") }))
 
-    expect(screen.getByText(text.turnstile.required)).toBeOnTheScreen()
+    expect(screen.getByText(t("auth.turnstile.required"))).toBeOnTheScreen()
     expect(login).not.toHaveBeenCalled()
   })
 
   it("sends the token once the check is solved, and the warning goes away", async () => {
     await render(<LoginScreen />)
     const user = await typeCredentials()
-    await user.press(screen.getByRole("button", { name: text.login.submit }))
-    expect(screen.getByText(text.turnstile.required)).toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: t("auth.login.submit") }))
+    expect(screen.getByText(t("auth.turnstile.required"))).toBeOnTheScreen()
 
     await user.press(screen.getByRole("button", { name: "Solve the check" }))
-    expect(screen.queryByText(text.turnstile.required)).not.toBeOnTheScreen()
-    await user.press(screen.getByRole("button", { name: text.login.submit }))
+    expect(screen.queryByText(t("auth.turnstile.required"))).not.toBeOnTheScreen()
+    await user.press(screen.getByRole("button", { name: t("auth.login.submit") }))
     await waitUntilIdle()
 
     expect(login).toHaveBeenCalledTimes(1)
@@ -74,13 +73,13 @@ describe("LoginScreen with Cloudflare Turnstile switched on", () => {
     await render(<LoginScreen />)
     const user = await typeCredentials()
     await user.press(screen.getByRole("button", { name: "Solve the check" }))
-    await user.press(screen.getByRole("button", { name: text.login.submit }))
+    await user.press(screen.getByRole("button", { name: t("auth.login.submit") }))
     await waitUntilIdle()
-    expect(await screen.findByText(text.errors.invalidCredentials)).toBeOnTheScreen()
+    expect(await screen.findByText(t("auth.errors.invalidCredentials"))).toBeOnTheScreen()
 
-    await user.press(screen.getByRole("button", { name: text.login.submit }))
+    await user.press(screen.getByRole("button", { name: t("auth.login.submit") }))
 
-    expect(screen.getByText(text.turnstile.required)).toBeOnTheScreen()
+    expect(screen.getByText(t("auth.turnstile.required"))).toBeOnTheScreen()
     expect(login).toHaveBeenCalledTimes(1)
   })
 })

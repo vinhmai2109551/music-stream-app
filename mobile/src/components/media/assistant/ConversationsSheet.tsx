@@ -10,11 +10,11 @@ import { ErrorState } from "@/components/ui/ErrorState"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
 import { Skeleton } from "@/components/ui/Skeleton"
-import { copy } from "@/constants/copy"
 import { useAssistantStore } from "@/store/assistantStore"
 import { showToast } from "@/store/toastStore"
 import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
 import { formatConversationTime } from "@/utils/formatConversationTime"
+import { useTranslation } from "@/i18n"
 
 const SHEET_HEIGHT = "75%"
 const SKELETON_ROWS = [0, 1, 2]
@@ -27,10 +27,12 @@ type RowProps = {
 }
 
 const Row = memo(function Row({ conversation, current, onOpen, onDelete }: RowProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
-  const title = conversation.title || copy.assistant.history.untitled
+  const title = conversation.title || t("assistant.history.untitled")
   const when = formatConversationTime(conversation.updatedAt)
   return (
     <View style={[styles.row, current && styles.current]}>
@@ -53,7 +55,7 @@ const Row = memo(function Row({ conversation, current, onOpen, onDelete }: RowPr
       </Pressable>
       <IconButton
         icon={Trash2}
-        label={`${copy.assistant.history.delete}: ${title}`}
+        label={`${t("assistant.history.delete")}: ${title}`}
         onPress={() => onDelete(conversation)}
       />
     </View>
@@ -80,6 +82,8 @@ export function ConversationsSheet({
   onNewChat,
   onDeleted,
 }: ConversationsSheetProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -105,7 +109,7 @@ export function ConversationsSheet({
     const done = await useAssistantStore.getState().removeConversation(deleting.id)
     setBusy(false)
     if (!done) return // the store told the person; the row came back
-    showToast(copy.assistant.history.deleted)
+    showToast(t("assistant.history.deleted"))
     onDeleted(deleting.id)
     setDeleting(null)
   }
@@ -115,19 +119,19 @@ export function ConversationsSheet({
     <BottomSheet
       visible={visible}
       onClose={close}
-      title={deleting ? copy.assistant.history.deleteTitle : copy.assistant.history.title}
+      title={deleting ? t("assistant.history.deleteTitle") : t("assistant.history.title")}
       height={deleting ? undefined : SHEET_HEIGHT}
     >
       {deleting ? (
         <View style={styles.confirm}>
-          <AppText color="secondary">{copy.assistant.history.deleteMessage}</AppText>
+          <AppText color="secondary">{t("assistant.history.deleteMessage")}</AppText>
           <Button
-            label={copy.assistant.history.confirmDelete}
+            label={t("assistant.history.confirmDelete")}
             loading={busy}
             onPress={() => void confirmDelete()}
           />
           <Button
-            label={copy.assistant.history.keep}
+            label={t("assistant.history.keep")}
             variant="tonal"
             onPress={() => setDeleting(null)}
           />
@@ -136,7 +140,7 @@ export function ConversationsSheet({
         <>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={copy.assistant.history.newChat}
+            accessibilityLabel={t("assistant.history.newChat")}
             onPress={() => {
               close()
               onNewChat()
@@ -145,7 +149,7 @@ export function ConversationsSheet({
           >
             <Plus size={sizes.iconMd} strokeWidth={2} color={colors.accentText} />
             <AppText variant="button" color="accentText">
-              {copy.assistant.history.newChat}
+              {t("assistant.history.newChat")}
             </AppText>
           </Pressable>
           {showSkeleton ? (
@@ -159,8 +163,8 @@ export function ConversationsSheet({
           ) : conversations.length === 0 ? (
             <EmptyState
               icon={MessageSquare}
-              title={copy.assistant.history.emptyTitle}
-              description={copy.assistant.history.emptyDescription}
+              title={t("assistant.history.emptyTitle")}
+              description={t("assistant.history.emptyDescription")}
             />
           ) : (
             <FlatList

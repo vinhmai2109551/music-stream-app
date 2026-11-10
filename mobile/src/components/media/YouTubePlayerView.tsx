@@ -11,6 +11,7 @@ import { YOUTUBE_MIN_SIZE } from "@/constants/player"
 import { usePlayerStore } from "@/store/playerStore"
 import { colors, radius, shadows, sizes } from "@/theme"
 import { youTubeSource } from "@/utils/youtubeSource"
+import { useTranslation } from "@/i18n"
 
 // The package types its component with React.VFC, which React 19 no longer has.
 const Player = YoutubeIframe as ComponentType<YoutubeIframeProps>
@@ -26,6 +27,8 @@ const WEB_VIEW_PROPS: WebViewProps = {
  * player. `youTubeSource` decides what it plays; this view only draws it and reports back.
  */
 export function YouTubePlayerView() {
+  const { t } = useTranslation()
+
   const view = useSyncExternalStore(youTubeSource.subscribeView, youTubeSource.getViewState)
   const playerRef = useRef<YoutubeIframeRef>(null)
   const [size, setSize] = useState(0)
@@ -52,7 +55,7 @@ export function YouTubePlayerView() {
 
   return (
     <View style={styles.shadow}>
-      <View accessibilityLabel="Video player" style={styles.frame} onLayout={onLayout}>
+      <View accessibilityLabel={t("player.videoPlayer")} style={styles.frame} onLayout={onLayout}>
         {measured && view.videoId && (
           <Player
             key={view.instance}

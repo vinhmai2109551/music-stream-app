@@ -9,14 +9,16 @@ import { EmptyState } from "@/components/ui/EmptyState"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { TopBar } from "@/components/ui/TopBar"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
 import { makeStyles, radius, shadows, sizes, spacing, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const SKELETON_ROWS = 3
 
 /** "My Playlists": the playlists the user made, and a button to make another. */
 export default function PlaylistsScreen() {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -27,7 +29,7 @@ export default function PlaylistsScreen() {
 
   return (
     <View style={styles.screen}>
-      <TopBar title={copy.playlistsScreen.title} />
+      <TopBar title={t("library.playlists.title")} />
       <FlatList
         data={status === "ready" ? playlists : []}
         keyExtractor={(playlist) => playlist.id}
@@ -35,21 +37,21 @@ export default function PlaylistsScreen() {
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <AppText variant="h2" accessibilityRole="header" style={styles.heading}>
-            {copy.playlistsScreen.heading}
+            {t("library.playlists.heading")}
           </AppText>
         }
         ListEmptyComponent={
           status === "ready" ? (
             <EmptyState
               icon={ListMusic}
-              title={copy.playlistsScreen.emptyTitle}
-              description={copy.playlistsScreen.emptyDescription}
+              title={t("library.playlists.emptyTitle")}
+              description={t("library.playlists.emptyDescription")}
             />
           ) : status === "error" ? (
             <EmptyState
-              title={copy.errors.loadFailedTitle}
-              description={copy.library.loadFailed}
-              action={<Button label={copy.common.retry} onPress={() => void load()} />}
+              title={t("errors.loadFailedTitle")}
+              description={t("playlist.loadFailed")}
+              action={<Button label={t("common.retry")} onPress={() => void load()} />}
             />
           ) : (
             <View style={styles.skeleton}>
@@ -63,7 +65,7 @@ export default function PlaylistsScreen() {
       />
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={copy.playlistsScreen.create}
+        accessibilityLabel={t("library.playlists.create")}
         onPress={() => setCreating(true)}
         style={({ pressed }) => [styles.fab, pressedStyle(pressed)]}
       >

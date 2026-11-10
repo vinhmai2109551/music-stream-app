@@ -9,10 +9,13 @@ import { IconButton } from "@/components/ui/IconButton"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { makeStyles, radius, shadows, sizes, spacing } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const PROGRESS_ANIMATION_MS = 500
 
 function MiniPlayerBase() {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   const track = usePlayerStore((state) => state.currentTrack)
@@ -40,7 +43,10 @@ function MiniPlayerBase() {
       <View style={styles.row}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Open player, ${track.title} by ${track.artist}`}
+          accessibilityLabel={t("player.openPlayerNamed", {
+            title: track.title,
+            artist: track.artist,
+          })}
           onPress={() => router.push("/player")}
           style={({ pressed }) => [styles.info, pressed && styles.pressed]}
         >
@@ -61,7 +67,7 @@ function MiniPlayerBase() {
         </Pressable>
         <IconButton
           icon={Heart}
-          label={liked ? "Unlike" : "Like"}
+          label={liked ? t("common.unlike") : t("common.like")}
           active={liked}
           color="white"
           activeColor="like"
@@ -69,7 +75,7 @@ function MiniPlayerBase() {
         />
         <IconButton
           icon={isPlaying ? Pause : Play}
-          label={isPlaying ? "Pause" : "Play"}
+          label={isPlaying ? t("common.pause") : t("common.play")}
           color="white"
           onPress={togglePlaying}
         />

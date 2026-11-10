@@ -5,6 +5,7 @@ import { CoverImage } from "@/components/ui/CoverImage"
 import { pressedStyle } from "@/components/ui/pressed"
 import { radius, shadows, sizes, spacing } from "@/theme"
 import type { Album } from "@/types"
+import { useTranslation } from "@/i18n"
 
 type AlbumCardProps = {
   album: Album
@@ -12,10 +13,12 @@ type AlbumCardProps = {
 }
 
 function AlbumCardBase({ album, onPress }: AlbumCardProps) {
+  const { t } = useTranslation()
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Album ${album.title} by ${album.artist}`}
+      accessibilityLabel={t("album.named", { title: album.title, artist: album.artist })}
       onPress={() => onPress(album.id)}
       style={({ pressed }) => [styles.card, pressedStyle(pressed)]}
     >

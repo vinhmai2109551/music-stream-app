@@ -22,12 +22,12 @@ import { Button } from "@/components/ui/Button"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { Skeleton } from "@/components/ui/Skeleton"
-import { copy } from "@/constants/copy"
 import { useAssistantChat } from "@/hooks/useAssistantChat"
 import { useKeyboardVisible } from "@/hooks/useKeyboardVisible"
 import { useAssistantStore } from "@/store/assistantStore"
 import { makeStyles, radius, spacing } from "@/theme"
 import type { ChatItem } from "@/utils/chatState"
+import { i18n, useTranslation } from "@/i18n"
 
 /** How far from the end the list may be and still follow a growing answer. */
 const FOLLOW_DISTANCE = 120
@@ -41,6 +41,8 @@ const keyOf = (item: ChatItem) => item.id
 
 /** The assistant: a conversation that streams its answer, shows what it found, and asks before it changes anything. */
 export default function AssistantScreen() {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const insets = useSafeAreaInsets()
 
@@ -63,7 +65,7 @@ export default function AssistantScreen() {
     [sendMessage],
   )
   useEffect(() => {
-    if (streaming) AccessibilityInfo.announceForAccessibility(copy.assistant.replying)
+    if (streaming) AccessibilityInfo.announceForAccessibility(i18n.t("assistant.replying"))
   }, [streaming])
   useEffect(() => {
     following.current = true // another conversation starts at its end
@@ -82,9 +84,9 @@ export default function AssistantScreen() {
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <EmptyState
           icon={CloudOff}
-          title={copy.assistant.unavailable.title}
-          description={copy.assistant.unavailable.description}
-          action={<Button label={copy.assistant.unavailable.close} onPress={() => router.back()} />}
+          title={t("assistant.unavailable.title")}
+          description={t("assistant.unavailable.description")}
+          action={<Button label={t("assistant.unavailable.close")} onPress={() => router.back()} />}
         />
       </View>
     )
@@ -96,7 +98,7 @@ export default function AssistantScreen() {
   let body
   if (chat.history.status === "loading") {
     body = (
-      <View accessibilityLabel={copy.assistant.loadingHistory} style={styles.skeletons}>
+      <View accessibilityLabel={t("assistant.loadingHistory")} style={styles.skeletons}>
         {SKELETON_BUBBLES.map((bubble, index) => (
           <Skeleton
             key={index}

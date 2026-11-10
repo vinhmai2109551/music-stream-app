@@ -5,15 +5,14 @@ import type { User } from "@/api/types"
 import { ApiError } from "@/api/client"
 import { EditProfileForm } from "@/components/media/EditProfileForm"
 import { AUTH_LIMITS } from "@/constants/auth"
-import { copy } from "@/constants/copy"
 import { useAuthStore } from "@/store/authStore"
 import { useToastStore } from "@/store/toastStore"
 import { prepareAvatar } from "@/utils/avatarImage"
+import { t } from "@/i18n"
 
 jest.mock("expo-image-picker", () => ({ launchImageLibraryAsync: jest.fn() }))
 jest.mock("@/utils/avatarImage", () => ({ prepareAvatar: jest.fn() }))
 
-const text = copy.account.edit
 const USER: User = {
   id: "u1",
   email: "a@b.co",
@@ -30,9 +29,9 @@ const onDone = jest.fn<() => void>()
 const picker = jest.mocked(ImagePicker.launchImageLibraryAsync)
 const prepare = jest.mocked(prepareAvatar)
 
-const nameField = () => screen.getByLabelText(text.nameLabel)
-const saveButton = () => screen.getByRole("button", { name: text.save })
-const changePhoto = () => screen.getByRole("button", { name: text.changePhoto })
+const nameField = () => screen.getByLabelText(t("settings.edit.nameLabel"))
+const saveButton = () => screen.getByRole("button", { name: t("settings.edit.save") })
+const changePhoto = () => screen.getByRole("button", { name: t("settings.edit.changePhoto") })
 const toast = () => useToastStore.getState().message
 
 /** What the picker answers when the user chooses a picture. */
@@ -61,13 +60,13 @@ describe("EditProfileForm", () => {
 
       await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1))
       expect(updateProfile).toHaveBeenCalledWith({ name: "Vinh Mai" })
-      expect(toast()).toBe(text.saved)
+      expect(toast()).toBe(t("settings.edit.saved"))
     })
 
     it("cannot be left empty", async () => {
       await fireEvent.changeText(nameField(), "   ")
 
-      expect(screen.getByText(copy.auth.validation.nameRequired)).toBeOnTheScreen()
+      expect(screen.getByText(t("auth.validation.nameRequired"))).toBeOnTheScreen()
       expect(saveButton()).toBeDisabled()
     })
 
@@ -128,7 +127,7 @@ describe("EditProfileForm", () => {
 
       await fireEvent.press(changePhoto())
 
-      await waitFor(() => expect(toast()).toBe(text.pickFailed))
+      await waitFor(() => expect(toast()).toBe(t("settings.edit.pickFailed")))
       expect(saveButton()).toBeDisabled()
     })
 
@@ -137,20 +136,20 @@ describe("EditProfileForm", () => {
 
       await fireEvent.press(changePhoto())
 
-      await waitFor(() => expect(toast()).toBe(text.pickFailed))
+      await waitFor(() => expect(toast()).toBe(t("settings.edit.pickFailed")))
     })
   })
 
   describe("when saving fails", () => {
     it("shows the reason in a toast, keeps the form open and lets the user try again", async () => {
       updateProfile.mockRejectedValueOnce(
-        new ApiError({ status: 0, kind: "network", message: copy.errors.network }),
+        new ApiError({ status: 0, kind: "network", message: t("errors.network") }),
       )
       await fireEvent.changeText(nameField(), "Vinh Mai")
 
       await fireEvent.press(saveButton())
 
-      await waitFor(() => expect(toast()).toBe(copy.errors.network))
+      await waitFor(() => expect(toast()).toBe(t("errors.network")))
       expect(onDone).not.toHaveBeenCalled()
       expect(nameField().props.value).toBe("Vinh Mai")
       await waitFor(() => expect(saveButton()).toBeEnabled())
@@ -165,14 +164,14 @@ describe("EditProfileForm", () => {
 
       await fireEvent.press(saveButton())
 
-      await waitFor(() => expect(toast()).toBe(copy.errors.unknown))
+      await waitFor(() => expect(toast()).toBe(t("errors.unknown")))
     })
   })
 
   it("going back leaves without saving", async () => {
     await fireEvent.changeText(nameField(), "Vinh Mai")
 
-    await fireEvent.press(screen.getByRole("button", { name: text.back }))
+    await fireEvent.press(screen.getByRole("button", { name: t("settings.edit.back") }))
 
     expect(onDone).toHaveBeenCalledTimes(1)
     expect(updateProfile).not.toHaveBeenCalled()

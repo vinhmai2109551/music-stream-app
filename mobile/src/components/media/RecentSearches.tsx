@@ -3,8 +3,8 @@ import { Pressable, StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { sizes, spacing, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 type RecentSearchesProps = {
   searches: readonly string[]
@@ -15,12 +15,14 @@ type RecentSearchesProps = {
 
 /** What was searched before, newest first. */
 export function RecentSearches({ searches, onPick, onRemove, onClear }: RecentSearchesProps) {
+  const { t } = useTranslation()
+
   const colors = useColors()
 
   return (
     <View>
       <View style={styles.header}>
-        <AppText variant="subtitle">{copy.search.recentTitle}</AppText>
+        <AppText variant="subtitle">{t("search.recentTitle")}</AppText>
         <Pressable
           accessibilityRole="button"
           onPress={onClear}
@@ -28,7 +30,7 @@ export function RecentSearches({ searches, onPick, onRemove, onClear }: RecentSe
           style={({ pressed }) => [styles.clear, pressedStyle(pressed)]}
         >
           <AppText variant="caption" color="accentText">
-            {copy.search.clearAll}
+            {t("search.clearAll")}
           </AppText>
         </Pressable>
       </View>
@@ -46,7 +48,7 @@ export function RecentSearches({ searches, onPick, onRemove, onClear }: RecentSe
           </Pressable>
           <IconButton
             icon={X}
-            label={`${copy.search.removeRecent}: ${search}`}
+            label={`${t("search.removeRecent")}: ${search}`}
             onPress={() => onRemove(search)}
           />
         </View>

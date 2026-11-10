@@ -9,14 +9,16 @@ import { AppText } from "@/components/ui/AppText"
 import { EmptyState } from "@/components/ui/EmptyState"
 import { ErrorState } from "@/components/ui/ErrorState"
 import { Skeleton } from "@/components/ui/Skeleton"
-import { copy } from "@/constants/copy"
 import { useFeed } from "@/hooks/useFeed"
 import { makeStyles, radius, sizes, spacing, useColors } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const SKELETON_POSTS = 2
 const END_REACHED_THRESHOLD = 0.6
 
 export default function FeedScreen() {
+  const { t } = useTranslation()
+
   const styles = useStyles()
   const colors = useColors()
 
@@ -28,7 +30,7 @@ export default function FeedScreen() {
 
   const header = (
     <AppText variant="h2" accessibilityRole="header" style={styles.title}>
-      {copy.feed.title}
+      {t("feed.title")}
     </AppText>
   )
 
@@ -69,8 +71,8 @@ export default function FeedScreen() {
           ListEmptyComponent={
             <EmptyState
               icon={Rss}
-              title={copy.feed.emptyTitle}
-              description={copy.feed.emptyDescription}
+              title={t("feed.emptyTitle")}
+              description={t("feed.emptyDescription")}
             />
           }
           ListFooterComponent={

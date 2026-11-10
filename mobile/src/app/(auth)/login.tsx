@@ -7,9 +7,9 @@ import { FormError } from "@/components/ui/FormError"
 import { TextField } from "@/components/ui/TextField"
 import { TurnstileWidget } from "@/components/ui/TurnstileWidget"
 import { AUTH_LIMITS } from "@/constants/auth"
-import { copy } from "@/constants/copy"
 import { TURNSTILE } from "@/constants/turnstile"
 import { images } from "@/data/images"
+import { useTranslation } from "@/i18n"
 import { useAsyncSubmit } from "@/hooks/useAsyncSubmit"
 import { useAuthStore } from "@/store/authStore"
 import { describeAuthError } from "@/utils/authErrors"
@@ -21,9 +21,8 @@ import {
   type LoginField,
 } from "@/utils/validation"
 
-const text = copy.auth
-
 export default function LoginScreen() {
+  const { t } = useTranslation()
   const login = useAuthStore((state) => state.login)
   const { submitting, error, run } = useAsyncSubmit()
   const [email, setEmail] = useState("")
@@ -72,20 +71,20 @@ export default function LoginScreen() {
 
   return (
     <AuthScreenLayout
-      title={text.login.title}
-      subtitle={text.login.subtitle}
+      title={t("auth.login.title")}
+      subtitle={t("auth.login.subtitle")}
       background={images.onboarding.launch}
       footer={{
-        prompt: text.login.switchPrompt,
-        action: text.login.switchAction,
+        prompt: t("auth.login.switchPrompt"),
+        action: t("auth.login.switchAction"),
         disabled: submitting,
         onPress: () => router.replace("/register"),
       }}
     >
       <TextField
         ref={emailRef}
-        label={text.fields.email.label}
-        placeholder={text.fields.email.placeholder}
+        label={t("auth.fields.email.label")}
+        placeholder={t("auth.fields.email.placeholder")}
         value={email}
         onChangeText={(value) => {
           setEmail(value)
@@ -105,8 +104,8 @@ export default function LoginScreen() {
       <TextField
         ref={passwordRef}
         password
-        label={text.fields.password.label}
-        placeholder={text.fields.password.placeholder}
+        label={t("auth.fields.password.label")}
+        placeholder={t("auth.fields.password.placeholder")}
         value={password}
         onChangeText={(value) => {
           setPassword(value)
@@ -122,9 +121,9 @@ export default function LoginScreen() {
         maxLength={AUTH_LIMITS.passwordMax}
       />
       <TurnstileWidget key={turnstileKey} action="login" onToken={handleTurnstileToken} />
-      {turnstileMissing ? <FormError message={text.turnstile.required} /> : null}
+      {turnstileMissing ? <FormError message={t("auth.turnstile.required")} /> : null}
       {error ? <FormError message={error} /> : null}
-      <Button label={text.login.submit} loading={submitting} onPress={submit} />
+      <Button label={t("auth.login.submit")} loading={submitting} onPress={submit} />
     </AuthScreenLayout>
   )
 }

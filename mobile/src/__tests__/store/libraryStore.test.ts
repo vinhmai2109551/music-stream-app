@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { ApiError } from "@/api/client"
 import type { ApiPlaylist } from "@/api/types"
-import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
 import { useToastStore } from "@/store/toastStore"
+import { t } from "@/i18n"
 
 jest.mock("@/api/tracks", () => ({ listLikedTracks: jest.fn() }))
 jest.mock("@/api/albums", () => ({ listLikedAlbums: jest.fn() }))
@@ -191,7 +191,7 @@ describe("addTrackToPlaylist", () => {
   it("says so when the track is already in it, and sends nothing", async () => {
     await state().addTrackToPlaylist("p1", "a")
 
-    expect(toast()).toBe(`${copy.library.alreadyIn} List p1`)
+    expect(toast()).toBe(t("playlist.alreadyIn", { name: "List p1" }))
     expect(playlistsApi.addTrackToPlaylist).not.toHaveBeenCalled()
   })
 
@@ -204,7 +204,7 @@ describe("addTrackToPlaylist", () => {
 
     expect(state().playlists[0].trackIds).toEqual(["a", "b"])
     expect(state().playlistRevision).toBe(revision + 1)
-    expect(toast()).toBe(`${copy.library.addedTo} List p1`)
+    expect(toast()).toBe(t("playlist.addedTo", { name: "List p1" }))
     request.resolve()
     await done
     expect(playlistsApi.addTrackToPlaylist).toHaveBeenCalledWith("p1", "b")
@@ -262,7 +262,7 @@ describe("removeTrackFromPlaylist", () => {
     expect(state().playlists[0].trackIds).toEqual(["a", "c"]) // before the server answered
     expect(state().playlists[1].trackIds).toEqual(["b"])
     expect(state().playlistRevision).toBe(1)
-    expect(toast()).toBe(`${copy.library.removedFrom} List p1`)
+    expect(toast()).toBe(t("playlist.removedFrom", { name: "List p1" }))
     request.resolve()
     await done
     expect(playlistsApi.removeTrackFromPlaylist).toHaveBeenCalledWith("p1", "b")

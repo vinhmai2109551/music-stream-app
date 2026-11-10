@@ -19,7 +19,6 @@ import { YouTubeSlot } from "@/components/media/YouTubeSlot"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
 import { SwipeToDismiss } from "@/components/ui/SwipeToDismiss"
-import { copy } from "@/constants/copy"
 import {
   BASE_COMMENT_COUNT,
   BASE_LIKE_COUNT,
@@ -32,13 +31,16 @@ import { canAutoSkip, usePlayerStore } from "@/store/playerStore"
 import { colors, spacing } from "@/theme"
 import { youtubeWatchUrl } from "@/utils/playbackKind"
 import { shareTrack } from "@/utils/shareTrack"
+import { useTranslation } from "@/i18n"
 
 const close = () => router.back()
 
-const openOnYouTube = (videoId: string) =>
-  Linking.openURL(youtubeWatchUrl(videoId)).catch(() => showToast(copy.errors.unknown))
+const openOnYouTube = (videoId: string, onFailed: () => void) =>
+  Linking.openURL(youtubeWatchUrl(videoId)).catch(onFailed)
 
 export default function PlayerScreen() {
+  const { t } = useTranslation()
+
   const insets = useSafeAreaInsets()
 
   const track = usePlayerStore((state) => state.currentTrack)
@@ -70,16 +72,21 @@ export default function PlayerScreen() {
     return (
       <View style={[styles.empty, { paddingTop: insets.top }]}>
         <AppText variant="title" color="white">
-          Nothing is playing
+          {t("player.nothingPlaying")}
         </AppText>
-        <Button label="Close" variant="glass" onPress={close} style={styles.emptyButton} />
+        <Button
+          label={t("common.close")}
+          variant="glass"
+          onPress={close}
+          style={styles.emptyButton}
+        />
       </View>
     )
   }
 
   const videoId = track.youtubeVideoId
 
-  const share = () => shareTrack(track).catch(() => showToast(copy.errors.unknown))
+  const share = () => shareTrack(track).catch(() => showToast(t("errors.unknown")))
 
   return (
     <View style={styles.screen}>
@@ -132,7 +139,11 @@ export default function PlayerScreen() {
               kind={error}
               skipping={skipping}
               onRetry={retry}
-              onOpenYouTube={videoId ? () => void openOnYouTube(videoId) : undefined}
+              onOpenYouTube={
+                videoId
+                  ? () => void openOnYouTube(videoId, () => showToast(t("errors.unknown")))
+                  : undefined
+              }
             />
           )}
           <View style={styles.actions}>

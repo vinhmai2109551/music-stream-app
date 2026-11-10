@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { api, ApiError, configureApi } from "@/api/client"
-import { copy } from "@/constants/copy"
 import { settle } from "../helpers/playback"
+import { t } from "@/i18n"
 
 type FakeResponse = { status: number; ok: boolean; text: () => Promise<string> }
 
@@ -165,7 +165,7 @@ describe("401 and the token refresh", () => {
 
   it("keeps the session when the refresh fails for network reasons", async () => {
     fetchMock.mockResolvedValue(reply(401, { message: "Unauthorized" }))
-    const offline = new ApiError({ status: 0, kind: "network", message: copy.errors.network })
+    const offline = new ApiError({ status: 0, kind: "network", message: t("errors.network") })
     refreshSession.mockRejectedValue(offline)
 
     await expect(api.get("/auth/me")).rejects.toBe(offline)
@@ -232,7 +232,7 @@ describe("failures", () => {
     const error = await api.get("/x").catch((caught: unknown) => caught)
 
     expect(error).toBeInstanceOf(ApiError)
-    expect(error).toMatchObject({ kind: "network", status: 0, message: copy.errors.network })
+    expect(error).toMatchObject({ kind: "network", status: 0, message: t("errors.network") })
   })
 
   it("a request that takes too long is a timeout", async () => {
@@ -248,7 +248,7 @@ describe("failures", () => {
     jest.advanceTimersByTime(15_000)
     const error = await pending
 
-    expect(error).toMatchObject({ kind: "timeout", status: 0, message: copy.errors.timeout })
+    expect(error).toMatchObject({ kind: "timeout", status: 0, message: t("errors.timeout") })
   })
 
   it("joins a list of validation messages into one sentence", async () => {
@@ -274,15 +274,15 @@ describe("failures", () => {
   it("ignores non-text entries in a message list and falls back when nothing is left", async () => {
     fetchMock.mockResolvedValue(reply(400, { message: [1, null] }))
 
-    await expect(api.get("/x")).rejects.toMatchObject({ message: copy.errors.unknown })
+    await expect(api.get("/x")).rejects.toMatchObject({ message: t("errors.unknown") })
   })
 
   it("gives a generic sentence when the body has no message", async () => {
     fetchMock.mockResolvedValueOnce(reply(500, "<html>Bad gateway</html>"))
     fetchMock.mockResolvedValueOnce(reply(400, {}))
 
-    await expect(api.get("/x")).rejects.toMatchObject({ message: copy.errors.server })
-    await expect(api.get("/x")).rejects.toMatchObject({ message: copy.errors.unknown })
+    await expect(api.get("/x")).rejects.toMatchObject({ message: t("errors.server") })
+    await expect(api.get("/x")).rejects.toMatchObject({ message: t("errors.unknown") })
   })
 
   it("keeps the parsed body in `details`", async () => {

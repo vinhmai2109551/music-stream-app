@@ -5,7 +5,6 @@ import { AppText } from "@/components/ui/AppText"
 import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
 import { makeStyles, radius, sizes, spacing } from "@/theme"
@@ -15,6 +14,7 @@ import { formatTime } from "@/utils/formatTime"
 import { BackgroundBadge } from "./BackgroundBadge"
 import { Equalizer } from "./Equalizer"
 import { TrackMenuSheet } from "./TrackMenuSheet"
+import { useTranslation } from "@/i18n"
 
 type TrackRowProps = {
   track: Track
@@ -34,10 +34,12 @@ function TrackRowBase({
   index,
   list,
   numbered = false,
-  source = copy.defaultSource,
+  source,
   trailing = "menu",
   playlistId,
 }: TrackRowProps) {
+  const { t } = useTranslation()
+
   const styles = useStyles()
 
   const active = usePlayerStore((state) => state.currentTrack?.id === track.id)
@@ -51,7 +53,7 @@ function TrackRowBase({
     <View style={[styles.row, active && styles.active]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Play ${track.title} by ${track.artist}`}
+        accessibilityLabel={t("track.playNamed", { title: track.title, artist: track.artist })}
         accessibilityState={{ selected: active }}
         onPress={() => playFromList(list, index, source)}
         style={({ pressed }) => [styles.main, pressedStyle(pressed)]}
@@ -94,14 +96,18 @@ function TrackRowBase({
       {trailing === "like" ? (
         <IconButton
           icon={Heart}
-          label={liked ? "Unlike" : "Like"}
+          label={liked ? t("common.unlike") : t("common.like")}
           active={liked}
           activeColor="like"
           onPress={() => void toggleLike(track.id)}
         />
       ) : (
         <>
-          <IconButton icon={Ellipsis} label="More options" onPress={() => setMenuOpen(true)} />
+          <IconButton
+            icon={Ellipsis}
+            label={t("common.moreOptions")}
+            onPress={() => setMenuOpen(true)}
+          />
           {menuOpen && (
             <TrackMenuSheet
               track={track}
