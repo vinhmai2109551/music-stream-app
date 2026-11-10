@@ -7,15 +7,26 @@ import Animated, { FadeInDown } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
-import { copy } from "@/constants/copy"
 import { images } from "@/data/images"
 import { useAppStore } from "@/store/appStore"
 import { colors, radius, sizes, spacing } from "@/theme"
+import { useTranslation } from "@/i18n"
 
 const BLUR_INTENSITY = 30
 const ENTER_DURATION = 500
 
+// Clear photo in the upper half, near-black behind the text block.
+const SCRIM_COLORS = [
+  colors.heroScrimTop,
+  colors.heroScrimMid,
+  colors.playerScrim,
+  colors.scrimDeep,
+] as const
+const SCRIM_LOCATIONS = [0, 0.38, 0.6, 0.85] as const
+
 export default function LaunchScreen() {
+  const { t } = useTranslation()
+
   const insets = useSafeAreaInsets()
   const start = useAppStore((state) => state.start)
 
@@ -23,7 +34,8 @@ export default function LaunchScreen() {
     <View style={styles.container}>
       <Image source={images.onboarding.launch} contentFit="cover" style={StyleSheet.absoluteFill} />
       <LinearGradient
-        colors={[colors.heroScrimTop, colors.heroScrimMid, colors.heroScrimBottom]}
+        colors={SCRIM_COLORS}
+        locations={SCRIM_LOCATIONS}
         style={StyleSheet.absoluteFill}
       />
       <Animated.View
@@ -31,7 +43,7 @@ export default function LaunchScreen() {
         style={[
           styles.content,
           {
-            paddingTop: insets.top + spacing.giant + spacing.xl,
+            paddingTop: insets.top + spacing.xxxl,
             paddingBottom: insets.bottom + spacing.xxl,
           },
         ]}
@@ -39,16 +51,23 @@ export default function LaunchScreen() {
         <BlurView intensity={BLUR_INTENSITY} tint="light" style={styles.logo}>
           <Music2 size={sizes.logoIcon} strokeWidth={2} color={colors.white} />
         </BlurView>
-        <AppText variant="display" color="white" style={styles.headline}>
-          {copy.launchHeadline.replace(", ", ",\n")}
-        </AppText>
-        <View style={styles.actions}>
-          <Button label="Create an account" onPress={() => start("register")} />
-          <Button
-            label="I already have an account"
-            variant="glass"
-            onPress={() => start("login")}
-          />
+        <View style={styles.block}>
+          <View style={styles.copyBlock}>
+            <AppText variant="display" color="white" accessibilityRole="header" numberOfLines={2}>
+              {t("launch.headline").replace(", ", ",\n")}
+            </AppText>
+            <AppText color="onDarkMuted" numberOfLines={3} ellipsizeMode="tail">
+              {t("launch.subtitle")}
+            </AppText>
+          </View>
+          <View style={styles.actions}>
+            <Button label={t("launch.createAccount")} onPress={() => start("register")} />
+            <Button
+              label={t("launch.haveAccount")}
+              variant="glass"
+              onPress={() => start("login")}
+            />
+          </View>
         </View>
       </Animated.View>
     </View>
@@ -56,13 +75,14 @@ export default function LaunchScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.text },
+  container: { flex: 1, backgroundColor: colors.ink },
   content: {
     flex: 1,
-    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: spacing.screen,
   },
   logo: {
+    alignSelf: "flex-start",
     width: sizes.logo,
     height: sizes.logo,
     borderRadius: radius.pill,
@@ -70,7 +90,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.glass,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.glassBorder,
   },
-  headline: { marginTop: "auto", textAlign: "center" },
-  actions: { width: "100%", gap: spacing.md, marginTop: spacing.giant + spacing.lg },
+  block: { gap: spacing.xxxl },
+  copyBlock: { gap: spacing.md },
+  actions: { gap: spacing.md },
 })

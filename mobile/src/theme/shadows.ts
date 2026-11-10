@@ -3,14 +3,14 @@ import { colors } from "./colors"
 
 export const shadows = {
   card: {
-    shadowColor: colors.text,
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
   },
   soft: {
-    shadowColor: colors.text,
+    shadowColor: colors.ink,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,

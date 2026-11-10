@@ -1,36 +1,70 @@
-import { Image } from "expo-image"
-import { Heart, ListPlus } from "lucide-react-native"
-import { Pressable, ScrollView, StyleSheet, View } from "react-native"
+import { Heart, ListMinus, ListPlus, Plus } from "lucide-react-native"
+import { useState } from "react"
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { BottomSheet } from "@/components/ui/BottomSheet"
+import { Button } from "@/components/ui/Button"
+import { Skeleton } from "@/components/ui/Skeleton"
 import { pressedStyle } from "@/components/ui/pressed"
+import { MAX_PLAYLIST_NAME } from "@/constants/playlist"
 import { useLibraryStore } from "@/store/libraryStore"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing, typography, useColors } from "@/theme"
 import type { Track } from "@/types"
+import { useTranslation } from "@/i18n"
 
 type TrackMenuSheetProps = {
   track: Track
   visible: boolean
   onClose: () => void
-  onNotify?: (message: string) => void
+  /** The playlist of the user this track is listed in: adds "Remove from this playlist". */
+  playlistId?: string
 }
 
-export function TrackMenuSheet({ track, visible, onClose, onNotify }: TrackMenuSheetProps) {
+export function TrackMenuSheet({ track, visible, onClose, playlistId }: TrackMenuSheetProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+  const colors = useColors()
+
   const liked = useLibraryStore((state) => state.likedTrackIds.includes(track.id))
   const playlists = useLibraryStore((state) => state.playlists)
+  const libraryStatus = useLibraryStore((state) => state.status)
+  const loadLibrary = useLibraryStore((state) => state.load)
   const toggleLike = useLibraryStore((state) => state.toggleLike)
   const addTrackToPlaylist = useLibraryStore((state) => state.addTrackToPlaylist)
+  const createPlaylist = useLibraryStore((state) => state.createPlaylist)
+  const removeTrackFromPlaylist = useLibraryStore((state) => state.removeTrackFromPlaylist)
 
-  const addTo = (playlistId: string, name: string) => {
-    addTrackToPlaylist(playlistId, track.id)
+  const [creating, setCreating] = useState(false)
+  const [name, setName] = useState("")
+  const [saving, setSaving] = useState(false)
+
+  const addTo = (playlistId: string) => {
+    void addTrackToPlaylist(playlistId, track.id)
     onClose()
-    onNotify?.(`Added to ${name}`)
+  }
+
+  const createAndAdd = async () => {
+    if (!name.trim() || saving) return
+    setSaving(true)
+    const playlist = await createPlaylist(name)
+    setSaving(false)
+    if (!playlist) return
+    setName("")
+    setCreating(false)
+    addTo(playlist.id)
   }
 
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={styles.header}>
-        <Image source={track.cover} contentFit="cover" style={styles.cover} />
+        <CoverImage
+          source={track.cover}
+          youtubeVideoId={track.youtubeVideoId}
+          label={track.title}
+          style={styles.cover}
+        />
         <View style={styles.headerText}>
           <AppText variant="subtitle" numberOfLines={1} ellipsizeMode="tail">
             {track.title}
@@ -42,8 +76,15 @@ export function TrackMenuSheet({ track, visible, onClose, onNotify }: TrackMenuS
       </View>
       <Pressable
         accessibilityRole="button"
-        onPress={() => toggleLike(track.id)}
-        style={({ pressed }) => [styles.row, styles.divided, pressedStyle(pressed)]}
+        accessibilityState={{ disabled: libraryStatus !== "ready" }}
+        disabled={libraryStatus !== "ready"}
+        onPress={() => void toggleLike(track.id)}
+        style={({ pressed }) => [
+          styles.row,
+          styles.divided,
+          libraryStatus !== "ready" && styles.waiting,
+          pressedStyle(pressed),
+        ]}
       >
         <Heart
           size={sizes.icon}
@@ -51,38 +92,125 @@ export function TrackMenuSheet({ track, visible, onClose, onNotify }: TrackMenuS
           fill={liked ? colors.like : "none"}
         />
         <AppText variant="bodyMedium" style={styles.flex}>
-          {liked ? "Remove from liked songs" : "Like this track"}
+          {liked ? t("track.removeFromLiked") : t("track.addToLiked")}
         </AppText>
       </Pressable>
+      {playlistId !== undefined && (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            void removeTrackFromPlaylist(playlistId, track.id)
+            onClose()
+          }}
+          style={({ pressed }) => [styles.row, styles.divided, pressedStyle(pressed)]}
+        >
+          <ListMinus size={sizes.icon} color={colors.secondary} />
+          <AppText variant="bodyMedium" style={styles.flex}>
+            {t("playlist.removeFromPlaylist")}
+          </AppText>
+        </Pressable>
+      )}
       <AppText variant="caption" color="secondary" style={styles.sectionTitle}>
-        Add to playlist
+        {t("playlist.addToPlaylist")}
       </AppText>
-      <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.list}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {libraryStatus === "idle" || libraryStatus === "loading" ? (
+          <View style={styles.row}>
+            <Skeleton width={sizes.coverSm} height={sizes.coverSm} />
+            <Skeleton width="60%" height={sizes.iconMd} />
+          </View>
+        ) : null}
+        {libraryStatus === "error" && (
+          <View style={styles.row}>
+            <AppText variant="caption" color="secondary" style={styles.flex}>
+              {t("playlist.loadFailed")}
+            </AppText>
+            <Button
+              compact
+              variant="tonal"
+              label={t("common.retry")}
+              onPress={() => void loadLibrary()}
+            />
+          </View>
+        )}
+        {libraryStatus === "ready" && playlists.length === 0 && !creating && (
+          <AppText variant="caption" color="secondary" style={styles.empty}>
+            {t("playlist.noPlaylists")}
+          </AppText>
+        )}
         {playlists.map((playlist) => (
           <Pressable
             key={playlist.id}
             accessibilityRole="button"
-            onPress={() => addTo(playlist.id, playlist.name)}
+            onPress={() => addTo(playlist.id)}
             style={({ pressed }) => [styles.row, pressedStyle(pressed)]}
           >
-            <Image source={playlist.cover} contentFit="cover" style={styles.playlistCover} />
+            <CoverImage
+              source={playlist.cover ?? ""}
+              label={playlist.name}
+              style={styles.playlistCover}
+            />
             <View style={styles.flex}>
               <AppText variant="bodyMedium" numberOfLines={1} ellipsizeMode="tail">
                 {playlist.name}
               </AppText>
               <AppText variant="small" color="secondary">
-                {playlist.trackIds.length} songs
+                {t("common.count.songs", {
+                  count: playlist.trackIds.length,
+                  value: playlist.trackIds.length,
+                })}
               </AppText>
             </View>
             <ListPlus size={sizes.iconMd} color={colors.secondary} />
           </Pressable>
         ))}
+        {creating ? (
+          <View style={styles.createRow}>
+            <TextInput
+              autoFocus
+              value={name}
+              onChangeText={setName}
+              onSubmitEditing={() => void createAndAdd()}
+              placeholder={t("playlist.playlistNamePlaceholder")}
+              placeholderTextColor={colors.secondary}
+              selectionColor={colors.accent}
+              maxLength={MAX_PLAYLIST_NAME}
+              returnKeyType="done"
+              editable={!saving}
+              style={styles.input}
+            />
+            <Button
+              compact
+              label={t("playlist.createPlaylist")}
+              loading={saving}
+              disabled={!name.trim()}
+              onPress={() => void createAndAdd()}
+            />
+          </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setCreating(true)}
+            style={({ pressed }) => [styles.row, pressedStyle(pressed)]}
+          >
+            <View style={[styles.playlistCover, styles.plus]}>
+              <Plus size={sizes.iconMd} color={colors.accentText} />
+            </View>
+            <AppText variant="bodyMedium" color="accentText" style={styles.flex}>
+              {t("playlist.newPlaylist")}
+            </AppText>
+          </Pressable>
+        )}
       </ScrollView>
     </BottomSheet>
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -99,9 +227,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.md,
   },
+  waiting: { opacity: 0.5 },
   divided: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.divider },
   flex: { flex: 1, minWidth: 0 },
   sectionTitle: { marginTop: spacing.xl, marginBottom: spacing.sm },
   list: { maxHeight: sizes.collectionCover + sizes.coverMd },
+  empty: { paddingVertical: spacing.sm },
   playlistCover: { width: sizes.coverSm, height: sizes.coverSm, borderRadius: radius.cover },
-})
+  plus: { alignItems: "center", justifyContent: "center", backgroundColor: colors.accentSoft },
+  createRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    minHeight: sizes.minTouch + spacing.sm,
+  },
+  input: {
+    flex: 1,
+    height: sizes.minTouch,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    borderWidth: sizes.borderThin,
+    borderColor: colors.divider,
+    color: colors.text,
+    ...typography.body,
+  },
+}))

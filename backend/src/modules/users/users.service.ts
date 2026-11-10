@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
 import type { Role } from "../../generated/prisma/enums.js"
+import { UploadsService, type AvatarUploadRequest, type PresignedUpload } from "../uploads/index.js"
 import { UpdateProfileDto } from "./dto/update-profile.dto.js"
 
 export interface UserView {
@@ -38,7 +39,10 @@ const viewSelect = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly uploads: UploadsService,
+  ) {}
 
   create(input: CreateUserInput): Promise<UserView> {
     return this.prisma.user.create({
@@ -69,8 +73,24 @@ export class UsersService {
     return new Map(users.map((user) => [user.id, user]))
   }
 
-  updateProfile(id: string, dto: UpdateProfileDto): Promise<UserView> {
-    return this.prisma.user.update({ where: { id }, data: dto, select: viewSelect })
+  presignAvatar(id: string, request: AvatarUploadRequest): Promise<PresignedUpload> {
+    return this.uploads.presignAvatar(id, request)
+  }
+
+  async updateProfile(id: string, dto: UpdateProfileDto): Promise<UserView> {
+    this.uploads.assertAvatarOf(id, dto.avatarUrl)
+
+    // Only a new picture makes the old one garbage.
+    const before =
+      dto.avatarUrl === undefined
+        ? null
+        : await this.prisma.user.findUnique({ where: { id }, select: { avatarUrl: true } })
+    const updated = await this.prisma.user.update({ where: { id }, data: dto, select: viewSelect })
+
+    const previous = before?.avatarUrl ?? null
+    // Fire and forget: the request has succeeded whether or not the old file could be deleted.
+    if (previous && previous !== updated.avatarUrl) void this.uploads.deleteAvatar(id, previous)
+    return updated
   }
 
   subscribe(id: string): Promise<UserView> {

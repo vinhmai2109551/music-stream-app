@@ -2,6 +2,7 @@ import { Logger } from "@nestjs/common"
 import { hash } from "bcryptjs"
 import { randomBytes } from "node:crypto"
 import type { PrismaClient } from "../generated/prisma/client.js"
+import { toSearchName } from "../shared/text/search-name.js"
 import {
   ADMIN_PROFILE,
   ALBUMS,
@@ -13,6 +14,8 @@ import {
   TRACKS,
   type MediaRef,
 } from "./seed-data.js"
+import { CATALOG_METADATA } from "./catalog/load-metadata.js"
+import { seedDemoLyrics } from "./demo-lyrics.js"
 
 const BCRYPT_ROUNDS = 10
 const MINUTE_MS = 60_000
@@ -21,7 +24,7 @@ const DAY_MS = 24 * 60 * MINUTE_MS
 export interface SeedOptions {
   adminEmail?: string
   adminPassword?: string
-  /** Public base URL of the R2 bucket, e.g. https://pub-xxxx.r2.dev */
+  /** Public base URL of the R2 bucket, e.g. https://pub-xxxx.r2.dev. Without it the seed is skipped. */
   mediaBaseUrl?: string
 }
 
@@ -31,12 +34,18 @@ export interface SeedOptions {
  */
 export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promise<void> {
   const log = new Logger("Seed")
-  const { adminEmail, adminPassword, mediaBaseUrl } = options
+  const { adminEmail, adminPassword } = options
+  const mediaBaseUrl = options.mediaBaseUrl?.trim()
+  // Every cover and audio link starts with the bucket address; a missing one must not stop the API.
+  if (!mediaBaseUrl) {
+    log.warn("R2_PUBLIC_URL is not set: skipping the seed (set it to the public URL of the bucket)")
+    return
+  }
   if (!adminEmail || !adminPassword) {
     throw new Error("Seed needs SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD")
   }
-  if (!mediaBaseUrl) throw new Error("Seed needs R2_PUBLIC_URL for media links")
-  const media = (ref: MediaRef) => `${mediaBaseUrl.replace(/\/$/, "")}/${ref.folder}/${ref.file}`
+  const media = (ref: MediaRef) =>
+    "url" in ref ? ref.url : `${mediaBaseUrl.replace(/\/$/, "")}/${ref.folder}/${ref.file}`
 
   // Users
   const admin = await prisma.user.upsert({
@@ -68,9 +77,13 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
   for (const artist of ARTISTS) {
     const data = {
       name: artist.name,
+      searchName: toSearchName(artist.name),
       bio: artist.bio,
       imageUrl: media(artist.image),
       baseFollowers: artist.baseFollowers,
+      region: artist.region,
+      // Only what the reviewed metadata file has: an artist missing from it keeps its genres.
+      ...(CATALOG_METADATA.artists[artist.id] ?? {}),
     }
     await prisma.artist.upsert({
       where: { id: artist.id },
@@ -81,10 +94,13 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
   for (const track of TRACKS) {
     const data = {
       title: track.title,
+      searchName: toSearchName(track.title),
       artistId: track.artistId,
       coverUrl: media(track.cover),
-      audioUrl: media(track.audio),
+      audioUrl: track.audio ? media(track.audio) : null,
       durationSec: track.durationSec,
+      youtubeVideoId: track.youtubeVideoId ?? null,
+      ...(CATALOG_METADATA.tracks[track.id] ?? {}),
     }
     await prisma.track.upsert({
       where: { id: track.id },
@@ -93,7 +109,12 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
     })
   }
   for (const album of ALBUMS) {
-    const data = { title: album.title, artistId: album.artistId, coverUrl: media(album.cover) }
+    const data = {
+      title: album.title,
+      searchName: toSearchName(album.title),
+      artistId: album.artistId,
+      coverUrl: media(album.cover),
+    }
     await prisma.album.upsert({
       where: { id: album.id },
       create: { id: album.id, ...data },
@@ -107,6 +128,7 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
   for (const playlist of PLAYLISTS) {
     const data = {
       name: playlist.name,
+      searchName: toSearchName(playlist.name),
       description: playlist.description,
       coverUrl: media(playlist.cover),
       isOfficial: playlist.official,
@@ -175,8 +197,11 @@ export async function runSeed(prisma: PrismaClient, options: SeedOptions): Promi
     skipDuplicates: true,
   })
 
+  const demoLyrics = await seedDemoLyrics(prisma)
+
   log.log(
     `Seeded ${ARTISTS.length} artists, ${TRACKS.length} tracks, ${ALBUMS.length} albums, ` +
-      `${PLAYLISTS.length} playlists, ${FEED_POSTS.length} posts, ${COMMENTS.length} comments`,
+      `${PLAYLISTS.length} playlists, ${FEED_POSTS.length} posts, ${COMMENTS.length} comments, ` +
+      `${demoLyrics} demo lyrics`,
   )
 }

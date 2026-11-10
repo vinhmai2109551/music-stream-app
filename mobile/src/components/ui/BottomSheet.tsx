@@ -1,11 +1,20 @@
 import { ChevronDown } from "lucide-react-native"
 import type { ReactNode } from "react"
-import { Modal, Pressable, StyleSheet, View } from "react-native"
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type DimensionValue,
+} from "react-native"
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 import { IconButton } from "./IconButton"
+import { useTranslation } from "@/i18n"
 
 const SHEET_MAX_HEIGHT = "88%"
 
@@ -13,10 +22,16 @@ type BottomSheetProps = {
   visible: boolean
   onClose: () => void
   title?: string
+  /** A fixed height (e.g. "70%") for content that fills the sheet, such as a list. */
+  height?: DimensionValue
   children: ReactNode
 }
 
-export function BottomSheet({ visible, onClose, title, children }: BottomSheetProps) {
+export function BottomSheet({ visible, onClose, title, height, children }: BottomSheetProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+
   const insets = useSafeAreaInsets()
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -26,16 +41,24 @@ export function BottomSheet({ visible, onClose, title, children }: BottomSheetPr
         style={styles.fill}
       >
         <Pressable
-          accessibilityLabel="Close"
+          accessibilityLabel={t("common.close")}
           style={[styles.fill, styles.backdrop]}
           onPress={onClose}
         />
       </Animated.View>
-      <View pointerEvents="box-none" style={styles.anchor}>
+      <KeyboardAvoidingView
+        pointerEvents="box-none"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.anchor}
+      >
         <Animated.View
           entering={SlideInDown.duration(260)}
           exiting={SlideOutDown.duration(200)}
-          style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}
+          style={[
+            styles.sheet,
+            height !== undefined && { height },
+            { paddingBottom: insets.bottom + spacing.lg },
+          ]}
         >
           <View style={styles.handle} />
           {title !== undefined && (
@@ -43,17 +66,17 @@ export function BottomSheet({ visible, onClose, title, children }: BottomSheetPr
               <AppText variant="subtitle" numberOfLines={1} style={styles.title}>
                 {title}
               </AppText>
-              <IconButton icon={ChevronDown} label="Close" onPress={onClose} />
+              <IconButton icon={ChevronDown} label={t("common.close")} onPress={onClose} />
             </View>
           )}
           {children}
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   fill: { ...StyleSheet.absoluteFill },
   backdrop: { backgroundColor: colors.backdrop },
   anchor: { flex: 1, justifyContent: "flex-end" },
@@ -79,4 +102,4 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: { flex: 1 },
-})
+}))

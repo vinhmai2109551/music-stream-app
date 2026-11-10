@@ -3,11 +3,12 @@ import { ConfigService } from "@nestjs/config"
 import { JwtModule } from "@nestjs/jwt"
 import { PassportModule } from "@nestjs/passport"
 import { UsersModule } from "../users/index.js"
+import { readAuthConfig } from "./auth.config.js"
 import { AuthController } from "./auth.controller.js"
 import { AuthService } from "./auth.service.js"
 import { JwtStrategy } from "./jwt.strategy.js"
-
-const DEFAULT_EXPIRES_IN = "7d"
+import { RefreshTokenService } from "./refresh-token.service.js"
+import { TurnstileService } from "./turnstile.service.js"
 
 @Module({
   imports: [
@@ -17,13 +18,11 @@ const DEFAULT_EXPIRES_IN = "7d"
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>("JWT_SECRET"),
-        signOptions: {
-          expiresIn: (config.get<string>("JWT_EXPIRES_IN") ?? DEFAULT_EXPIRES_IN) as never,
-        },
+        signOptions: { expiresIn: readAuthConfig(config).accessExpiresIn as never },
       }),
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, RefreshTokenService, JwtStrategy, TurnstileService],
 })
 export class AuthModule {}

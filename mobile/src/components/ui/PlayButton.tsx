@@ -2,6 +2,7 @@ import { Pause, Play } from "lucide-react-native"
 import { ActivityIndicator, Pressable, StyleSheet } from "react-native"
 import { colors, radius, shadows, sizes } from "@/theme"
 import { pressedStyle } from "./pressed"
+import { useTranslation } from "@/i18n"
 
 type PlayButtonProps = {
   playing?: boolean
@@ -18,19 +19,21 @@ export function PlayButton({
   size = sizes.playButton,
   onPress,
 }: PlayButtonProps) {
+  const { t } = useTranslation()
+
   const Icon = playing ? Pause : Play
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={playing ? "Pause" : "Play"}
+      accessibilityLabel={playing ? t("common.pause") : t("common.play")}
       accessibilityState={{ busy: loading }}
       onPress={onPress}
       style={({ pressed }) => [styles.button, { width: size, height: size }, pressedStyle(pressed)]}
     >
       {loading ? (
-        <ActivityIndicator color={colors.white} />
+        <ActivityIndicator color={colors.onAccent} />
       ) : (
-        <Icon size={sizes.icon} color={colors.white} fill={colors.white} />
+        <Icon size={sizes.icon} color={colors.onAccent} fill={colors.onAccent} />
       )}
     </Pressable>
   )

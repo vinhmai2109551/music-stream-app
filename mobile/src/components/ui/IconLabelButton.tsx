@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react-native"
 import { Pressable, StyleSheet, type PressableProps } from "react-native"
-import { colors, sizes, spacing, type ColorToken } from "@/theme"
+import { type ColorToken, sizes, spacing, useColors } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
 
@@ -26,6 +26,8 @@ export function IconLabelButton({
   accessibilityLabel,
   ...props
 }: IconLabelButtonProps) {
+  const colors = useColors()
+
   const tint = colors[active ? activeColor : color]
   return (
     <Pressable

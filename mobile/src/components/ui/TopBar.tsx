@@ -1,10 +1,11 @@
 import { router } from "expo-router"
 import { ChevronLeft } from "lucide-react-native"
-import { StyleSheet, View } from "react-native"
+import { View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { colors, sizes, spacing } from "@/theme"
+import { makeStyles, sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 import { IconButton } from "./IconButton"
+import { useTranslation } from "@/i18n"
 
 type TopBarProps = {
   title?: string
@@ -12,10 +13,19 @@ type TopBarProps = {
 
 /** Back button + optional title for pushed screens. Respects the top safe area. */
 export function TopBar({ title }: TopBarProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+
   const insets = useSafeAreaInsets()
   return (
     <View style={[styles.bar, { paddingTop: insets.top, height: insets.top + sizes.topBarHeight }]}>
-      <IconButton icon={ChevronLeft} label="Back" color="text" onPress={() => router.back()} />
+      <IconButton
+        icon={ChevronLeft}
+        label={t("common.back")}
+        color="text"
+        onPress={() => router.back()}
+      />
       {title !== undefined && (
         <AppText variant="subtitle" numberOfLines={1} ellipsizeMode="tail" style={styles.title}>
           {title}
@@ -25,7 +35,7 @@ export function TopBar({ title }: TopBarProps) {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   bar: {
     flexDirection: "row",
     alignItems: "center",
@@ -33,4 +43,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   title: { flex: 1, marginLeft: spacing.xs },
-})
+}))

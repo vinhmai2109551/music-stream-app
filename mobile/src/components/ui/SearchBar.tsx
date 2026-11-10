@@ -1,30 +1,63 @@
 import { Search, X } from "lucide-react-native"
-import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from "react-native"
-import { colors, radius, shadows, sizes, spacing, typography } from "@/theme"
+import { useState, type Ref } from "react"
+import {
+  Pressable,
+  TextInput,
+  View,
+  type TextInputInstance,
+  type TextInputProps,
+} from "react-native"
+import { makeStyles, radius, shadows, sizes, spacing, typography, useColors } from "@/theme"
 import { pressedStyle } from "./pressed"
+import { useTranslation } from "@/i18n"
 
 type SearchBarProps = Omit<TextInputProps, "style" | "value"> & {
   value: string
   onClear: () => void
+  ref?: Ref<TextInputInstance>
 }
 
-export function SearchBar({ value, onClear, ...props }: SearchBarProps) {
+export function SearchBar({ value, onClear, ref, onFocus, onBlur, ...props }: SearchBarProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+  const colors = useColors()
+
+  const [focused, setFocused] = useState(false)
+  // The thicker ring grows inward, so the padding shrinks to keep the text where it was.
+  const borderWidth = focused ? sizes.borderThick : sizes.borderThin
+  const paddingLeft = spacing.lg - (borderWidth - sizes.borderThin)
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { borderWidth, paddingLeft, borderColor: focused ? colors.accent : colors.divider },
+      ]}
+    >
       <Search size={sizes.iconMd} strokeWidth={1.75} color={colors.tertiary} />
       <TextInput
+        ref={ref}
         value={value}
         style={styles.input}
-        placeholderTextColor={colors.tertiary}
+        placeholderTextColor={colors.secondary}
         selectionColor={colors.accent}
         returnKeyType="search"
         autoCorrect={false}
+        onFocus={(event) => {
+          setFocused(true)
+          onFocus?.(event)
+        }}
+        onBlur={(event) => {
+          setFocused(false)
+          onBlur?.(event)
+        }}
         {...props}
       />
       {value.length > 0 && (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Clear search"
+          accessibilityLabel={t("search.clear")}
           onPress={onClear}
           hitSlop={8}
           style={({ pressed }) => [styles.clear, pressedStyle(pressed)]}
@@ -36,16 +69,14 @@ export function SearchBar({ value, onClear, ...props }: SearchBarProps) {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
     height: sizes.searchBarHeight,
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    paddingHorizontal: spacing.lg,
+    paddingRight: spacing.lg,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.divider,
     backgroundColor: colors.background,
     ...shadows.soft,
   },
@@ -55,6 +86,8 @@ const styles = StyleSheet.create({
     color: colors.text,
     ...typography.body,
     paddingVertical: 0,
+    outlineWidth: 0,
+    outlineColor: colors.transparent,
   },
   clear: {
     width: 28,
@@ -62,6 +95,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.text,
+    backgroundColor: colors.elevated,
   },
-})
+}))

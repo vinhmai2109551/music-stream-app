@@ -1,16 +1,24 @@
-import { Eye, EyeOff } from "lucide-react-native"
+import { CircleAlert, Eye, EyeOff } from "lucide-react-native"
 import { useState, type Ref } from "react"
-import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from "react-native"
-import { copy } from "@/constants/copy"
+import {
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+  type TextInputInstance,
+  type TextInputProps,
+} from "react-native"
 import { colors, radius, sizes, spacing, typography } from "@/theme"
 import { AppText } from "./AppText"
+import { pressedStyle } from "./pressed"
+import { useTranslation } from "@/i18n"
 
 type TextFieldProps = Omit<TextInputProps, "style" | "secureTextEntry"> & {
   label: string
   error?: string
   /** Password field with a show / hide button. */
   password?: boolean
-  ref?: Ref<TextInput>
+  ref?: Ref<TextInputInstance>
 }
 
 /** Labelled text input for dark, photo-backed screens (glass look, red when invalid). */
@@ -24,19 +32,32 @@ export function TextField({
   editable = true,
   ...props
 }: TextFieldProps) {
+  const { t } = useTranslation()
+
   const [focused, setFocused] = useState(false)
   const [revealed, setRevealed] = useState(false)
-  const borderColor = error ? colors.like : focused ? colors.accent : colors.glassBorder
+  const highlighted = focused || Boolean(error)
+  const borderColor = error ? colors.likeOnDark : focused ? colors.accent : colors.glassBorder
+  // The thicker ring grows inward, so shift the padding to keep the text where it was.
+  const borderWidth = highlighted ? sizes.borderThick : sizes.borderThin
+  const paddingLeft = spacing.lg - (borderWidth - sizes.borderThin)
 
   return (
     <View>
-      <AppText variant="caption" color="onDarkMuted" style={styles.label}>
+      <AppText variant="caption" color="white" style={styles.label}>
         {label}
       </AppText>
-      <View style={[styles.container, { borderColor }, !editable && styles.disabled]}>
+      <View
+        style={[
+          styles.container,
+          { borderColor, borderWidth, paddingLeft },
+          !editable && styles.disabled,
+        ]}
+      >
         <TextInput
           ref={ref}
           accessibilityLabel={label}
+          accessibilityHint={error}
           style={styles.input}
           placeholderTextColor={colors.onDarkMuted}
           selectionColor={colors.accent}
@@ -56,9 +77,9 @@ export function TextField({
         {password && (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={revealed ? copy.auth.hidePassword : copy.auth.showPassword}
+            accessibilityLabel={revealed ? t("auth.hidePassword") : t("auth.showPassword")}
             onPress={() => setRevealed((value) => !value)}
-            style={styles.toggle}
+            style={({ pressed }) => [styles.toggle, pressedStyle(pressed)]}
           >
             {revealed ? (
               <EyeOff size={sizes.iconMd} color={colors.onDarkMuted} />
@@ -69,9 +90,18 @@ export function TextField({
         )}
       </View>
       {error ? (
-        <AppText variant="small" color="like" accessibilityRole="alert" style={styles.error}>
-          {error}
-        </AppText>
+        <View style={styles.errorRow}>
+          <CircleAlert size={sizes.iconSm} color={colors.likeOnDark} />
+          <AppText
+            variant="caption"
+            color="likeOnDark"
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            style={styles.errorText}
+          >
+            {error}
+          </AppText>
+        </View>
       ) : null}
     </View>
   )
@@ -83,10 +113,8 @@ const styles = StyleSheet.create({
     height: sizes.searchBarHeight,
     flexDirection: "row",
     alignItems: "center",
-    paddingLeft: spacing.lg,
     borderRadius: radius.card,
-    borderWidth: 1,
-    backgroundColor: colors.glass,
+    backgroundColor: colors.glassField,
   },
   disabled: { opacity: 0.6 },
   input: {
@@ -96,6 +124,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     ...typography.body,
     paddingVertical: 0,
+    outlineWidth: 0,
   },
   toggle: {
     width: sizes.minTouch,
@@ -103,5 +132,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  error: { marginTop: spacing.xs },
+  errorRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.xs,
+    marginTop: spacing.xs,
+  },
+  errorText: { flex: 1 },
 })

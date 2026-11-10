@@ -17,6 +17,15 @@ enum Role {
   ADMIN
 }
 
+/// Where an artist comes from; the catalog is filtered by it. GLOBAL is everything else.
+enum Region {
+  VIETNAM
+  KOREA
+  JAPAN
+  CHINA
+  GLOBAL
+}
+
 // ---------------------------------------------------------------- owner: users
 model User {
   id           String   @id @default(cuid())
@@ -37,55 +46,126 @@ model User {
   comments      Comment[]
   commentLikes  CommentLike[]
   postLikes     FeedPostLike[]
+  refreshTokens RefreshToken[]
+  playEvents    PlayEvent[]
+
+  aiConversations AiConversation[]
+  aiActions       AiPendingAction[]
+  aiUsage         AiUsage[]
+}
+
+// ---------------------------------------------------------------- owner: auth
+/// Only the SHA-256 hash of a refresh token is stored, never the token itself.
+/// Tokens rotate on every refresh; all tokens of one login share a familyId so that reuse of an
+/// already-revoked token can revoke the whole family. `replacedAt` is set only when a refresh
+/// replaced the token (not on logout or family revocation); it opens a short grace window for a
+/// client that never received the new token.
+model RefreshToken {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  familyId   String
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  replacedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
 }
 
 // -------------------------------------------------------------- owner: artists
 model Artist {
   id            String   @id @default(cuid())
   name          String
+  /// The name in lower case without accents ("Sơn Tùng" -> "son tung"), so a search typed without
+  /// accents finds it. Written by the owning module whenever the name changes; null until then.
+  searchName    String?
   bio           String   @default("")
   imageUrl      String
   /// Followers that exist outside this app; real follows (Follow rows) are added on top.
   baseFollowers Int      @default(0)
+  region        Region   @default(GLOBAL)
+  /// Music genres ("v-pop", "ballad"...), at most 10; used to describe the artist for semantic search.
+  genres        String[] @default([])
   createdAt     DateTime @default(now())
 
   tracks    Track[]
+  embedding ArtistEmbedding?
   albums    Album[]
   follows   Follow[]
   feedPosts FeedPost[]
 
   @@index([name])
+  @@index([region])
 }
 
 // --------------------------------------------------------------- owner: tracks
 model Track {
-  id          String   @id @default(cuid())
-  title       String
-  artistId    String
-  coverUrl    String
-  audioUrl    String
-  plays       Int      @default(0)
-  durationSec Int
-  createdAt   DateTime @default(now())
+  id             String   @id @default(cuid())
+  title          String
+  /// The name in lower case without accents ("Sơn Tùng" -> "son tung"), so a search typed without
+  /// accents finds it. Written by the owning module whenever the name changes; null until then.
+  searchName     String?
+  artistId       String
+  coverUrl       String
+  /// Audio file in our storage. Null for commercial tracks, which only play through YouTube.
+  audioUrl       String?
+  plays          Int      @default(0)
+  durationSec    Int
+  /// Id of the official YouTube video the app plays this track from; null = play `audioUrl`.
+  youtubeVideoId String?
+  /// What the song is, never its lyrics: genres, moods, tags (situations, instruments, themes) and a
+  /// short description. At most 10 entries per list. They feed the text that is embedded for
+  /// semantic search and recommendations.
+  genres         String[] @default([])
+  mood           String[] @default([])
+  tags           String[] @default([])
+  description    String   @default("")
+  /// Language of the vocals as an ISO 639 code ("vi", "ko", "ja", "zh", "en"); null = instrumental or unknown.
+  language       String?
+  createdAt      DateTime @default(now())
 
-  artist    Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
-  albums    AlbumTrack[]
-  playlists PlaylistTrack[]
-  likes     TrackLike[]
-  comments  Comment[]
-  feedPosts FeedPost[]
+  artist     Artist          @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  embedding  TrackEmbedding?
+  lyrics     TrackLyrics?
+  albums     AlbumTrack[]
+  playlists  PlaylistTrack[]
+  likes      TrackLike[]
+  comments   Comment[]
+  feedPosts  FeedPost[]
+  playEvents PlayEvent[]
 
   @@index([artistId])
   @@index([title])
 }
 
+/// One counted listen. Lets the API ignore a repeat listen of the same track by the same user
+/// within a short window, and is the base for a "recently played" list.
+model PlayEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  trackId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@index([userId, trackId, createdAt])
+}
+
 // --------------------------------------------------------------- owner: albums
 model Album {
-  id        String   @id @default(cuid())
-  title     String
-  coverUrl  String
-  artistId  String
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  title      String
+  /// The name in lower case without accents ("Sơn Tùng" -> "son tung"), so a search typed without
+  /// accents finds it. Written by the owning module whenever the name changes; null until then.
+  searchName String?
+  coverUrl   String
+  artistId   String
+  createdAt  DateTime @default(now())
 
   artist Artist       @relation(fields: [artistId], references: [id], onDelete: Cascade)
   tracks AlbumTrack[]
@@ -110,6 +190,9 @@ model AlbumTrack {
 model Playlist {
   id          String   @id @default(cuid())
   name        String
+  /// The name in lower case without accents ("Sơn Tùng" -> "son tung"), so a search typed without
+  /// accents finds it. Written by the owning module whenever the name changes; null until then.
+  searchName  String?
   description String   @default("")
   coverUrl    String?
   /// Editorial playlists ("Music Stream") have no owner.
@@ -118,7 +201,7 @@ model Playlist {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner  User?            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner  User?           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   tracks PlaylistTrack[]
   likes  PlaylistLike[]
 
@@ -208,6 +291,7 @@ model Comment {
 
   @@index([trackId, createdAt])
   @@index([postId, createdAt])
+  @@index([parentId, createdAt])
 }
 
 model CommentLike {
@@ -249,4 +333,180 @@ model FeedPostLike {
 
   @@id([userId, postId])
   @@index([postId])
+}
+
+// ----------------------------------------------------------- owner: embeddings
+/// The vector of the text that describes a track (see embedding-text.ts), for semantic search and
+/// recommendations. `embedding` is a pgvector column: Prisma cannot read or write it, so the
+/// embeddings module does that with parameterised raw SQL. The HNSW cosine index on it is created
+/// in the migration (Prisma cannot express it). `contentHash` is the hash of the text plus the model
+/// name: the vector is made again only when it changes. Deleting the track deletes its vector.
+model TrackEmbedding {
+  trackId     String                     @id
+  embedding   Unsupported("vector(768)")
+  model       String
+  contentHash String
+  updatedAt   DateTime                   @default(now())
+
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+}
+
+/// The same for an artist.
+model ArtistEmbedding {
+  artistId    String                     @id
+  embedding   Unsupported("vector(768)")
+  model       String
+  contentHash String
+  updatedAt   DateTime                   @default(now())
+
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+}
+
+/// A piece of a help text (src/modules/ai/knowledge/*.md) with its vector, so the assistant can find
+/// the answer to a question about the app. `ai:embed` rebuilds the chunks of a file when its text
+/// changes. `embedding` is read and written by the embeddings module with raw SQL; its HNSW cosine
+/// index is created in the migration (Prisma cannot express it).
+model KnowledgeChunk {
+  id          String                     @id @default(cuid())
+  /// File the text came from, e.g. "premium.md".
+  source      String
+  /// Nearest heading above the chunk; shown as the citation.
+  heading     String
+  /// Order of the chunk inside its file.
+  position    Int
+  content     String
+  embedding   Unsupported("vector(768)")
+  model       String
+  contentHash String
+  updatedAt   DateTime                   @default(now())
+
+  @@unique([source, position])
+  @@index([source])
+}
+
+// ---------------------------------------------------------------- owner: lyrics
+/// The original lyrics of a track, one element of `lines` per line; a blank line is "" so the
+/// position of every line is kept. Only text that may be stored is written here (own work, or a
+/// licensed source named in `source`); the demo data is written for the demo and says so.
+/// `contentHash` is the hash of `language` and `lines`: a translation is valid only for the hash it
+/// was made from. Deleting the track deletes its lyrics and their translations.
+model TrackLyrics {
+  id          String   @id @default(cuid())
+  trackId     String   @unique
+  /// Language of the lines, as an app language code: vi, en-US, ko, ja or zh-Hans.
+  language    String
+  lines       String[]
+  /// Start of each line in milliseconds, same length as `lines`; empty = no timings.
+  timingsMs   Int[]    @default([])
+  /// Where the text came from: "demo", "manual" or the name of a provider.
+  source      String
+  contentHash String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  track        Track                    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  translations TrackLyricsTranslation[]
+}
+
+/// One translation of one version of the lyrics. The unique key makes a second translation of the
+/// same lyrics, language and version impossible, so two requests at once store it once.
+model TrackLyricsTranslation {
+  id               String   @id @default(cuid())
+  lyricsId         String
+  targetLanguage   String
+  /// `contentHash` of the lyrics it was made from.
+  sourceHash       String
+  /// Same length as the original lines; a blank line stays blank.
+  lines            String[]
+  /// Engine that translated it ("deepl").
+  provider         String
+  billedCharacters Int
+  createdAt        DateTime @default(now())
+
+  lyrics TrackLyrics @relation(fields: [lyricsId], references: [id], onDelete: Cascade)
+
+  @@unique([lyricsId, targetLanguage, sourceHash])
+}
+
+// ---------------------------------------------------------------- owner: ai
+enum AiMessageRole {
+  USER
+  ASSISTANT
+}
+
+enum AiActionStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  /// Not answered within 10 minutes, or the user wrote another message instead.
+  EXPIRED
+}
+
+/// One chat of a user with the assistant.
+model AiConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  /// The first message, cut short.
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AiMessage[]
+  actions  AiPendingAction[]
+
+  @@index([userId, updatedAt])
+}
+
+/// `content` is a list of the neutral parts of the language model client (text, tool_call,
+/// tool_result, opaque), exactly as received, so a conversation can be replayed to the model as
+/// it is. The results of tools travel back to the model with role USER.
+model AiMessage {
+  id             String        @id @default(cuid())
+  conversationId String
+  role           AiMessageRole
+  content        Json
+  createdAt      DateTime      @default(now())
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+}
+
+/// A tool that changes the user's data (create a playlist, like tracks...). The agent only
+/// proposes it; nothing runs until the user confirms.
+model AiPendingAction {
+  id             String         @id @default(cuid())
+  conversationId String
+  userId         String
+  /// The id of the tool call of the model that this action answers.
+  callId         String
+  tool           String
+  input          Json
+  /// What the user is asked to approve, in one sentence.
+  summary        String
+  status         AiActionStatus @default(PENDING)
+  /// What the tool returned once it ran (or why it did not).
+  result         Json?
+  expiresAt      DateTime
+  createdAt      DateTime       @default(now())
+  resolvedAt     DateTime?
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, status])
+  @@index([userId, status, expiresAt])
+}
+
+/// Messages a user has sent on one day (of the time zone in ai.config.ts), for the daily limit. Kept apart from AiMessage so that
+/// deleting a conversation does not give the quota back.
+model AiUsage {
+  userId   String
+  day      DateTime @db.Date
+  messages Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day])
 }

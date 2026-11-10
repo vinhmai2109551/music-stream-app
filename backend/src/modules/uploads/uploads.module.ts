@@ -1,8 +1,11 @@
 import { Module } from "@nestjs/common"
+import { UploadsController } from "./uploads.controller.js"
+import { UploadsService } from "./uploads.service.js"
 
-/**
- * File uploads to Cloudflare R2 (presigned URLs).
- * Intentionally empty for now: the endpoints are added in the R2 integration phase.
- */
-@Module({})
+/** Presigned uploads to Cloudflare R2, and the "is this URL ours?" check for other modules. */
+@Module({
+  controllers: [UploadsController],
+  providers: [UploadsService],
+  exports: [UploadsService],
+})
 export class UploadsModule {}

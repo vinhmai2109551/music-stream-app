@@ -1,5 +1,16 @@
 import { PartialType } from "@nestjs/swagger"
-import { IsInt, IsOptional, IsString, IsUrl, MaxLength, Min, MinLength } from "class-validator"
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+  Min,
+  MinLength,
+} from "class-validator"
+import { Region } from "../../../generated/prisma/enums.js"
+import { PaginationQueryDto, StringList } from "../../../shared/index.js"
 
 export class CreateArtistDto {
   @IsString()
@@ -20,6 +31,22 @@ export class CreateArtistDto {
   @IsInt()
   @Min(0)
   baseFollowers?: number
+
+  /** Where the artist comes from; defaults to GLOBAL. */
+  @IsOptional()
+  @IsEnum(Region)
+  region?: Region
+
+  /** Music genres of the artist, e.g. `v-pop` (at most 10, each at most 40 characters). */
+  @StringList()
+  genres?: string[]
 }
 
 export class UpdateArtistDto extends PartialType(CreateArtistDto) {}
+
+export class ListArtistsQueryDto extends PaginationQueryDto {
+  /** Only artists from this region. */
+  @IsOptional()
+  @IsEnum(Region)
+  region?: Region
+}

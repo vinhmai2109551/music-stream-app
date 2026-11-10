@@ -58,3 +58,6 @@ WORKLOG.md
 
 # Generated Prisma client (rebuilt by `prisma generate`)
 backend/src/generated/
+
+# Generated pictures waiting to be uploaded to R2 (see backend/src/seed/R2_UPLOAD_LIST.md)
+backend/local-images/

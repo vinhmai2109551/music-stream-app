@@ -38,6 +38,14 @@ export class LikesService {
     }
   }
 
+  /** Likes several tracks in one statement (those already liked stay as they are). */
+  async likeTracks(userId: string, trackIds: readonly string[]): Promise<void> {
+    await this.prisma.trackLike.createMany({
+      data: [...new Set(trackIds)].map((trackId) => ({ userId, trackId })),
+      skipDuplicates: true,
+    })
+  }
+
   async unlike(kind: LikeKind, userId: string, targetId: string): Promise<void> {
     switch (kind) {
       case LikeKind.Tracks:

@@ -1,0 +1,955 @@
+{
+  "tracks": {
+    "ado-new-genesis": {
+      "genres": ["j-pop", "electronic", "dance"],
+      "mood": ["sôi động", "tự tin", "hào hứng"],
+      "tags": ["anime", "phim rạp", "bùng nổ"],
+      "description": "Bản J-pop điện tử hoành tráng với quãng giọng cao vút và tiết tấu nhanh, mang lại cảm giác vươn lên mạnh mẽ. Thích hợp khi cần nạp năng lượng.",
+      "language": "ja"
+    },
+    "ado-usseewa": {
+      "genres": ["j-pop", "rock", "electronic"],
+      "mood": ["mạnh mẽ", "nổi loạn", "sôi động"],
+      "tags": ["giải tỏa căng thẳng", "rock nhật", "ca sĩ trẻ"],
+      "description": "Ca khúc J-pop pha trộn rock gai góc, thể hiện sự bức phá và cá tính mạnh mẽ qua chất giọng đầy nội lực. Thích hợp để giải tỏa áp lực cuộc sống.",
+      "language": "ja"
+    },
+    "aespa-next-level": {
+      "genres": ["k-pop", "dance-pop", "edm"],
+      "mood": ["mạnh mẽ", "sôi động", "tương lai"],
+      "tags": ["tập gym", "điện tử", "cá tính"],
+      "description": "Bản nhạc dance điện tử mang phong cách futuristic độc đáo với bass nặng, tạo cảm giác mạnh mẽ và tràn đầy năng lượng.",
+      "language": "ko"
+    },
+    "aespa-supernova": {
+      "genres": ["k-pop", "dance-pop", "edm"],
+      "mood": ["sôi động", "độc đáo", "mạnh mẽ"],
+      "tags": ["hiện đại", "thời thượng", "bùng nổ"],
+      "description": "Ca khúc k-pop mang âm hưởng điện tử không gian với cấu trúc bài hát bất ngờ, tạo ấn tượng mạnh mẽ ngay từ lần nghe đầu.",
+      "language": "ko"
+    },
+    "aespa-whiplash": {
+      "genres": ["k-pop", "edm", "house"],
+      "mood": ["sôi động", "cuốn hút", "thời thượng"],
+      "tags": ["club", "nhảy múa", "thời trang"],
+      "description": "Bản nhạc house với bassline tối giản nhưng gây nghiện, mang đến không gian âm nhạc thời thượng và đầy cuốn hút.",
+      "language": "ko"
+    },
+    "aimer-zankyosanka": {
+      "genres": ["j-pop", "rock"],
+      "mood": ["mạnh mẽ", "hào hùng", "sôi động"],
+      "tags": ["anime", "nhật bản", "kiếm hiệp"],
+      "description": "Ca khúc J-pop mang âm hưởng rock Nhật kịch tính, kết hợp giọng ca khàn đặc trưng và dàn nhạc cụ hoành tráng. Thích hợp khi cần truyền cảm hứng.",
+      "language": "ja"
+    },
+    "bich-phuong-bua-yeu": {
+      "genres": ["v-pop", "dance-pop"],
+      "mood": ["lãng mạn", "cuốn hút", "vui vẻ"],
+      "tags": ["thư giãn", "nhảy múa", "hẹn hò"],
+      "description": "Ca khúc pop hiện đại mang hơi hướng tropical house với giai điệu quyến rũ, tươi vui và đầy màu sắc bí ẩn. Rất hợp cho những buổi tiệc nhẹ hoặc khi muốn làm mới tâm trạng.",
+      "language": "vi"
+    },
+    "bich-phuong-di-du-dua-di": {
+      "genres": ["v-pop", "dance-pop", "edm"],
+      "mood": ["sôi động", "cuốn hút", "lôi cuốn"],
+      "tags": ["nhảy múa", "tiệc tùng", "cuối tuần", "thư giãn"],
+      "description": "Ca khúc V-pop mang giai điệu house pha chút disco hiện đại đầy cuốn hút, thích hợp cho các buổi tiệc tùng và nhảy múa cuối tuần.",
+      "language": "vi"
+    },
+    "bigbang-bang-bang-bang": {
+      "genres": ["k-pop", "hip hop", "electronic"],
+      "mood": ["bùng nổ", "sôi động", "cuồng nhiệt"],
+      "tags": ["tiệc tùng", "quẩy", "nhảy múa"],
+      "description": "Ca khúc hip hop điện tử cực kỳ bùng nổ và cuồng nhiệt, hoàn hảo cho các bữa tiệc tùng hoặc khi cần giải phóng năng lượng.",
+      "language": "ko"
+    },
+    "bigbang-haru-haru": {
+      "genres": ["k-pop", "r&b", "hip hop"],
+      "mood": ["buồn", "hoài niệm", "da diết"],
+      "tags": ["đêm mưa", "hoài niệm tuổi trẻ", "nhớ nhung"],
+      "description": "Bản r&b k-pop kinh điển mang giai điệu buồn da diết và phần rap đặc trưng, gợi nhớ về những kỷ niệm đẹp trong quá khứ.",
+      "language": "ko"
+    },
+    "blackpink-ddu-du-ddu-du": {
+      "genres": ["k-pop", "hip hop", "trap"],
+      "mood": ["mạnh mẽ", "bùng nổ", "sôi động"],
+      "tags": ["cá tính", "nhảy múa", "quẩy", "năng lượng"],
+      "description": "Bản trap hip-hop đặc trưng với nhịp bass nặng và giai điệu sắc sảo, tạo nên một sức hút mạnh mẽ không thể chối từ.",
+      "language": "ko"
+    },
+    "blackpink-how-you-like-that": {
+      "genres": ["k-pop", "hip hop", "dance-pop"],
+      "mood": ["bùng nổ", "mạnh mẽ", "tự tin"],
+      "tags": ["tập gym", "cá tính", "sôi động", "thời trang"],
+      "description": "Ca khúc hip-hop pha EDM với phần beat cực mạnh mẽ và cá tính, giúp khơi dậy sự tự tin và năng lượng tối đa cho người nghe.",
+      "language": "ko"
+    },
+    "blackpink-pink-venom": {
+      "genres": ["k-pop", "hip hop", "dance-pop"],
+      "mood": ["mạnh mẽ", "ma mị", "tự tin"],
+      "tags": ["cá tính", "bùng nổ", "độc đáo", "trình diễn"],
+      "description": "Sự pha trộn độc đáo giữa nhạc cụ truyền thống và hip-hop hiện đại, tạo nên một bản nhạc đầy ma mị, cá tính và sắc sảo.",
+      "language": "ko"
+    },
+    "blackpink-shut-down": {
+      "genres": ["k-pop", "hip hop", "trap"],
+      "mood": ["sôi động", "tự tin", "mạnh mẽ"],
+      "tags": ["nhảy múa", "cá tính", "hip hop"],
+      "description": "Bài hát mang giai điệu hip hop pha trộn cổ điển sắc sảo và đầy tự tin, rất phù hợp để nghe khi tập gym hoặc dạo phố.",
+      "language": "ko"
+    },
+    "bts-boy-with-luv": {
+      "genres": ["k-pop", "dance-pop", "synth-pop"],
+      "mood": ["vui tươi", "ngọt ngào", "lãng mạn"],
+      "tags": ["thanh xuân", "tình yêu", "yêu đời", "thư giãn"],
+      "description": "Bài hát pop ngọt ngào và tươi sáng với âm hưởng synth-pop nhẹ nhàng, mang lại cảm giác yêu đời và hạnh phúc trong tình yêu.",
+      "language": "ko"
+    },
+    "bts-butter": {
+      "genres": ["k-pop", "dance-pop", "disco-pop"],
+      "mood": ["sôi động", "vui tươi", "tự tin"],
+      "tags": ["nhảy múa", "tiệc tùng", "giải trí", "mùa hè"],
+      "description": "Bản pop dance bắt tai với giai điệu mượt như bơ và nhịp điệu rộn ràng, cực kỳ thích hợp để nhảy múa và giải trí mùa hè.",
+      "language": "en"
+    },
+    "bts-dna": {
+      "genres": ["k-pop", "edm", "electropop"],
+      "mood": ["sôi động", "phấn khích", "bùng nổ"],
+      "tags": ["tập gym", "năng lượng", "hiện đại", "cuồng nhiệt"],
+      "description": "Ca khúc electropop kết hợp EDM sôi động với âm bass mạnh mẽ, mang lại nguồn năng lượng bùng nổ cho các buổi tập luyện.",
+      "language": "ko"
+    },
+    "bts-dynamite": {
+      "genres": ["k-pop", "disco-pop", "dance-pop"],
+      "mood": ["vui tươi", "sôi động", "phấn khởi"],
+      "tags": ["năng lượng", "tập gym", "giải trí", "buổi sáng"],
+      "description": "Ca khúc disco-pop tươi vui, tràn đầy năng lượng tích cực giúp bạn khởi đầu ngày mới thật sảng khoái và phấn khởi.",
+      "language": "en"
+    },
+    "bts-permission-to-dance": {
+      "genres": ["k-pop", "dance-pop", "pop"],
+      "mood": ["vui tươi", "lạc quan", "phấn khởi"],
+      "tags": ["lạc quan", "hy vọng", "cộng đồng", "giải trí"],
+      "description": "Giai điệu pop tươi sáng, mang thông điệp lạc quan và khích lệ tinh thần, giúp bạn xua tan mọi mệt mỏi trong cuộc sống.",
+      "language": "en"
+    },
+    "bts-spring-day": {
+      "genres": ["ballad", "k-pop", "alternative pop"],
+      "mood": ["hoài niệm", "buồn", "ấm áp"],
+      "tags": ["mùa đông", "nhớ nhung", "thời gian", "tâm trạng"],
+      "description": "Bản ballad pha trộn alternative rock mang giai điệu da diết, ấm áp, hoàn hảo để nghe khi nhớ nhung hoặc vào những ngày se lạnh.",
+      "language": "ko"
+    },
+    "creepy-nuts-bling-bang-bang-born": {
+      "genres": ["hip hop", "j-pop", "rap"],
+      "mood": ["sôi động", "vui vẻ", "tự tin"],
+      "tags": ["nhảy múa", "tập thể dục", "anime"],
+      "description": "Bản hip-hop/rap Nhật Bản với beat bắt tai, flow cực mượt và giai điệu vui tươi gây nghiện. Rất hợp để nhảy nhót hoặc tập thể dục.",
+      "language": "ja"
+    },
+    "den-bai-nay-chill-phet": {
+      "genres": ["hip hop", "indie pop"],
+      "mood": ["nhẹ nhàng", "thư giãn", "hoài niệm"],
+      "tags": ["chill", "làm việc", "cà phê"],
+      "description": ".Bản rap chill kết hợp giọng ca nữ nhẹ nhàng, hoàn hảo để thưởng thức trong quán cà phê hoặc khi muốn xả stress sau giờ làm việc.",
+      "language": "vi"
+    },
+    "den-di-ve-nha": {
+      "genres": ["hip hop"],
+      "mood": ["vui tươi", "ấm áp", "hoài niệm"],
+      "tags": ["gia đình", "tết", "thư giãn"],
+      "description": "Ca khúc rap vui tươi, ấm áp về chủ đề trở về mái ấm gia đình, mang lại cảm giác bình yên và hạnh phúc.",
+      "language": "vi"
+    },
+    "den-mang-tien-ve-cho-me": {
+      "genres": ["hip hop"],
+      "mood": ["hoài niệm", "ấm áp", "nhẹ nhàng"],
+      "tags": ["gia đình", "ý nghĩa", "tâm sự"],
+      "description": "Bản rap mang đậm tính nhân văn của Đen, ca ngợi tình mẫu tử với giai điệu nhẹ nhàng, sâu lắng. Thích hợp nghe khi nhớ nhà.",
+      "language": "vi"
+    },
+    "duc-phuc-anh-nang-cua-anh": {
+      "genres": ["v-pop", "ballad"],
+      "mood": ["lãng mạn", "nhẹ nhàng", "ấm áp"],
+      "tags": ["nhạc phim", "tình yêu", "thư giãn"],
+      "description": "Bài hát ballad trữ tình, ấm áp với phần giai điệu piano và dây du dương. Tạo cảm giác bình yên, lãng mạn, rất thích hợp để nghe cùng người yêu trong buổi tối nhẹ nhàng.",
+      "language": "vi"
+    },
+    "duc-phuc-hon-ca-yeu": {
+      "genres": ["v-pop", "ballad"],
+      "mood": ["lãng mạn", "ngọt ngào", "hạnh phúc"],
+      "tags": ["đám cưới", "tình yêu", "nhẹ nhàng"],
+      "description": "Bản ballad ngọt ngào, lãng mạn với chất giọng cao vút và tình cảm của Đức Phúc. Là ca khúc quen thuộc trong các lễ cưới và những khoảnh khắc tỏ tình đầy yêu thương.",
+      "language": "vi"
+    },
+    "eason-chan-lonely-warrior": {
+      "genres": ["c-pop", "rock", "pop"],
+      "mood": ["mạnh mẽ", "hào hùng", "tự tin"],
+      "tags": ["nhạc game", "anh hùng", "truyền cảm hứng"],
+      "description": "Ca khúc mang âm hưởng rock hiện đại, hào hùng và mạnh mẽ, ca ngợi những người hùng thầm lặng trong cuộc sống. Thích hợp khi tập gym hoặc tìm động lực.",
+      "language": "zh"
+    },
+    "fujii-kaze-shinunoga-e-wa": {
+      "genres": ["j-pop", "r&b", "soul"],
+      "mood": ["lãng mạn", "sâu lắng", "mê hoặc"],
+      "tags": ["tình yêu", "thư giãn", "đêm khuya"],
+      "description": "Bản R&B/soul Nhật Bản cuốn hút với giai điệu trầm ấm và phong cách biểu diễn độc đáo. Phù hợp để nghe thư giãn vào buổi tối muộn.",
+      "language": "ja"
+    },
+    "g-dragon-power": {
+      "genres": ["k-pop", "hip hop", "dance"],
+      "mood": ["sôi động", "tự tin", "mạnh mẽ"],
+      "tags": ["nhảy múa", "tiệc tùng", "thể thao"],
+      "description": "Ca khúc hip hop K-pop mang năng lượng bùng nổ, nhịp điệu mạnh mẽ và phong cách cá tính đặc trưng. Phù hợp để nghe khi tập gym hoặc giải trí.",
+      "language": "ko"
+    },
+    "gem-bubble": {
+      "genres": ["c-pop", "ballad"],
+      "mood": ["buồn", "đau khổ", "sâu lắng"],
+      "tags": ["thất tình", "piano", "giọng khủng"],
+      "description": "Bản ballad da diết với tiếng piano chủ đạo và giọng hát đầy cảm xúc, diễn tả nỗi buồn sâu sắc trong tình yêu. Thích hợp nghe khi một mình.",
+      "language": "zh"
+    },
+    "gem-light-years-away": {
+      "genres": ["c-pop", "pop rock", "ballad"],
+      "mood": ["mạnh mẽ", "sôi động", "lãng mạn"],
+      "tags": ["nhạc phim", "hành động", "giọng khủng"],
+      "description": "Bản pop ballad kết hợp rock hoành tráng với giọng ca nội lực, mang lại cảm giác mạnh mẽ và không gian rộng lớn. Thích hợp khi lái xe hoặc tập luyện.",
+      "language": "zh"
+    },
+    "hieuthuhai-exit-sign": {
+      "genres": ["v-pop", "hip hop"],
+      "mood": ["buồn", "lãng mạn"],
+      "tags": ["nhạc trẻ", "tâm trạng"],
+      "description": "Bản rap/hip hop pha lẫn giai điệu melodi buồn và sâu lắng, kể về những hoài niệm trong tình yêu.",
+      "language": "vi"
+    },
+    "hieuthuhai-khong-the-say": {
+      "genres": ["v-pop", "hip hop"],
+      "mood": ["sôi động", "lãng mạn", "tự tin"],
+      "tags": ["nhạc trẻ", "tiệc tùng", "chill"],
+      "description": "Bản hip hop/r&b cuốn hút với giọng rap trầm ấm và giai điệu bắt tai, thích hợp cho các buổi đi chơi tối hoặc lái xe.",
+      "language": "vi"
+    },
+    "hieuthuhai-ngu-mot-minh": {
+      "genres": ["v-pop", "hip hop"],
+      "mood": ["sôi động", "lãng mạn"],
+      "tags": ["nhạc trẻ", "tiệc tùng"],
+      "description": "Ca khúc hip hop hiện đại mang âm hưởng r&b ngọt ngào và quyến rũ, rất được giới trẻ yêu thích trong các buổi tiệc nhẹ.",
+      "language": "vi"
+    },
+    "higedan-pretender": {
+      "genres": ["j-pop", "ballad", "rock"],
+      "mood": ["buồn", "lãng mạn", "hoài niệm"],
+      "tags": ["tình yêu", "ngồi cà phê", "nhạc phim"],
+      "description": "Bản pop-rock Nhật Bản ngọt ngào nhưng đượm buồn về tình yêu đơn phương. Thích hợp nghe khi thư giãn tại quán cà phê hoặc trên xe buýt.",
+      "language": "ja"
+    },
+    "higedan-subtitle": {
+      "genres": ["j-pop", "ballad"],
+      "mood": ["ấm áp", "buồn", "lãng mạn"],
+      "tags": ["mùa đông", "tình yêu", "nhạc phim"],
+      "description": "Bản ballad J-pop giàu cảm xúc với giai điệu piano êm dịu và giọng ca truyền cảm. Rất thích hợp để thưởng thức trong những ngày đông se lạnh.",
+      "language": "ja"
+    },
+    "hngle-khong-buong": {
+      "genres": ["v-pop", "r&b"],
+      "mood": ["buồn", "nhẹ nhàng"],
+      "tags": ["tâm trạng", "thư giãn"],
+      "description": "Ca khúc r&b nhẹ nhàng với giai điệu lofi cuốn hút, mang lại cảm giác sâu lắng cho người nghe trong những buổi tối cô đơn.",
+      "language": "vi"
+    },
+    "hngle-tim-em": {
+      "genres": ["v-pop", "r&b"],
+      "mood": ["lãng mạn", "nhẹ nhàng"],
+      "tags": ["tâm trạng", "thư giãn"],
+      "description": "Bản r&b hiện đại với âm hưởng chill nhẹ, phù hợp để nghe khi làm việc hoặc thư giãn một mình.",
+      "language": "vi"
+    },
+    "hoa-minzy-bac-bling": {
+      "genres": ["v-pop", "dance-pop"],
+      "mood": ["sôi động", "vui tươi", "tự hào"],
+      "tags": ["lễ hội", "nhảy múa", "văn hóa việt nam"],
+      "description": "Sự kết hợp độc đáo giữa âm nhạc truyền thống vùng quan họ Bắc Ninh và nhịp điệu hiện đại. Mang lại không gian lễ hội rộn ràng, tươi vui và đầy tự hào.",
+      "language": "vi"
+    },
+    "hoa-minzy-khong-the-cung-nhau-suot-kiep": {
+      "genres": ["v-pop", "ballad"],
+      "mood": ["buồn", "hoài niệm", "đau lòng"],
+      "tags": ["ngày mưa", "thất tình", "nhạc phim"],
+      "description": "Bản ballad tự sự mang đậm nỗi buồn hoài niệm với giai điệu da diết và giọng hát đượm buồn. Rất hợp để nghe trong những chiều mưa hoặc khi tâm trạng lắng đọng.",
+      "language": "vi"
+    },
+    "hoang-thuy-linh-de-mi-noi-cho-ma-nghe": {
+      "genres": ["v-pop", "dance-pop"],
+      "mood": ["sôi động", "vui tươi", "tự hào"],
+      "tags": ["lễ hội", "nhảy múa", "văn hóa việt nam"],
+      "description": "Sản phẩm pop pha trộn âm nhạc dân gian đậm chất Việt Nam với tiết tấu rộn ràng, tươi vui. Mang đến nguồn năng lượng tích cực, hoàn hảo cho các dịp lễ hội và giải trí.",
+      "language": "vi"
+    },
+    "hoang-thuy-linh-see-tinh": {
+      "genres": ["v-pop", "dance-pop"],
+      "mood": ["sôi động", "lãng mạn", "vui vẻ"],
+      "tags": ["tiktkok", "nhảy múa", "thư giãn"],
+      "description": "Bản pop dance bắt tai với giai điệu tropical house vui tươi, ngọt ngào và vô cùng cuốn hút. Ca khúc tạo cảm giác yêu đời, thường được bật trong các video ngắn và tiệc nhẹ.",
+      "language": "vi"
+    },
+    "iu-blueming": {
+      "genres": ["k-pop", "indie pop", "synth-pop"],
+      "mood": ["vui tươi", "nhẹ nhàng", "tươi mới"],
+      "tags": ["dạo phố", "thư giãn", "buổi sáng"],
+      "description": "Ca khúc indie pop pha synth-pop tươi vui, trẻ trung với giai điệu bắt tai giúp làm dịu và sáng bừng tâm trạng mỗi ngày.",
+      "language": "ko"
+    },
+    "iu-celebrity": {
+      "genres": ["k-pop", "electronic pop", "ballad"],
+      "mood": ["ấm áp", "tươi sáng", "truyền cảm hứng"],
+      "tags": ["thư giãn", "ý nghĩa", "buổi chiều"],
+      "description": "Bản electronic pop nhẹ nhàng, mang thông điệp tích cực và ấm áp, thích hợp để nghe khi cần tìm sự khích lệ tinh thần.",
+      "language": "ko"
+    },
+    "iu-love-wins-all": {
+      "genres": ["k-pop", "ballad", "orchestral pop"],
+      "mood": ["buồn", "xúc động", "lãng mạn"],
+      "tags": ["đêm khuya", "nỗi niềm", "cảm xúc"],
+      "description": "Bản ballad hoành tráng với giai điệu sâu lắng và giọng hát đầy cảm xúc, chạm đến trái tim người nghe trong không gian yên tĩnh.",
+      "language": "ko"
+    },
+    "ive-after-like": {
+      "genres": ["k-pop", "disco", "dance-pop"],
+      "mood": ["vui tươi", "sôi động", "hứng khởi"],
+      "tags": ["hoài cổ", "tiệc tùng", "nhảy múa"],
+      "description": "Bản disco-pop pha trộn sample cổ điển vô cùng bắt tai, mang lại không khí vui tươi và rộn ràng cho mọi buổi tiệc.",
+      "language": "ko"
+    },
+    "ive-i-am": {
+      "genres": ["k-pop", "dance-pop", "pop"],
+      "mood": ["tự tin", "sôi động", "hứng khởi"],
+      "tags": ["năng lượng", "làm việc", "phối khí hoành tráng"],
+      "description": "Ca khúc k-pop mang âm hưởng dance-pop tươi sáng và đầy tự tin với giọng hát nội lực, phù hợp để tạo động lực khi làm việc hoặc bắt đầu ngày mới.",
+      "language": "ko"
+    },
+    "ive-love-dive": {
+      "genres": ["k-pop", "dance-pop"],
+      "mood": ["sang trọng", "tự tin", "lôi cuốn"],
+      "tags": ["thời trang", "cá tính", "giai điệu bắt tai"],
+      "description": "Bài hát pop sang trọng, giai điệu gây nghiện cùng thông điệp yêu bản thân đầy tự tin và cuốn hút.",
+      "language": "ko"
+    },
+    "jack-bac-phan": {
+      "genres": ["v-pop", "ballad"],
+      "mood": ["buồn", "hoài niệm"],
+      "tags": ["nhạc trẻ", "tâm trạng"],
+      "description": "Ca khúc mang đậm phong cách v-pop kết hợp ngũ cung, kể câu chuyện tình buồn với giai điệu bắt tai và giọng hát cảm xúc.",
+      "language": "vi"
+    },
+    "jack-hoa-hai-duong": {
+      "genres": ["v-pop", "dance pop"],
+      "mood": ["sôi động", "tự tin"],
+      "tags": ["nhạc trẻ", "điện tử"],
+      "description": "Ca khúc v-pop hiện đại kết hợp EDM và nhạc cụ dân tộc, mang lại không gian âm nhạc vừa cuốn hút vừa mới mẻ. Thích hợp nghe khi cần năng lượng.",
+      "language": "vi"
+    },
+    "jack-hong-nhan": {
+      "genres": ["v-pop", "dance pop"],
+      "mood": ["sôi động", "buồn"],
+      "tags": ["nhạc trẻ", "bắt tai"],
+      "description": "Bản hit mang phong cách v-pop pha trộn nhạc điện tử và âm hưởng truyền thống, tạo nên giai điệu vừa sôi động vừa đượm buồn.",
+      "language": "vi"
+    },
+    "jack-song-gio": {
+      "genres": ["v-pop", "ballad"],
+      "mood": ["buồn", "lãng mạn", "hoài niệm"],
+      "tags": ["nhạc trẻ", "tâm trạng", "thất tình"],
+      "description": "Bản pop ballad kết hợp âm hưởng dân gian quen thuộc của Jack, mang đến giai điệu da diết và nhiều cảm xúc hoài niệm. Phù hợp nghe khi chạnh lòng.",
+      "language": "vi"
+    },
+    "jack-thien-ly-oi": {
+      "genres": ["v-pop"],
+      "mood": ["vui tươi", "nhẹ nhàng", "lãng mạn"],
+      "tags": ["nhạc trẻ", "thư giãn"],
+      "description": "Bản v-pop nhẹ nhàng với giai điệu tươi sáng và dễ nghe, thích hợp để thư giãn và tận hưởng những phút giây bình yên.",
+      "language": "vi"
+    },
+    "jay-chou-love-confession": {
+      "genres": ["c-pop", "r&b", "pop"],
+      "mood": ["lãng mạn", "tươi vui", "ngọt ngào"],
+      "tags": ["tình yêu", "hẹn hò", "mùa hè"],
+      "description": "Bản pop R&B ngọt ngào với tiếng guitar acoustic nhẹ nhàng và giai điệu dễ thương. Hoàn hảo để nghe trong những buổi hẹn hò hoặc dạo phố.",
+      "language": "zh"
+    },
+    "jay-chou-rice-field": {
+      "genres": ["c-pop", "r&b", "folk"],
+      "mood": ["hoài niệm", "vui tươi", "thư giãn"],
+      "tags": ["tuổi thơ", "guitar acoustic", "đồng quê"],
+      "description": "Ca khúc c-pop pha trộn r&b mang giai điệu vui tươi, hoài niệm về tuổi thơ và những ký ức bình yên bên đồng quê. Phù hợp nghe khi thư giãn.",
+      "language": "zh"
+    },
+    "jay-chou-sunny-day": {
+      "genres": ["c-pop", "pop rock", "acoustic"],
+      "mood": ["hoài niệm", "buồn", "lãng mạn"],
+      "tags": ["thanh xuân", "guitar", "trường học"],
+      "description": "Ca khúc pop-rock kinh điển gợi nhớ thời học sinh với tiếng guitar acoustic chủ đạo và giai điệu man mác buồn. Thích hợp nghe khi nhớ về kỷ niệm xưa.",
+      "language": "zh"
+    },
+    "jennie-like-jennie": {
+      "genres": ["k-pop", "hip hop", "dance-pop"],
+      "mood": ["tự tin", "sôi động", "cá tính"],
+      "tags": ["hiện đại", "thời trang", "giải trí"],
+      "description": "Một bài hát k-pop mang phong cách hiện đại với beat bắt tai và tinh thần tự tin, phù hợp cho lúc năng động.",
+      "language": "en"
+    },
+    "jennie-solo": {
+      "genres": ["k-pop", "dance-pop", "hip hop"],
+      "mood": ["tự tin", "quyến rũ", "mạnh mẽ"],
+      "tags": ["cá tính", "thời trang", "nhảy múa"],
+      "description": "Bản dance-pop kết hợp hip hop cá tính và quyến rũ, tạo cảm giác tự lập và mạnh mẽ khi nghe.",
+      "language": "ko"
+    },
+    "jimin-like-crazy": {
+      "genres": ["k-pop", "synth-pop", "r&b"],
+      "mood": ["u sầu", "lãng mạn", "mơ màng"],
+      "tags": ["đêm khuya", "cô đơn", "tâm trạng", "hiện đại"],
+      "description": "Bản synth-pop mang âm hưởng điện tử pha lẫn sự u sầu và mơ màng, lý tưởng để thưởng thức trong không gian tĩnh lặng về đêm.",
+      "language": "ko"
+    },
+    "jj-lin-jiang-nan": {
+      "genres": ["c-pop", "r&b", "ballad"],
+      "mood": ["lãng mạn", "buồn", "hoài niệm"],
+      "tags": ["nhạc trung hoa", "tình yêu", "nhẹ nhàng"],
+      "description": "Bản ballad phong cách trung hoa kết hợp r&b đặc trưng của JJ Lin, mang giai điệu uyển chuyển và hoài niệm về tình yêu. Thích hợp nghe lúc thư giãn.",
+      "language": "zh"
+    },
+    "jung-kook-seven": {
+      "genres": ["k-pop", "r&b", "pop"],
+      "mood": ["lãng mạn", "sôi động", "cuốn hút"],
+      "tags": ["tình yêu", "mùa hè", "thư giãn", "hiện đại"],
+      "description": "Bản pop R&B mang âm hưởng UK garage hiện đại, với giai điệu bắt tai và ngọt ngào thích hợp cho những buổi hẹn hò mùa hè.",
+      "language": "en"
+    },
+    "jung-kook-standing-next-to-you": {
+      "genres": ["k-pop", "r&b", "funk"],
+      "mood": ["sôi động", "mạnh mẽ", "lãng mạn"],
+      "tags": ["nhảy múa", "tình yêu", "năng lượng", "hiện đại"],
+      "description": "Ca khúc kết hợp giữa pop và funk mang hơi hướng cổ điển nhưng rất hiện đại, với nhịp điệu mạnh mẽ và đầy cuốn hút.",
+      "language": "en"
+    },
+    "kenshi-yonezu-kick-back": {
+      "genres": ["j-pop", "rock", "electronic"],
+      "mood": ["sôi động", "mạnh mẽ", "bùng nổ"],
+      "tags": ["tập gym", "giải trí", "anime"],
+      "description": "Ca khúc J-pop pha trộn rock và điện tử cuồng nhiệt, nhịp điệu dồn dập và đầy năng lượng. Phù hợp khi cần giải tỏa căng thẳng hay tập thể thao.",
+      "language": "ja"
+    },
+    "kenshi-yonezu-lemon": {
+      "genres": ["j-pop", "ballad"],
+      "mood": ["buồn", "hoài niệm", "sâu lắng"],
+      "tags": ["ngày mưa", "tâm trạng", "nhạc phim"],
+      "description": "Bản ballad J-pop sâu lắng với giai điệu piano và giọng hát giàu cảm xúc. Rất hợp để nghe trong những buổi chiều mưa hoặc khi cô đơn.",
+      "language": "ja"
+    },
+    "kevin-macleod-dream-catcher": {
+      "genres": ["ambient", "electronic"],
+      "mood": ["thư giãn", "mơ màng"],
+      "tags": ["êm dịu", "ngủ ngon", "nhạc nền"],
+      "description": "Bản nhạc điện tử nhẹ nhàng, êm dịu tạo cảm giác bay bổng như đang chìm vào giấc mơ. Thích hợp nghe để thư giãn hoặc dễ đi vào giấc ngủ.",
+      "language": null
+    },
+    "kevin-macleod-fork-and-spoon": {
+      "genres": ["acoustic", "folk"],
+      "mood": ["vui tươi", "nhẹ nhàng"],
+      "tags": ["vui nhộn", "acoustic", "nhạc nền"],
+      "description": "Bản nhạc acoustic vui tươi, nhẹ nhàng với tiếng guitar mộc mạc và nhịp điệu đáng yêu. Thích hợp làm nhạc nền cho các video nấu ăn hoặc đời sống.",
+      "language": null
+    },
+    "kevin-macleod-ghost-dance": {
+      "genres": ["ambient", "world"],
+      "mood": ["ma mị", "huyền bí"],
+      "tags": ["halloween", "kịch tính", "nhạc nền"],
+      "description": "Bản nhạc không lời mang âm hưởng kỳ bí, ma mị với tiếng gõ nhịp độc đáo. Thích hợp làm nhạc nền cho các chủ đề kinh dị hoặc trò chơi.",
+      "language": null
+    },
+    "kevin-macleod-severe-tire-damage": {
+      "genres": ["rock", "electronic"],
+      "mood": ["sôi động", "mạnh mẽ"],
+      "tags": ["nhanh", "hành động", "guitar điện"],
+      "description": "Bản nhạc rock kết hợp điện tử với nhịp độ nhanh, dồn dập và đầy năng lượng. Thích hợp làm nhạc nền cho các trò chơi hành động hoặc thể thao.",
+      "language": null
+    },
+    "kevin-macleod-stratosphere": {
+      "genres": ["edm", "ambient"],
+      "mood": ["sôi động", "huyền ảo"],
+      "tags": ["điện tử", "không gian", "làm việc"],
+      "description": "Bản nhạc điện tử mang âm hưởng không gian vũ trụ với nhịp điệu dồn dập và hiện đại. Thích hợp làm nhạc nền cho video hoặc khi chơi game.",
+      "language": null
+    },
+    "kevin-macleod-strength-of-the-titans": {
+      "genres": ["orchestral", "soundtrack"],
+      "mood": ["hào hùng", "mạnh mẽ"],
+      "tags": ["hoành tráng", "chiến đấu", "nhạc phim"],
+      "description": "Bản nhạc giao hưởng hoành tráng mang lại cảm giác mạnh mẽ, sử thi và chiến đấu. Thích hợp cho các cảnh hành động hoặc khi cần sự tập trung cao.",
+      "language": null
+    },
+    "kevin-macleod-sugar-plum-dark-mix": {
+      "genres": ["electronic", "ambient"],
+      "mood": ["ma mị", "huyền bí"],
+      "tags": ["giáng sinh", "điện tử", "nhạc nền"],
+      "description": "Bản phối lại mang hơi hướng tối tăm và huyền bí dựa trên giai điệu Giáng sinh quen thuộc. Thích hợp làm nhạc nền cho các video sáng tạo.",
+      "language": null
+    },
+    "kevin-macleod-tea-roots": {
+      "genres": ["world", "ambient"],
+      "mood": ["thư giãn", "bình yên"],
+      "tags": ["thiền", "nhẹ nhàng", "truyền thống"],
+      "description": "Bản nhạc không lời mang âm hưởng truyền thống Á Đông, nhẹ nhàng và thư thái. Thích hợp nghe khi uống trà, đọc sách hoặc thiền định.",
+      "language": null
+    },
+    "king-gnu-specialz": {
+      "genres": ["j-pop", "rock", "alternative rock"],
+      "mood": ["sôi động", "hồi hộp", "mạnh mẽ"],
+      "tags": ["anime", "rock nhật", "giải trí"],
+      "description": "Ca khúc alternative rock đầy ma mị và dồn dập, mang âm hưởng nhạc điện tử hiện đại. Thích hợp cho những ai yêu thích dòng nhạc rock cá tính.",
+      "language": "ja"
+    },
+    "le-sserafim-antifragile": {
+      "genres": ["k-pop", "latin pop", "dance"],
+      "mood": ["sôi động", "mạnh mẽ", "tự tin"],
+      "tags": ["tập gym", "nhảy múa", "năng động"],
+      "description": "Bản nhạc k-pop pha trộn nhịp điệu latin sôi động và cá tính mạnh, rất lý tưởng để tập gym, nhảy múa hoặc tăng cường năng lượng.",
+      "language": "ko"
+    },
+    "le-sserafim-easy": {
+      "genres": ["k-pop", "r&b", "hip hop"],
+      "mood": ["thư giãn", "cuốn hút", "nhẹ nhàng"],
+      "tags": ["chill", "nghe khi lái xe", "thời trang"],
+      "description": "Ca khúc mang âm hưởng r&b và trap êm dịu, với giai điệu lôi cuốn và phong cách hiện đại, thích hợp cho những phút giây thư giãn.",
+      "language": "ko"
+    },
+    "lisa-money": {
+      "genres": ["k-pop", "hip hop", "trap"],
+      "mood": ["tự tin", "sôi động", "mạnh mẽ"],
+      "tags": ["tập gym", "nhảy múa", "cá tính"],
+      "description": "Bản rap pha trộn trap mạnh mẽ với beat cực căng, hoàn hảo để tập thể dục hoặc bùng nổ năng lượng.",
+      "language": "en"
+    },
+    "lisa-rockstar": {
+      "genres": ["k-pop", "hip hop", "edm"],
+      "mood": ["sôi động", "bùng nổ", "tự tin"],
+      "tags": ["lễ hội", "nhảy múa", "cá tính"],
+      "description": "Ca khúc mang hơi hướng edm và hip hop cực kỳ sôi động, thích hợp cho không gian tiệc tùng hoặc vận động mạnh.",
+      "language": "en"
+    },
+    "mayday-stubborn": {
+      "genres": ["rock", "c-pop", "pop rock"],
+      "mood": ["mạnh mẽ", "tự tin", "sôi động"],
+      "tags": ["thanh xuân", "cổ vũ", "guitar điện"],
+      "description": "Ca khúc rock mạnh mẽ và đầy nhiệt huyết về tuổi trẻ và sự kiên trì theo đuổi ước mơ. Thích hợp nghe khi cần thêm động lực trong cuộc sống.",
+      "language": "zh"
+    },
+    "mayday-suddenly-miss-you-so-bad": {
+      "genres": ["rock", "ballad", "c-pop"],
+      "mood": ["buồn", "hoài niệm", "lãng mạn"],
+      "tags": ["thanh xuân", "nhớ nhung", "ballad rock"],
+      "description": "Bản rock ballad đượm buồn về sự nhớ nhung khôn nguôi trong tình yêu và thanh xuân. Thích hợp nghe vào những buổi tối cô đơn.",
+      "language": "zh"
+    },
+    "mck-chim-sau": {
+      "genres": ["v-pop", "r&b", "hip hop"],
+      "mood": ["chill", "lãng mạn", "buồn"],
+      "tags": ["thư giãn", "đêm khuya", "driving"],
+      "description": "Ca khúc R&B pha trộn hip hop với giai điệu mượt mà, cuốn hút và âm hưởng lãng mạn. Phù hợp để nghe thư giãn vào buổi tối hoặc khi lái xe dạo phố.",
+      "language": "vi"
+    },
+    "mono-em-la": {
+      "genres": ["v-pop", "r&b"],
+      "mood": ["lãng mạn", "nhẹ nhàng"],
+      "tags": ["nhạc trẻ", "chill"],
+      "description": "Ca khúc r&b lofi ngọt ngào với giai điệu êm dịu, rất phù hợp để nghe trong không gian lãng mạn hoặc khi thư giãn tối muộn.",
+      "language": "vi"
+    },
+    "mono-waiting-for-you": {
+      "genres": ["v-pop", "dance pop"],
+      "mood": ["sôi động", "lãng mạn", "tự tin"],
+      "tags": ["nhạc trẻ", "bắt tai", "nhảy"],
+      "description": "Bản disco-pop cực kỳ bắt tai với giai điệu hiện đại và trẻ trung, tạo hiệu ứng lan tỏa mạnh mẽ trong cộng đồng âm nhạc.",
+      "language": "vi"
+    },
+    "my-tam-dau-chi-rieng-em": {
+      "genres": ["ballad", "v-pop"],
+      "mood": ["buồn", "lãng mạn", "da diết"],
+      "tags": ["thất tình", "tâm trạng", "nghe khi buồn", "buổi tối"],
+      "description": "Bản ballad buồn và da diết với giọng hát đầy cảm xúc của Mỹ Tâm, rất thích hợp để nghe trong những lúc tâm trạng hay buổi tối cô đơn.",
+      "language": "vi"
+    },
+    "my-tam-uoc-gi": {
+      "genres": ["ballad", "v-pop"],
+      "mood": ["hoài niệm", "buồn", "lãng mạn"],
+      "tags": ["thập niên 2000", "tình yêu", "kỷ niệm", "nhạc xưa"],
+      "description": "Một bản ballad trữ tình kinh điển mang âm hưởng hoài niệm, gợi nhớ nhiều kỷ niệm đẹp về tình yêu trong quá khứ.",
+      "language": "vi"
+    },
+    "newjeans-ditto": {
+      "genres": ["k-pop", "indie pop", "synth-pop"],
+      "mood": ["hoài niệm", "buồn nhẹ", "ấm áp"],
+      "tags": ["mùa đông", "hoài niệm", "thư giãn"],
+      "description": "Giai điệu synth-pop hoài niệm pha lẫn tiết tấu garage ấm áp, gợi cảm giác bâng khuâng, thích hợp nghe khi trời se lạnh.",
+      "language": "ko"
+    },
+    "newjeans-hype-boy": {
+      "genres": ["k-pop", "r&b", "dance-pop"],
+      "mood": ["vui tươi", "trẻ trung", "hứng khởi"],
+      "tags": ["dạo phố", "thanh xuân", "nhẹ nhàng"],
+      "description": "Bản pop mang âm hưởng thập niên 2000 tươi mới, trong trẻo và dễ chịu, lý tưởng cho những buổi dạo phố cuối tuần.",
+      "language": "ko"
+    },
+    "newjeans-omg": {
+      "genres": ["k-pop", "r&b", "hip hop"],
+      "mood": ["ngọt ngào", "vui tươi", "dễ thương"],
+      "tags": ["thư giãn", "hẹn hò", "trẻ trung"],
+      "description": "Ca khúc r&b pha chút hip hop với nhịp điệu nhún nhảy nhẹ nhàng, mang lại cảm giác vui vẻ và ngọt ngào.",
+      "language": "ko"
+    },
+    "newjeans-super-shy": {
+      "genres": ["k-pop", "drum and bass", "dance-pop"],
+      "mood": ["vui tươi", "hứng khởi", "ngọt ngào"],
+      "tags": ["mùa hè", "nhảy múa", "dạo phố"],
+      "description": "Bản nhạc drum and bass nhanh nhẹn, tươi mát và đáng yêu, rất hợp cho những chuyến đi chơi mùa hè.",
+      "language": "ko"
+    },
+    "rose-apt": {
+      "genres": ["k-pop", "pop-rock", "indie pop"],
+      "mood": ["vui tươi", "sôi động", "hứng khởi"],
+      "tags": ["tiệc tùng", "năng động", "giải trí"],
+      "description": "Ca khúc pop-rock vui tươi, nhịp điệu bắt tai mang âm hưởng tươi mới, thích hợp cho các buổi tiệc tùng hoặc tụ tập bạn bè.",
+      "language": "en"
+    },
+    "seventeen-hot": {
+      "genres": ["k-pop", "dance", "hip hop"],
+      "mood": ["sôi động", "bùng nổ", "nhiệt huyết"],
+      "tags": ["tập gym", "năng lượng", "mùa hè"],
+      "description": "Ca khúc k-pop mang màu sắc hip hop và dance rực cháy nhiệt huyết, mang lại nguồn năng lượng bùng nổ cho người nghe.",
+      "language": "ko"
+    },
+    "seventeen-super": {
+      "genres": ["k-pop", "dance", "hip hop"],
+      "mood": ["hùng tráng", "mạnh mẽ", "sôi động"],
+      "tags": ["nhảy múa", "hoành tráng", "tập luyện"],
+      "description": "Bản nhạc k-pop kết hợp yếu tố truyền thống và hiện đại với phần beat hoành tráng, tạo cảm giác mạnh mẽ và hào hứng.",
+      "language": "ko"
+    },
+    "son-tung-chung-ta-cua-hien-tai": {
+      "genres": ["v-pop", "ballad", "r&b"],
+      "mood": ["buồn", "lãng mạn", "hoài niệm"],
+      "tags": ["nhạc trẻ", "thất tình", "thư giãn", "buổi tối"],
+      "description": "Bản pop ballad nhẹ nhàng, đượm buồn và hoài niệm, thích hợp để nghe khi một mình vào buổi tối.",
+      "language": "vi"
+    },
+    "son-tung-dung-lam-trai-tim-anh-dau": {
+      "genres": ["v-pop", "dance-pop"],
+      "mood": ["vui tươi", "hạnh phúc", "ngọt ngào"],
+      "tags": ["tỏ tình", "yêu đời", "mùa hè", "nhạc trẻ"],
+      "description": "Giai điệu pop tươi sáng, vui tươi và tràn ngập năng lượng hạnh phúc, hoàn hảo cho những dịp tỏ tình.",
+      "language": "vi"
+    },
+    "son-tung-hay-trao-cho-anh": {
+      "genres": ["v-pop", "hip hop", "dance"],
+      "mood": ["sôi động", "tự tin", "vui vẻ"],
+      "tags": ["tiệc tùng", "nhảy múa", "mùa hè", "driving"],
+      "description": "Ca khúc nhạc pop kết hợp hip hop cực kỳ sôi động, mang âm hưởng Latin hiện đại với giai điệu bắt tai.",
+      "language": "vi"
+    },
+    "son-tung-lac-troi": {
+      "genres": ["v-pop", "hip hop", "electronic"],
+      "mood": ["huyền ảo", "mạnh mẽ", "độc đáo"],
+      "tags": ["cổ trang", "hiện đại", "độc lạ"],
+      "description": "Sự pha trộn độc đáo giữa nhạc cụ truyền thống và beat điện tử hiện đại tạo nên không gian âm nhạc huyền ảo.",
+      "language": "vi"
+    },
+    "son-tung-muon-roi-ma-sao-con": {
+      "genres": ["v-pop", "r&b"],
+      "mood": ["lãng mạn", "thao thức", "nhẹ nhàng"],
+      "tags": ["thao thức", "nhớ nhung", "ngủ muộn", "thanh xuân"],
+      "description": "Bản r&b pop trẻ trung với giaiidiệu bắt tai về nỗi nhớ nhung khi yêu, thích hợp nghe lúc đêm khuya.",
+      "language": "vi"
+    },
+    "son-tung-noi-nay-co-anh": {
+      "genres": ["v-pop", "dance-pop"],
+      "mood": ["lãng mạn", "vui vẻ", "ngọt ngào"],
+      "tags": ["tình yêu", "ngọt ngào", "thanh xuân", "hẹn hò"],
+      "description": "Bài hát pop ngọt ngào và tươi vui ca ngợi tình yêu đôi lứa, rất hợp để nghe khi hẹn hò hoặc dạo phố.",
+      "language": "vi"
+    },
+    "soobin-anh-da-quen-voi-co-don": {
+      "genres": ["v-pop", "r&b"],
+      "mood": ["buồn", "cô đơn", "tự sự"],
+      "tags": ["tự sự", "đêm khuya", "tâm trạng"],
+      "description": "Ca khúc r&b mang âm hưởng trầm buồn, giai điệu bắt tai nói về nỗi cô đơn quen thuộc của chàng trai.",
+      "language": "vi"
+    },
+    "soobin-dancing-in-the-dark": {
+      "genres": ["v-pop", "r&b", "electronic"],
+      "mood": ["huyền ảo", "lãng mạn", "cuốn hút"],
+      "tags": ["đêm khuya", "thư giãn", "hiện đại"],
+      "description": "Ca khúc r&b hiện đại với âm hưởng điện tử quyến rũ, hoàn hảo cho những không gian tối và thư giãn.",
+      "language": "vi"
+    },
+    "soobin-gia-nhu": {
+      "genres": ["v-pop", "ballad", "r&b"],
+      "mood": ["buồn", "hoài niệm", "day dứt"],
+      "tags": ["tiếc nuối", "chia tay", "tâm trạng"],
+      "description": "Bản ballad nhẹ nhàng nhưng đượm buồn về những tiếc nuối trong tình yêu đã qua.",
+      "language": "vi"
+    },
+    "soobin-phia-sau-mot-co-gai": {
+      "genres": ["v-pop", "ballad"],
+      "mood": ["buồn", "sâu lắng", "cô đơn"],
+      "tags": ["thất tình", "tình đơn phương", "acoustic", "buổi tối"],
+      "description": "Bản pop ballad sâu lắng về tình yêu đơn phương, mang lại cảm giác nghẹn ngào và day dứt cho người nghe.",
+      "language": "vi"
+    },
+    "stray-kids-gods-menu": {
+      "genres": ["k-pop", "hip hop", "trap"],
+      "mood": ["sôi động", "mạnh mẽ", "bùng nổ"],
+      "tags": ["tập gym", "cực sung", "độc lạ"],
+      "description": "Bản hip hop k-pop mang âm hưởng trap mạnh mẽ với cấu trúc độc đáo và nhịp điệu dồn dập, cực kỳ thích hợp khi tập thể lực.",
+      "language": "ko"
+    },
+    "stray-kids-maniac": {
+      "genres": ["k-pop", "hip hop", "electronic"],
+      "mood": ["mạnh mẽ", "ma mị", "cuốn hút"],
+      "tags": ["cá tính", "năng lượng", "thể thao"],
+      "description": "Ca khúc k-pop pha trộn âm thanh điện tử sắc sảo và hip hop nặng đô, tạo nên không gian âm nhạc cá tính và đầy lôi cuốn.",
+      "language": "ko"
+    },
+    "stray-kids-s-class": {
+      "genres": ["k-pop", "hip hop", "dance"],
+      "mood": ["sôi động", "tự tin", "bùng nổ"],
+      "tags": ["tập gym", "nhảy múa", "đẳng cấp"],
+      "description": "Bản nhạc k-pop tổng hợp nhiều phong cách hip hop với nhịp điệu dồn dập và bùng nổ năng lượng, thích hợp cho các hoạt động thể chất mạnh.",
+      "language": "ko"
+    },
+    "tang-duy-tan-ben-tren-tang-lau": {
+      "genres": ["v-pop", "edm", "dance-pop"],
+      "mood": ["sôi động", "cuốn hút", "tâm trạng"],
+      "tags": ["quẩy", "driving", "tập gym"],
+      "description": "Bản hit dance-pop kết hợp âm hưởng EDM bắt tai, nhịp điệu dồn dập và phần điệp khúc gây nghiện. Phù hợp cho không gian sôi động, tiệc tùng hoặc khi lái xe đêm.",
+      "language": "vi"
+    },
+    "tang-duy-tan-da-vu": {
+      "genres": ["v-pop", "edm"],
+      "mood": ["sôi động", "ma mị", "cuốn hút"],
+      "tags": ["driving", "quẩy", "thư giãn"],
+      "description": "Ca khúc mang phong cách điện tử pha chút ma mị, huyền ảo với bassline mạnh mẽ. Rất thích hợp để bật khi lái xe đêm hoặc trong các buổi tụ tập cần không gian năng động.",
+      "language": "vi"
+    },
+    "tlinh-gai-doc-than": {
+      "genres": ["v-pop", "hip hop"],
+      "mood": ["sôi động", "tự tin", "vui vẻ"],
+      "tags": ["tập gym", "nhảy múa", "tự tin"],
+      "description": "Ca khúc mang âm hưởng hip hop và dance-pop trẻ trung, năng động, cổ vũ tinh thần độc thân và tự tin của phụ nữ hiện đại. Rất hợp cho các buổi tập luyện hoặc tiệc tùng.",
+      "language": "vi"
+    },
+    "tlinh-neu-luc-do": {
+      "genres": ["v-pop", "r&b", "ballad"],
+      "mood": ["buồn", "hoài niệm", "tâm trạng"],
+      "tags": ["đêm khuya", "thất tình", "tự sự"],
+      "description": "Một bản R&B ballad mang màu sắc tự sự, giàu cảm xúc với giọng hát đầy trải nghiệm về những nuối tiếc trong tình yêu. Thích hợp nghe khi một mình lúc đêm về.",
+      "language": "vi"
+    },
+    "twice-fancy": {
+      "genres": ["k-pop", "dance-pop", "synth-pop"],
+      "mood": ["vui tươi", "sôi động", "lãng mạn"],
+      "tags": ["giải trí", "tiệc tùng", "dạo phố"],
+      "description": "Bản nhạc k-pop mang phong cách synth-pop rực rỡ, tràn đầy năng lượng tươi vui và giai điệu bắt tai, hoàn hảo cho các buổi tụ tập bạn bè.",
+      "language": "ko"
+    },
+    "twice-what-is-love": {
+      "genres": ["k-pop", "dance-pop", "bubblegum pop"],
+      "mood": ["vui tươi", "ngọt ngào", "hứng khởi"],
+      "tags": ["dễ thương", "hoài niệm", "thư giãn"],
+      "description": "Ca khúc k-pop kinh điển mang màu sắc bubblegum pop ngọt ngào, tươi vui với giai điệu dễ thương làm bừng sáng tâm trạng.",
+      "language": "ko"
+    },
+    "vu-buoc-qua-nhau": {
+      "genres": ["v-pop", "indie pop", "ballad"],
+      "mood": ["buồn", "hoài niệm", "nhẹ nhàng"],
+      "tags": ["thất tình", "tự sự", "acoustic"],
+      "description": "Bản pop ballad nhẹ nhàng, sâu lắng về những mối tình lướt qua nhau trong đời. Giai điệu chậm rãi và giọng hát ấm áp thích hợp cho những khoảnh khắc tĩnh lặng một mình.",
+      "language": "vi"
+    },
+    "vu-la-lung": {
+      "genres": ["v-pop", "indie pop", "acoustic"],
+      "mood": ["buồn", "lãng mạn", "nhẹ nhàng"],
+      "tags": ["acoustic", "guitar", "cà phê", "ngày mưa"],
+      "description": "Ca khúc indie pop mang âm hưởng acoustic mộc mạc với tiếng đàn guitar dịu dàng. Tạo cảm giác hoài niệm, lãng mạn, hoàn hảo cho những quán cà phê hoặc ngày mưa.",
+      "language": "vi"
+    },
+    "wren-evans-thich-em-hoi-nhieu": {
+      "genres": ["v-pop", "r&b", "indie pop"],
+      "mood": ["lãng mạn", "vui tươi", "chill"],
+      "tags": ["thư giãn", "hẹn hò", "năng động"],
+      "description": "Bản R&B pha lẫn indie pop hiện đại, trẻ trung với giai điệu bắt tai và ca từ nghịch ngợm, đáng yêu. Hoàn hảo để nghe khi hẹn hò hoặc thư giãn cùng bạn bè.",
+      "language": "vi"
+    },
+    "yoasobi-idol": {
+      "genres": ["j-pop", "dance", "electronic"],
+      "mood": ["sôi động", "tươi vui", "bất ngờ"],
+      "tags": ["hoạt hình", "giải trí", "nhảy múa"],
+      "description": "Ca khúc J-pop đầy màu sắc với cấu trúc độc đáo và nhịp điệu dồn dập, mang lại cảm giác phấn khích. Thích hợp cho các buổi tiệc hoặc giải trí.",
+      "language": "ja"
+    },
+    "yoasobi-yoru-ni-kakeru": {
+      "genres": ["j-pop", "indie pop", "electronic"],
+      "mood": ["sôi động", "hồi hộp", "cuốn hút"],
+      "tags": ["chạy bộ", "lướt web", "nhạc trẻ"],
+      "description": "Bản J-pop điện tử nhanh nhẹn, kết hợp giai điệu bắt tai và giọng hát trong trẻo. Thích hợp khi muốn tìm kiếm sự hưng phấn lúc di chuyển.",
+      "language": "ja"
+    }
+  },
+  "artists": {
+    "ado": {
+      "genres": ["j-pop", "rock", "dance", "cabaret"]
+    },
+    "aespa": {
+      "genres": ["k-pop", "dance-pop", "edm", "pop"]
+    },
+    "aimer": {
+      "genres": ["j-pop", "rock", "ballad", "anime"]
+    },
+    "bich-phuong": {
+      "genres": ["v-pop", "dance-pop", "pop"]
+    },
+    "bigbang": {
+      "genres": ["k-pop", "hip hop", "r&b", "dance-pop"]
+    },
+    "blackpink": {
+      "genres": ["k-pop", "dance-pop", "hip hop", "pop"]
+    },
+    "bts": {
+      "genres": ["k-pop", "hip hop", "pop", "dance-pop"]
+    },
+    "creepy-nuts": {
+      "genres": ["hip hop", "rap", "j-pop", "edm"]
+    },
+    "den": {
+      "genres": ["hip hop", "rap", "indie"]
+    },
+    "duc-phuc": {
+      "genres": ["v-pop", "ballad", "pop"]
+    },
+    "eason-chan": {
+      "genres": ["c-pop", "mandopop", "cantopop", "ballad"]
+    },
+    "fujii-kaze": {
+      "genres": ["j-pop", "r&b", "soul", "jazz"]
+    },
+    "g-dragon": {
+      "genres": ["k-pop", "hip hop", "r&b", "rap"]
+    },
+    "gem": {
+      "genres": ["c-pop", "mandopop", "ballad", "rock"]
+    },
+    "hieuthuhai": {
+      "genres": ["hip hop", "v-pop", "rap"]
+    },
+    "higedan": {
+      "genres": ["j-pop", "pop rock", "piano rock", "soul"]
+    },
+    "hngle": {
+      "genres": ["v-pop", "ballad", "r&b"]
+    },
+    "hoa-minzy": {
+      "genres": ["v-pop", "ballad", "dance-pop"]
+    },
+    "hoang-thuy-linh": {
+      "genres": ["v-pop", "dance-pop", "electronic"]
+    },
+    "iu": {
+      "genres": ["k-pop", "ballad", "r&b", "acoustic"]
+    },
+    "ive": {
+      "genres": ["k-pop", "dance-pop", "pop"]
+    },
+    "jack": {
+      "genres": ["v-pop", "dance-pop", "folk-pop"]
+    },
+    "jay-chou": {
+      "genres": ["c-pop", "mandopop", "r&b", "rock"]
+    },
+    "jennie": {
+      "genres": ["k-pop", "hip hop", "pop", "r&b"]
+    },
+    "jimin": {
+      "genres": ["k-pop", "pop", "r&b", "dance-pop"]
+    },
+    "jj-lin": {
+      "genres": ["c-pop", "mandopop", "ballad", "r&b"]
+    },
+    "jung-kook": {
+      "genres": ["k-pop", "pop", "r&b", "dance-pop"]
+    },
+    "kenshi-yonezu": {
+      "genres": ["j-pop", "rock", "indie pop", "alternative"]
+    },
+    "kevin-macleod": {
+      "genres": ["electronic", "classical", "ambient", "soundtrack"]
+    },
+    "king-gnu": {
+      "genres": ["rock", "j-pop", "alternative rock", "experimental"]
+    },
+    "le-sserafim": {
+      "genres": ["k-pop", "dance-pop", "pop", "edm"]
+    },
+    "lisa": {
+      "genres": ["k-pop", "hip hop", "rap", "pop"]
+    },
+    "mayday": {
+      "genres": ["rock", "c-pop", "pop rock"]
+    },
+    "mck": {
+      "genres": ["hip hop", "r&b", "rap"]
+    },
+    "mono": {
+      "genres": ["v-pop", "dance-pop", "r&b"]
+    },
+    "my-tam": {
+      "genres": ["v-pop", "ballad", "pop", "r&b"]
+    },
+    "newjeans": {
+      "genres": ["k-pop", "pop", "r&b", "dance-pop"]
+    },
+    "rose": {
+      "genres": ["k-pop", "pop", "indie pop", "rock"]
+    },
+    "seventeen": {
+      "genres": ["k-pop", "dance-pop", "hip hop", "r&b"]
+    },
+    "son-tung": {
+      "genres": ["v-pop", "dance-pop", "hip hop"]
+    },
+    "soobin": {
+      "genres": ["v-pop", "r&b", "ballad"]
+    },
+    "stray-kids": {
+      "genres": ["k-pop", "hip hop", "edm", "dance-pop"]
+    },
+    "tang-duy-tan": {
+      "genres": ["v-pop", "dance-pop", "electronic"]
+    },
+    "tlinh": {
+      "genres": ["r&b", "hip hop", "v-pop"]
+    },
+    "twice": {
+      "genres": ["k-pop", "dance-pop", "pop"]
+    },
+    "vu": {
+      "genres": ["indie pop", "ballad", "acoustic"]
+    },
+    "wren-evans": {
+      "genres": ["v-pop", "r&b", "indie pop"]
+    },
+    "yoasobi": {
+      "genres": ["j-pop", "electropop", "synth-pop", "dance"]
+    }
+  }
+}

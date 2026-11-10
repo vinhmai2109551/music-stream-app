@@ -1,0 +1,139 @@
+import { router } from "expo-router"
+import { Music } from "lucide-react-native"
+import type { ReactNode } from "react"
+import { StyleSheet, View } from "react-native"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { HorizontalList } from "@/components/ui/HorizontalList"
+import { SectionHeader } from "@/components/ui/SectionHeader"
+import type { Region } from "@/api/types"
+import type { HomeData } from "@/hooks/useHomeData"
+import { useAuthStore } from "@/store/authStore"
+import { usePlayerStore } from "@/store/playerStore"
+import { spacing } from "@/theme"
+import type { Suggestion } from "@/types"
+import { toChartItem, toSuggestion } from "@/utils/homeMappers"
+import { AlbumCard } from "./AlbumCard"
+import { ArtistAvatar } from "./ArtistAvatar"
+import { ChartCard } from "./ChartCard"
+import { PremiumBanner } from "./PremiumBanner"
+import { RecommendationSections } from "./RecommendationSections"
+import { SuggestionCard } from "./SuggestionCard"
+import { useTranslation } from "@/i18n"
+
+const openPlaylist = (id: string) => router.push({ pathname: "/playlist/[id]", params: { id } })
+const openAlbum = (id: string) => router.push({ pathname: "/album/[id]", params: { id } })
+const openArtist = (id: string) => router.push({ pathname: "/artist/[id]", params: { id } })
+const openSearch = () => router.navigate("/search")
+const openPremium = () => router.push("/premium")
+
+type HomeContentProps = {
+  data: HomeData
+  /** The region chosen on Home; the personal sections follow it. */
+  region: Region | null
+}
+
+/** The sections of the Home screen, below the header and the search field. */
+export function HomeContent({ data, region }: HomeContentProps) {
+  const { t } = useTranslation()
+
+  const playFromList = usePlayerStore((state) => state.playFromList)
+  const isPremium = useAuthStore((state) => state.user?.isPremium ?? false)
+
+  const isEmpty =
+    data.suggestions.length === 0 &&
+    data.charts.length === 0 &&
+    data.albums.length === 0 &&
+    data.artists.length === 0
+  if (isEmpty) {
+    return (
+      <EmptyState
+        icon={Music}
+        title={t("home.emptyTitle")}
+        description={t("home.emptyDescription")}
+      />
+    )
+  }
+
+  const playSuggestion = (suggestion: Suggestion) => {
+    const index = data.suggestions.findIndex((track) => track.id === suggestion.trackId)
+    if (index < 0) return
+    playFromList(data.suggestions, index, t("home.sections.suggestions"))
+    router.push("/player")
+  }
+
+  const firstChart = data.charts[0]
+
+  return (
+    <>
+      <RecommendationSections region={region} />
+
+      <Section title={t("home.sections.suggestions")} onAction={openSearch}>
+        <HorizontalList
+          data={data.suggestions.map(toSuggestion)}
+          keyExtractor={(item) => item.id}
+          emptyMessage={t("common.empty.songs")}
+          renderItem={({ item }) => <SuggestionCard suggestion={item} onPress={playSuggestion} />}
+        />
+      </Section>
+
+      <Section
+        title={t("home.sections.charts")}
+        onAction={firstChart ? () => openPlaylist(firstChart.id) : undefined}
+      >
+        <HorizontalList
+          data={data.charts.map(toChartItem)}
+          keyExtractor={(item) => item.id}
+          emptyMessage={t("common.empty.charts")}
+          renderItem={({ item }) => <ChartCard chart={item} onPress={openPlaylist} />}
+        />
+      </Section>
+
+      <Section title={t("home.sections.trendingAlbums")}>
+        <HorizontalList
+          data={data.albums}
+          keyExtractor={(item) => item.id}
+          emptyMessage={t("common.empty.albums")}
+          renderItem={({ item }) => <AlbumCard album={item} onPress={openAlbum} />}
+        />
+      </Section>
+
+      <Section title={t("home.sections.popularArtists")}>
+        <HorizontalList
+          data={data.artists}
+          keyExtractor={(item) => item.id}
+          emptyMessage={t("common.empty.artists")}
+          renderItem={({ item }) => <ArtistAvatar artist={item} onPress={openArtist} />}
+        />
+      </Section>
+
+      {!isPremium && (
+        <View style={[styles.padded, styles.banner]}>
+          <PremiumBanner onPress={openPremium} />
+        </View>
+      )}
+    </>
+  )
+}
+
+type SectionProps = {
+  title: string
+  onAction?: () => void
+  children: ReactNode
+}
+
+function Section({ title, onAction, children }: SectionProps) {
+  return (
+    <View style={styles.section}>
+      <View style={styles.padded}>
+        <SectionHeader title={title} onAction={onAction} />
+      </View>
+      {children}
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  padded: { paddingHorizontal: spacing.screen },
+  section: { marginTop: spacing.xxl },
+  banner: { marginTop: spacing.xxxl },
+})

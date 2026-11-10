@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from "react-native"
 import { sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
+import { useTranslation } from "@/i18n"
 
 type SectionHeaderProps = {
   title: string
@@ -9,7 +10,9 @@ type SectionHeaderProps = {
   onAction?: () => void
 }
 
-export function SectionHeader({ title, action = "See all", onAction }: SectionHeaderProps) {
+export function SectionHeader({ title, action, onAction }: SectionHeaderProps) {
+  const { t } = useTranslation()
+
   return (
     <View style={styles.row}>
       <AppText variant="title" numberOfLines={1} style={styles.title}>
@@ -22,7 +25,7 @@ export function SectionHeader({ title, action = "See all", onAction }: SectionHe
           style={({ pressed }) => [styles.action, pressedStyle(pressed)]}
         >
           <AppText variant="caption" color="secondary">
-            {action}
+            {action ?? t("common.seeAll")}
           </AppText>
         </Pressable>
       )}

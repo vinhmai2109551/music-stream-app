@@ -7,7 +7,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated"
-import { colors, radius } from "@/theme"
+import { radius, useColors } from "@/theme"
 
 const PULSE_DURATION = 800
 const PULSE_MIN_OPACITY = 0.45
@@ -25,6 +25,8 @@ export function Skeleton({
   rounded = radius.cover,
   style,
 }: SkeletonProps) {
+  const colors = useColors()
+
   const opacity = useSharedValue(1)
 
   useEffect(() => {

@@ -1,19 +1,23 @@
-import { Image } from "expo-image"
 import { memo } from "react"
+import { User } from "lucide-react-native"
 import { Pressable, StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
 import { Button } from "@/components/ui/Button"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { pressedStyle } from "@/components/ui/pressed"
 import { useLibraryStore } from "@/store/libraryStore"
 import { radius, shadows, sizes, spacing } from "@/theme"
-import type { Artist } from "@/types"
+import type { ImageSource } from "@/types"
+import { useTranslation } from "@/i18n"
 
 type ArtistAvatarProps = {
-  artist: Artist
+  artist: { id: string; name: string; image: ImageSource }
   onPress: (id: string) => void
 }
 
 function ArtistAvatarBase({ artist, onPress }: ArtistAvatarProps) {
+  const { t } = useTranslation()
+
   const followed = useLibraryStore((state) => state.followedArtistIds.includes(artist.id))
   const toggleFollow = useLibraryStore((state) => state.toggleFollow)
 
@@ -21,19 +25,19 @@ function ArtistAvatarBase({ artist, onPress }: ArtistAvatarProps) {
     <View style={styles.container}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Artist ${artist.name}`}
+        accessibilityLabel={t("artist.named", { name: artist.name })}
         onPress={() => onPress(artist.id)}
         style={({ pressed }) => [styles.link, pressedStyle(pressed)]}
       >
-        <Image source={artist.image} contentFit="cover" style={styles.image} />
+        <CoverImage source={artist.image} label={artist.name} icon={User} style={styles.image} />
         <AppText variant="caption" numberOfLines={1} ellipsizeMode="tail" style={styles.name}>
           {artist.name}
         </AppText>
       </Pressable>
       <Button
         compact
-        label={followed ? "Following" : "Follow"}
-        variant={followed ? "secondary" : "dark"}
+        label={followed ? t("common.following") : t("common.follow")}
+        variant={followed ? "tonal" : "outline"}
         onPress={() => toggleFollow(artist.id)}
         style={styles.follow}
       />

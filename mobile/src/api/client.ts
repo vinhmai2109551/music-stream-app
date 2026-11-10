@@ -1,7 +1,10 @@
-import { copy } from "@/constants/copy"
+import { t } from "@/i18n"
 
 const REQUEST_TIMEOUT_MS = 15_000
 const BASE_URL = (process.env.EXPO_PUBLIC_API_URL ?? "").replace(/\/+$/, "")
+
+/** The API address without a trailing slash; empty when it is not configured. */
+export const API_BASE_URL = BASE_URL
 
 export type ApiErrorKind = "http" | "network" | "timeout"
 
@@ -25,11 +28,21 @@ export class ApiError extends Error {
 
 interface ApiHandlers {
   getToken: () => string | null
-  /** Called when a request that carried a token comes back 401 (expired or invalid token). */
+  /**
+   * Exchanges the stored refresh token for a new token pair and returns the new access token.
+   * Returns null when the server rejected the refresh token (the session is over) and throws an
+   * ApiError for network or server trouble (the session may still be fine).
+   */
+  refreshSession: () => Promise<string | null>
+  /** Called when the session cannot be continued: refresh was rejected or the retry was 401. */
   onUnauthorized: () => void
 }
 
-let handlers: ApiHandlers = { getToken: () => null, onUnauthorized: () => {} }
+let handlers: ApiHandlers = {
+  getToken: () => null,
+  refreshSession: () => Promise.resolve(null),
+  onUnauthorized: () => {},
+}
 
 /** Wires the client to the auth store without importing it (avoids a circular dependency). */
 export function configureApi(next: Partial<ApiHandlers>): void {
@@ -37,11 +50,11 @@ export function configureApi(next: Partial<ApiHandlers>): void {
 }
 
 export interface RequestOptions {
-  /** Do not send the token and do not treat a 401 as an expired session (login, register). */
+  /** No token, no refresh, no logout on 401 (login, register, refresh, logout). */
   skipAuth?: boolean
 }
 
-function parseBody(text: string): unknown {
+export function parseBody(text: string): unknown {
   if (!text) return undefined
   try {
     return JSON.parse(text)
@@ -51,7 +64,7 @@ function parseBody(text: string): unknown {
 }
 
 /** NestJS puts a string, or an array of strings for validation errors, in `message`. */
-function messageFromBody(body: unknown, status: number): string {
+export function messageFromBody(body: unknown, status: number): string {
   if (typeof body === "object" && body !== null && "message" in body) {
     const { message } = body as { message: unknown }
     if (Array.isArray(message)) {
@@ -61,20 +74,20 @@ function messageFromBody(body: unknown, status: number): string {
       return message
     }
   }
-  return status >= 500 ? copy.errors.server : copy.errors.unknown
+  return status >= 500 ? t("errors.server") : t("errors.unknown")
 }
 
-async function request<T>(
+/** One HTTP round trip with the given token. Throws ApiError for anything but a 2xx answer. */
+async function send<T>(
   method: string,
   path: string,
-  body?: unknown,
-  options: RequestOptions = {},
+  body: unknown,
+  token: string | null,
 ): Promise<T> {
   if (!BASE_URL) {
-    throw new ApiError({ status: 0, kind: "network", message: copy.errors.notConfigured })
+    throw new ApiError({ status: 0, kind: "network", message: t("errors.notConfigured") })
   }
 
-  const token = options.skipAuth ? null : handlers.getToken()
   const headers: Record<string, string> = { Accept: "application/json" }
   if (body !== undefined) headers["Content-Type"] = "application/json"
   if (token) headers.Authorization = `Bearer ${token}`
@@ -102,24 +115,65 @@ async function request<T>(
   } catch {
     throw new ApiError(
       timedOut
-        ? { status: 0, kind: "timeout", message: copy.errors.timeout }
-        : { status: 0, kind: "network", message: copy.errors.network },
+        ? { status: 0, kind: "timeout", message: t("errors.timeout") }
+        : { status: 0, kind: "network", message: t("errors.network") },
     )
   } finally {
     clearTimeout(timer)
   }
 
   if (!ok) {
-    const error = new ApiError({
+    throw new ApiError({
       status,
       kind: "http",
       message: messageFromBody(data, status),
       details: data,
     })
-    if (status === 401 && token) handlers.onUnauthorized()
-    throw error
   }
   return data as T
+}
+
+let refreshInFlight: Promise<string | null> | null = null
+
+/** Gets a fresh access token. Every request that hits a 401 at the same time shares one refresh. */
+function renewAccessToken(rejectedToken: string): Promise<string | null> {
+  // Another request already renewed the token while this one was in flight: reuse the new one.
+  const current = handlers.getToken()
+  if (current && current !== rejectedToken) return Promise.resolve(current)
+
+  refreshInFlight ??= handlers.refreshSession().finally(() => {
+    refreshInFlight = null
+  })
+  return refreshInFlight
+}
+
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  options: RequestOptions = {},
+): Promise<T> {
+  const token = options.skipAuth ? null : handlers.getToken()
+  try {
+    return await send<T>(method, path, body, token)
+  } catch (error) {
+    // Only an authenticated request that was rejected is worth a refresh.
+    if (!token || !(error instanceof ApiError) || error.status !== 401) throw error
+
+    // Network trouble while refreshing throws here and keeps the session; the caller just sees it.
+    const freshToken = await renewAccessToken(token)
+    if (!freshToken) {
+      handlers.onUnauthorized()
+      throw error
+    }
+
+    try {
+      return await send<T>(method, path, body, freshToken) // retried exactly once
+    } catch (retryError) {
+      if (retryError instanceof ApiError && retryError.status === 401) handlers.onUnauthorized()
+      throw retryError
+    }
+  }
 }
 
 export const api = {
@@ -132,4 +186,14 @@ export const api = {
     request<T>("PUT", path, body, options),
   delete: <T>(path: string, options?: RequestOptions) =>
     request<T>("DELETE", path, undefined, options),
+}
+
+/**
+ * What a streaming request (see ./stream) needs of the session: the token, a way to renew it that
+ * shares one refresh with every other request, and what to do when the session is over.
+ */
+export const session = {
+  token: (): string | null => handlers.getToken(),
+  renew: (rejectedToken: string): Promise<string | null> => renewAccessToken(rejectedToken),
+  expired: (): void => handlers.onUnauthorized(),
 }

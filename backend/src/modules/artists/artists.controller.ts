@@ -1,16 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from "@nestjs/common"
 import { ApiOperation, ApiTags } from "@nestjs/swagger"
 import { Role } from "../../generated/prisma/enums.js"
-import {
-  Auth,
-  CurrentUser,
-  OptionalAuth,
-  PaginationQueryDto,
-  type AuthUser,
-  type Page,
-} from "../../shared/index.js"
+import { Auth, CurrentUser, OptionalAuth, type AuthUser, type Page } from "../../shared/index.js"
 import { ArtistsService, type ArtistView } from "./artists.service.js"
-import { CreateArtistDto, UpdateArtistDto } from "./dto/artist.dto.js"
+import { CreateArtistDto, ListArtistsQueryDto, UpdateArtistDto } from "./dto/artist.dto.js"
 
 @ApiTags("artists")
 @Controller("artists")
@@ -19,9 +12,9 @@ export class ArtistsController {
 
   @Get()
   @OptionalAuth()
-  @ApiOperation({ summary: "List artists (search with ?q=)" })
+  @ApiOperation({ summary: "List artists (search with ?q=, filter with ?region=)" })
   list(
-    @Query() query: PaginationQueryDto,
+    @Query() query: ListArtistsQueryDto,
     @CurrentUser() user: AuthUser | null,
   ): Promise<Page<ArtistView>> {
     return this.artists.list(query, user?.id)

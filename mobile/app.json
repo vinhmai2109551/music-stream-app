@@ -1,13 +1,18 @@
 {
   "expo": {
-    "name": "music-stream-app",
+    "name": "Music Stream",
     "slug": "music-stream-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "musicstreamapp",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.vinhmai.musicstream"
+    },
     "android": {
+      "package": "com.vinhmai.musicstream",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -23,15 +28,33 @@
     "plugins": [
       "expo-router",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Music Stream cần truy cập ảnh của bạn để đổi ảnh đại diện."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#1FB8E0",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 76,
+          "dark": {
+            "backgroundColor": "#0B0F17",
+            "image": "./assets/images/splash-icon.png"
+          }
         }
       ],
-      "expo-audio",
-      "expo-secure-store"
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": true
+        }
+      ],
+      "expo-secure-store",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

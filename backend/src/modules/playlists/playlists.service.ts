@@ -1,4 +1,10 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common"
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  type OnModuleInit,
+} from "@nestjs/common"
 import type { Playlist, PlaylistTrack } from "../../generated/prisma/client.js"
 import { Role } from "../../generated/prisma/enums.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
@@ -9,6 +15,8 @@ import {
   type Page,
   type PaginationQueryDto,
 } from "../../shared/index.js"
+import { backfillSearchNames } from "../../shared/text/backfill-search-names.js"
+import { toSearchName } from "../../shared/text/search-name.js"
 import { LikeKind, LikesService } from "../likes/index.js"
 import { TracksService, type TrackView } from "../tracks/index.js"
 import { UsersService } from "../users/index.js"
@@ -41,7 +49,7 @@ const include = {
 } as const
 
 @Injectable()
-export class PlaylistsService {
+export class PlaylistsService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tracks: TracksService,
@@ -49,11 +57,44 @@ export class PlaylistsService {
     private readonly users: UsersService,
   ) {}
 
+  /** Gives a search name to playlists that have none (made before the column, or written by SQL). */
+  async onModuleInit(): Promise<void> {
+    await backfillSearchNames({
+      label: "playlists",
+      read: async (take) =>
+        (
+          await this.prisma.playlist.findMany({
+            where: { searchName: null },
+            select: { id: true, name: true },
+            take,
+          })
+        ).map((row) => ({ id: row.id, text: row.name })),
+      write: async (rows) => {
+        await this.prisma.$transaction(
+          rows.map((row) =>
+            this.prisma.playlist.update({
+              where: { id: row.id },
+              data: { searchName: row.searchName },
+            }),
+          ),
+        )
+      },
+    })
+  }
+
   /** Editorial playlists, visible to everyone. */
   async listOfficial(query: PaginationQueryDto, userId?: string): Promise<Page<PlaylistView>> {
+    const needle = query.q ? toSearchName(query.q) : ""
     const where = {
       isOfficial: true,
-      ...(query.q ? { name: { contains: query.q, mode: "insensitive" as const } } : {}),
+      ...(query.q
+        ? {
+            OR: [
+              ...(needle ? [{ searchName: { contains: needle } }] : []),
+              { name: { contains: query.q, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
     }
     const [rows, total] = await Promise.all([
       this.prisma.playlist.findMany({
@@ -101,6 +142,7 @@ export class PlaylistsService {
     const playlist = await this.prisma.playlist.create({
       data: {
         ...dto,
+        searchName: toSearchName(dto.name),
         isOfficial: dto.isOfficial ?? false,
         ownerId: dto.isOfficial ? null : user.id,
       },
@@ -110,7 +152,10 @@ export class PlaylistsService {
 
   async update(id: string, user: AuthUser, dto: UpdatePlaylistDto): Promise<PlaylistDetail> {
     await this.findWritable(id, user)
-    await this.prisma.playlist.update({ where: { id }, data: dto })
+    await this.prisma.playlist.update({
+      where: { id },
+      data: { ...dto, ...(dto.name === undefined ? {} : { searchName: toSearchName(dto.name) }) },
+    })
     return this.get(id, user)
   }
 
@@ -130,10 +175,59 @@ export class PlaylistsService {
     return this.get(id, user)
   }
 
+  /**
+   * Creates a playlist of the user with tracks already in it, all or nothing: a playlist is never
+   * left half filled. 400 when a track does not exist.
+   */
+  async createWithTracks(
+    user: AuthUser,
+    dto: CreatePlaylistDto,
+    trackIds: string[],
+  ): Promise<PlaylistDetail> {
+    if (dto.isOfficial) throw new ForbiddenException("Only the API can create official playlists")
+    const ids = [...new Set(trackIds)]
+    await this.assertTracksExist(ids)
+    const playlist = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.playlist.create({
+        data: { ...dto, searchName: toSearchName(dto.name), isOfficial: false, ownerId: user.id },
+      })
+      await tx.playlistTrack.createMany({
+        data: ids.map((trackId, position) => ({ playlistId: created.id, trackId, position })),
+      })
+      return created
+    })
+    return this.get(playlist.id, user)
+  }
+
+  /**
+   * Adds several tracks at the end of a playlist in one go (tracks already in it stay where they
+   * are). 400 when a track does not exist. Returns how many were new.
+   */
+  async addTracks(id: string, user: AuthUser, trackIds: string[]): Promise<number> {
+    const playlist = await this.findWritable(id, user)
+    await this.assertTracksExist([...new Set(trackIds)])
+    const present = new Set(playlist.tracks.map((track) => track.trackId))
+    const fresh = [...new Set(trackIds)].filter((trackId) => !present.has(trackId))
+    const start = playlist.tracks.reduce((max, track) => Math.max(max, track.position + 1), 0)
+    await this.prisma.playlistTrack.createMany({
+      data: fresh.map((trackId, index) => ({ playlistId: id, trackId, position: start + index })),
+      skipDuplicates: true,
+    })
+    return fresh.length
+  }
+
   async removeTrack(id: string, user: AuthUser, trackId: string): Promise<PlaylistDetail> {
     await this.findWritable(id, user)
     await this.prisma.playlistTrack.deleteMany({ where: { playlistId: id, trackId } })
     return this.get(id, user)
+  }
+
+  private async assertTracksExist(ids: string[]): Promise<void> {
+    if (ids.length === 0) return
+    const found = new Set((await this.tracks.getByIds(ids)).map((track) => track.id))
+    if (ids.some((id) => !found.has(id))) {
+      throw new BadRequestException("A track in the list does not exist")
+    }
   }
 
   /** Official playlists are public; personal ones only for their owner (or an admin). */

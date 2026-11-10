@@ -1,18 +1,20 @@
-import { Image } from "expo-image"
-import { Ellipsis } from "lucide-react-native"
+import { Ellipsis, Heart } from "lucide-react-native"
 import { memo, useState } from "react"
-import { Pressable, StyleSheet, View } from "react-native"
+import { Pressable, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { IconButton } from "@/components/ui/IconButton"
 import { pressedStyle } from "@/components/ui/pressed"
-import { copy } from "@/constants/copy"
+import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { makeStyles, radius, sizes, spacing } from "@/theme"
 import type { Track } from "@/types"
 import { formatCount } from "@/utils/formatCount"
 import { formatTime } from "@/utils/formatTime"
+import { BackgroundBadge } from "./BackgroundBadge"
 import { Equalizer } from "./Equalizer"
 import { TrackMenuSheet } from "./TrackMenuSheet"
+import { useTranslation } from "@/i18n"
 
 type TrackRowProps = {
   track: Track
@@ -21,7 +23,10 @@ type TrackRowProps = {
   list: Track[]
   numbered?: boolean
   source?: string
-  onNotify?: (message: string) => void
+  /** What sits at the end of the row: the "more" menu, or a heart that un-likes the track. */
+  trailing?: "menu" | "like"
+  /** Set when this list is a playlist of the user: the menu then offers to remove the track. */
+  playlistId?: string
 }
 
 function TrackRowBase({
@@ -29,19 +34,27 @@ function TrackRowBase({
   index,
   list,
   numbered = false,
-  source = copy.defaultSource,
-  onNotify,
+  source,
+  trailing = "menu",
+  playlistId,
 }: TrackRowProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+
   const active = usePlayerStore((state) => state.currentTrack?.id === track.id)
   const playing = usePlayerStore((state) => state.currentTrack?.id === track.id && state.isPlaying)
   const playFromList = usePlayerStore((state) => state.playFromList)
+  const liked = useLibraryStore((state) => state.likedTrackIds.includes(track.id))
+  const toggleLike = useLibraryStore((state) => state.toggleLike)
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <View style={[styles.row, active && styles.active]}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Play ${track.title} by ${track.artist}`}
+        accessibilityLabel={t("track.playNamed", { title: track.title, artist: track.artist })}
+        accessibilityState={{ selected: active }}
         onPress={() => playFromList(list, index, source)}
         style={({ pressed }) => [styles.main, pressedStyle(pressed)]}
       >
@@ -50,35 +63,60 @@ function TrackRowBase({
             {playing ? (
               <Equalizer />
             ) : (
-              <AppText variant="caption" color={active ? "accent" : "tertiary"}>
+              <AppText variant="caption" color={active ? "accentText" : "secondary"}>
                 {index + 1}
               </AppText>
             )}
           </View>
         )}
-        <Image source={track.cover} contentFit="cover" style={styles.cover} />
+        <CoverImage
+          source={track.cover}
+          youtubeVideoId={track.youtubeVideoId}
+          label={track.title}
+          style={styles.cover}
+        />
         <View style={styles.text}>
-          <AppText
-            variant="subtitle"
-            color={active ? "accent" : "text"}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {track.title}
-          </AppText>
+          <View style={styles.titleRow}>
+            <AppText
+              variant="subtitle"
+              color={active ? "accentText" : "text"}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={styles.title}
+            >
+              {track.title}
+            </AppText>
+            <BackgroundBadge track={track} />
+          </View>
           <AppText variant="caption" color="secondary" numberOfLines={1} ellipsizeMode="tail">
             {track.artist} · {formatCount(track.plays)} · {formatTime(track.duration)}
           </AppText>
         </View>
       </Pressable>
-      <IconButton icon={Ellipsis} label="More options" onPress={() => setMenuOpen(true)} />
-      {menuOpen && (
-        <TrackMenuSheet
-          track={track}
-          visible={menuOpen}
-          onClose={() => setMenuOpen(false)}
-          onNotify={onNotify}
+      {trailing === "like" ? (
+        <IconButton
+          icon={Heart}
+          label={liked ? t("common.unlike") : t("common.like")}
+          active={liked}
+          activeColor="like"
+          onPress={() => void toggleLike(track.id)}
         />
+      ) : (
+        <>
+          <IconButton
+            icon={Ellipsis}
+            label={t("common.moreOptions")}
+            onPress={() => setMenuOpen(true)}
+          />
+          {menuOpen && (
+            <TrackMenuSheet
+              track={track}
+              visible={menuOpen}
+              onClose={() => setMenuOpen(false)}
+              playlistId={playlistId}
+            />
+          )}
+        </>
       )}
     </View>
   )
@@ -86,7 +124,7 @@ function TrackRowBase({
 
 export const TrackRow = memo(TrackRowBase)
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   row: {
     minHeight: sizes.trackRowHeight,
     flexDirection: "row",
@@ -106,4 +144,6 @@ const styles = StyleSheet.create({
   number: { width: sizes.trackNumberWidth, alignItems: "center" },
   cover: { width: sizes.cover, height: sizes.cover, borderRadius: radius.cover },
   text: { flex: 1, minWidth: 0 },
-})
+  titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
+  title: { flexShrink: 1 },
+}))

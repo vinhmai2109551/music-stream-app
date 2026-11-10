@@ -1,4 +1,5 @@
 import { IsOptional, IsString, MaxLength, MinLength } from "class-validator"
+import { CursorQueryDto } from "../../../shared/index.js"
 
 export class CreateCommentDto {
   @IsString()
@@ -16,13 +17,16 @@ export class CreateCommentDto {
   @IsString()
   postId?: string
 
-  /** Reply to another comment on the same track or post. */
+  /**
+   * Reply to another comment on the same track or post. Replies are one level deep: answering a
+   * reply attaches the new comment to the top-level comment of that reply.
+   */
   @IsOptional()
   @IsString()
   parentId?: string
 }
 
-export class ListCommentsQueryDto {
+export class ListCommentsQueryDto extends CursorQueryDto {
   @IsOptional()
   @IsString()
   trackId?: string

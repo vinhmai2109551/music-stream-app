@@ -1,8 +1,9 @@
-import { Heart, MessageCircle, Share2 } from "lucide-react-native"
+import { Heart, MessageCircle, ScrollText, Share2 } from "lucide-react-native"
 import { StyleSheet, View } from "react-native"
 import { IconButton } from "@/components/ui/IconButton"
 import { IconLabelButton } from "@/components/ui/IconLabelButton"
 import { formatCount } from "@/utils/formatCount"
+import { useTranslation } from "@/i18n"
 
 type PlayerActionsProps = {
   liked: boolean
@@ -10,6 +11,7 @@ type PlayerActionsProps = {
   commentCount: number
   onToggleLike: () => void
   onComments: () => void
+  onLyrics: () => void
   onShare: () => void
 }
 
@@ -19,14 +21,17 @@ export function PlayerActions({
   commentCount,
   onToggleLike,
   onComments,
+  onLyrics,
   onShare,
 }: PlayerActionsProps) {
+  const { t } = useTranslation()
+
   return (
     <View style={styles.row}>
       <IconLabelButton
         icon={Heart}
         label={formatCount(likeCount)}
-        accessibilityLabel={`Like, ${likeCount} likes`}
+        accessibilityLabel={t("player.likeCount", { count: likeCount })}
         color="white"
         active={liked}
         activeColor="like"
@@ -35,11 +40,12 @@ export function PlayerActions({
       <IconLabelButton
         icon={MessageCircle}
         label={formatCount(commentCount)}
-        accessibilityLabel={`Comments, ${commentCount}`}
+        accessibilityLabel={t("player.commentCount", { count: commentCount })}
         color="white"
         onPress={onComments}
       />
-      <IconButton icon={Share2} label="Share" color="white" onPress={onShare} />
+      <IconButton icon={ScrollText} label={t("lyrics.open")} color="white" onPress={onLyrics} />
+      <IconButton icon={Share2} label={t("common.share")} color="white" onPress={onShare} />
     </View>
   )
 }

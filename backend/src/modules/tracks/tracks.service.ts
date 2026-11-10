@@ -1,10 +1,41 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  type OnModuleInit,
+} from "@nestjs/common"
+import { ConfigService } from "@nestjs/config"
 import type { Track } from "../../generated/prisma/client.js"
+import type { Region } from "../../generated/prisma/enums.js"
 import { PrismaService } from "../../infrastructure/prisma/prisma.service.js"
-import { pageArgs, toPage, type Page } from "../../shared/index.js"
+import { CatalogEvents, pageArgs, toPage, type Page } from "../../shared/index.js"
+import { backfillSearchNames } from "../../shared/text/backfill-search-names.js"
+import { toSearchName } from "../../shared/text/search-name.js"
 import { ArtistsService } from "../artists/index.js"
 import { LikeKind, LikesService } from "../likes/index.js"
+import { UploadsService } from "../uploads/index.js"
 import { CreateTrackDto, ListTracksQueryDto, UpdateTrackDto } from "./dto/track.dto.js"
+import { readPlayConfig } from "./tracks.config.js"
+
+/** A track found by a keyword search: its title and artist in search form, and its popularity. */
+export interface TrackKeywordMatch {
+  id: string
+  name: string
+  artistName: string
+  plays: number
+}
+
+/** What the embeddings module needs to describe a track. */
+export interface TrackEmbeddingSource {
+  id: string
+  title: string
+  artist: string
+  region: Region
+  genres: string[]
+  mood: string[]
+  tags: string[]
+  description: string
+}
 
 export interface TrackView {
   id: string
@@ -12,28 +43,85 @@ export interface TrackView {
   artist: string
   artistId: string
   cover: string
-  audioUrl: string
+  /** Audio file in our storage; null when the track only plays through its YouTube video. */
+  audioUrl: string | null
   plays: number
   /** Length in seconds. */
   duration: number
+  /** Official YouTube video to play from; null when the track plays `audioUrl` instead. */
+  youtubeVideoId: string | null
+  genres: string[]
+  mood: string[]
+  tags: string[]
+  /** A sentence or two about the style and mood of the song; never its lyrics. */
+  description: string
+  /** Language of the vocals (ISO 639 code); null = instrumental or unknown. */
+  language: string | null
   likesCount: number
   liked: boolean
 }
 
+/** Result of `POST /tracks/:id/play`. */
+export interface PlayResult {
+  plays: number
+  /** False when this listen was ignored because the user just played the track. */
+  counted: boolean
+}
+
 @Injectable()
-export class TracksService {
+export class TracksService implements OnModuleInit {
+  private readonly playDedupeMs: number
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly artists: ArtistsService,
     private readonly likes: LikesService,
-  ) {}
+    private readonly uploads: UploadsService,
+    private readonly events: CatalogEvents,
+    config: ConfigService,
+  ) {
+    this.playDedupeMs = readPlayConfig(config).dedupeMs
+  }
+
+  /** Gives a search name to tracks that have none (made before the column, or written by SQL). */
+  async onModuleInit(): Promise<void> {
+    await backfillSearchNames({
+      label: "tracks",
+      read: async (take) =>
+        (
+          await this.prisma.track.findMany({
+            where: { searchName: null },
+            select: { id: true, title: true },
+            take,
+          })
+        ).map((row) => ({ id: row.id, text: row.title })),
+      write: async (rows) => {
+        await this.prisma.$transaction(
+          rows.map((row) =>
+            this.prisma.track.update({
+              where: { id: row.id },
+              data: { searchName: row.searchName },
+            }),
+          ),
+        )
+      },
+    })
+  }
 
   async list(query: ListTracksQueryDto, userId?: string): Promise<Page<TrackView>> {
+    const needle = query.q ? toSearchName(query.q) : ""
     const where = {
       ...(query.artistId ? { artistId: query.artistId } : {}),
+      ...(query.region ? { artist: { region: query.region } } : {}),
       ...(query.q
         ? {
             OR: [
+              ...(needle
+                ? [
+                    { searchName: { contains: needle } },
+                    { artist: { searchName: { contains: needle } } },
+                  ]
+                : []),
               { title: { contains: query.q, mode: "insensitive" as const } },
               { artist: { name: { contains: query.q, mode: "insensitive" as const } } },
             ],
@@ -72,26 +160,185 @@ export class TracksService {
   }
 
   async create(dto: CreateTrackDto): Promise<TrackView> {
-    const track = await this.prisma.track.create({ data: dto })
+    this.assertPlayable(dto)
+    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl ?? undefined })
+    const track = await this.prisma.track.create({
+      data: { ...dto, searchName: toSearchName(dto.title) },
+    })
+    this.events.changed({ kind: "track", id: track.id })
     return this.get(track.id)
   }
 
   async update(id: string, dto: UpdateTrackDto): Promise<TrackView> {
-    await this.prisma.track.update({ where: { id }, data: dto })
+    this.uploads.assertManagedUrls({ coverUrl: dto.coverUrl, audioUrl: dto.audioUrl ?? undefined })
+    if (dto.audioUrl !== undefined || dto.youtubeVideoId !== undefined) {
+      const current = await this.prisma.track.findUnique({
+        where: { id },
+        select: { audioUrl: true, youtubeVideoId: true },
+      })
+      if (current) this.assertPlayable({ ...current, ...dto })
+    }
+    await this.prisma.track.update({
+      where: { id },
+      data: { ...dto, ...(dto.title === undefined ? {} : { searchName: toSearchName(dto.title) }) },
+    })
+    this.events.changed({ kind: "track", id })
     return this.get(id)
+  }
+
+  /**
+   * For the search module: tracks whose title or artist contains the typed text (or all its
+   * words), most played first. Accents and case do not matter.
+   */
+  async keywordMatches(
+    q: string,
+    region: Region | undefined,
+    limit: number,
+  ): Promise<TrackKeywordMatch[]> {
+    const needle = toSearchName(q)
+    if (!needle) return []
+    const inEither = (word: string) => ({
+      OR: [{ searchName: { contains: word } }, { artist: { searchName: { contains: word } } }],
+    })
+    const rows = await this.prisma.track.findMany({
+      where: {
+        ...(region ? { artist: { region } } : {}),
+        OR: [inEither(needle), { AND: needle.split(" ").map(inEither) }],
+      },
+      orderBy: [{ plays: "desc" }, { id: "asc" }],
+      take: limit,
+      select: { id: true, searchName: true, plays: true, artist: { select: { searchName: true } } },
+    })
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.searchName ?? "",
+      artistName: row.artist.searchName ?? "",
+      plays: row.plays,
+    }))
+  }
+
+  /** For the search module: ids of the tracks whose artist comes from `region`. */
+  async idsInRegion(region: Region): Promise<string[]> {
+    const rows = await this.prisma.track.findMany({
+      where: { artist: { region } },
+      select: { id: true },
+    })
+    return rows.map((row) => row.id)
+  }
+
+  /** For the embeddings module: the tracks that exist among `ids`, with their artist, by id. */
+  async embeddingSources(ids: readonly string[]): Promise<Map<string, TrackEmbeddingSource>> {
+    const rows = await this.prisma.track.findMany({ where: { id: { in: [...new Set(ids)] } } })
+    const artists = await this.artists.embeddingSources(rows.map((row) => row.artistId))
+    return new Map(
+      rows.map((row) => [
+        row.id,
+        {
+          id: row.id,
+          title: row.title,
+          artist: artists.get(row.artistId)?.name ?? "",
+          region: artists.get(row.artistId)?.region ?? "GLOBAL",
+          genres: row.genres,
+          mood: row.mood,
+          tags: row.tags,
+          description: row.description,
+        },
+      ]),
+    )
+  }
+
+  /**
+   * For the recommendations module: the listens of a user since `since`, newest first, one entry
+   * per listen (a track listened to twice appears twice).
+   */
+  async recentPlays(
+    userId: string,
+    since: Date,
+    limit: number,
+  ): Promise<{ trackId: string; playedAt: Date }[]> {
+    const rows = await this.prisma.playEvent.findMany({
+      where: { userId, createdAt: { gte: since } },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      select: { trackId: true, createdAt: true },
+    })
+    return rows.map((row) => ({ trackId: row.trackId, playedAt: row.createdAt }))
+  }
+
+  /** For the recommendations module: ids of the most played tracks, optionally of one region. */
+  async popularIds(region: Region | undefined, limit: number): Promise<string[]> {
+    const rows = await this.prisma.track.findMany({
+      where: region ? { artist: { region } } : {},
+      orderBy: [{ plays: "desc" }, { id: "asc" }],
+      take: limit,
+      select: { id: true },
+    })
+    return rows.map((row) => row.id)
+  }
+
+  /** For the embeddings module: track ids in order, `limit` of them after `after`. */
+  async listIds(after: string | null, limit: number): Promise<string[]> {
+    const rows = await this.prisma.track.findMany({
+      where: after ? { id: { gt: after } } : {},
+      orderBy: { id: "asc" },
+      take: limit,
+      select: { id: true },
+    })
+    return rows.map((row) => row.id)
+  }
+
+  async idsOfArtist(artistId: string): Promise<string[]> {
+    const rows = await this.prisma.track.findMany({ where: { artistId }, select: { id: true } })
+    return rows.map((row) => row.id)
+  }
+
+  count(): Promise<number> {
+    return this.prisma.track.count()
   }
 
   async remove(id: string): Promise<void> {
     await this.prisma.track.delete({ where: { id } })
   }
 
-  async recordPlay(id: string): Promise<{ plays: number }> {
-    const track = await this.prisma.track.update({
-      where: { id },
-      data: { plays: { increment: 1 } },
-      select: { plays: true },
+  /**
+   * Counts one listen by `userId`. The same user playing the same track again within the dedupe
+   * window answers `counted: false`, so replaying cannot inflate the number.
+   */
+  async recordPlay(userId: string, id: string): Promise<PlayResult> {
+    const track = await this.prisma.track.findUnique({ where: { id }, select: { id: true } })
+    if (!track) throw new NotFoundException("Track not found")
+
+    return this.prisma.$transaction(async (tx) => {
+      // One request at a time per (user, track): otherwise two parallel ones both see "no recent
+      // listen" and both count. The lock is released when the transaction ends.
+      const lockKey = `${userId}:${id}`
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`
+
+      const since = new Date(Date.now() - this.playDedupeMs)
+      const recent = await tx.playEvent.findFirst({
+        where: { userId, trackId: id, createdAt: { gt: since } },
+        select: { id: true },
+      })
+      if (recent) {
+        const current = await tx.track.findUniqueOrThrow({ where: { id }, select: { plays: true } })
+        return { plays: current.plays, counted: false }
+      }
+
+      await tx.playEvent.create({ data: { userId, trackId: id } })
+      const updated = await tx.track.update({
+        where: { id },
+        data: { plays: { increment: 1 } },
+        select: { plays: true },
+      })
+      return { plays: updated.plays, counted: true }
     })
-    return track
+  }
+
+  /** A track nobody can play (no audio file and no YouTube video) is a data mistake. */
+  private assertPlayable(source: { audioUrl?: string | null; youtubeVideoId?: string | null }) {
+    if (!source.audioUrl && !source.youtubeVideoId) {
+      throw new BadRequestException("A track needs an audioUrl or a youtubeVideoId to be played")
+    }
   }
 
   private async toViews(rows: Track[], userId?: string): Promise<TrackView[]> {
@@ -110,6 +357,12 @@ export class TracksService {
       audioUrl: row.audioUrl,
       plays: row.plays,
       duration: row.durationSec,
+      youtubeVideoId: row.youtubeVideoId,
+      genres: row.genres,
+      mood: row.mood,
+      tags: row.tags,
+      description: row.description,
+      language: row.language,
       likesCount: counts.get(row.id) ?? 0,
       liked: liked.has(row.id),
     }))

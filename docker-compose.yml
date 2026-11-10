@@ -1,6 +1,9 @@
 services:
   db:
-    image: postgres:16-alpine
+    # PostgreSQL 16 with the pgvector extension (semantic search and recommendations). Same major
+    # version and same volume as before, so the data stays. This image is Debian based, the old one
+    # was Alpine: after switching an existing volume run REINDEX once (see the README).
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     # POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB come from backend/.env
     env_file: backend/.env
@@ -27,6 +30,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      # The API answers GET /api/health only when it can reach the database. The image has no curl,
+      # so Node (>= 18, has fetch) makes the call. start_period covers migrations and the seed.
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:' + (process.env.PORT || 3000) + '/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
 volumes:
   pgdata:

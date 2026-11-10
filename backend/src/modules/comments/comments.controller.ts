@@ -1,7 +1,14 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query } from "@nestjs/common"
-import { ApiOperation, ApiTags } from "@nestjs/swagger"
-import { Auth, CurrentUser, OptionalAuth, type AuthUser } from "../../shared/index.js"
-import { CommentsService, type CommentView } from "./comments.service.js"
+import { ApiNotFoundResponse, ApiOperation, ApiTags } from "@nestjs/swagger"
+import {
+  Auth,
+  CurrentUser,
+  CursorQueryDto,
+  OptionalAuth,
+  type AuthUser,
+  type CursorPage,
+} from "../../shared/index.js"
+import { CommentsService, type CommentPage, type CommentView } from "./comments.service.js"
 import { CreateCommentDto, ListCommentsQueryDto } from "./dto/comment.dto.js"
 
 @ApiTags("comments")
@@ -11,17 +18,46 @@ export class CommentsController {
 
   @Get()
   @OptionalAuth()
-  @ApiOperation({ summary: "Comments of a track (?trackId=) or a feed post (?postId=)" })
+  @ApiOperation({
+    summary: "Comments of a track (?trackId=) or a feed post (?postId=)",
+    description:
+      "Top-level comments, newest first, one page at a time: pass the previous nextCursor as " +
+      "?cursor= (limit defaults to 20, max 50); total counts every comment, replies included. " +
+      "Each comes with its 3 newest replies " +
+      "(oldest first) and repliesCount; load the rest with GET /comments/:id/replies.",
+  })
   list(
     @Query() query: ListCommentsQueryDto,
     @CurrentUser() user: AuthUser | null,
-  ): Promise<CommentView[]> {
+  ): Promise<CommentPage> {
     return this.comments.list(query, user?.id)
+  }
+
+  @Get(":id/replies")
+  @OptionalAuth()
+  @ApiOperation({
+    summary: "Replies of a comment, newest first",
+    description:
+      "One page at a time. To get the replies older than the ones you show, pass the id of the " +
+      "oldest one as ?cursor=; after that use nextCursor.",
+  })
+  @ApiNotFoundResponse({ description: "Comment not found" })
+  replies(
+    @Param("id") id: string,
+    @Query() query: CursorQueryDto,
+    @CurrentUser() user: AuthUser | null,
+  ): Promise<CursorPage<CommentView>> {
+    return this.comments.listReplies(id, query, user?.id)
   }
 
   @Post()
   @Auth()
-  @ApiOperation({ summary: "Write a comment or a reply (set parentId)" })
+  @ApiOperation({
+    summary: "Write a comment or a reply (set parentId)",
+    description:
+      "Replies are one level deep: answering a reply attaches the new comment to the " +
+      "top-level comment of that reply.",
+  })
   create(
     @CurrentUser() user: AuthUser | null,
     @Body() dto: CreateCommentDto,

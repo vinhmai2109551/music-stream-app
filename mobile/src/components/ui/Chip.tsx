@@ -1,5 +1,5 @@
-import { Pressable, StyleSheet, type PressableProps } from "react-native"
-import { colors, radius, sizes, spacing } from "@/theme"
+import { Pressable, type PressableProps } from "react-native"
+import { makeStyles, radius, sizes, spacing } from "@/theme"
 import { AppText } from "./AppText"
 import { pressedStyle } from "./pressed"
 
@@ -12,6 +12,8 @@ type ChipProps = Omit<PressableProps, "style" | "children"> & {
 }
 
 export function Chip({ label, selected = false, ...props }: ChipProps) {
+  const styles = useStyles()
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -24,14 +26,14 @@ export function Chip({ label, selected = false, ...props }: ChipProps) {
       ]}
       {...props}
     >
-      <AppText variant="caption" color={selected ? "white" : "secondary"} numberOfLines={1}>
+      <AppText variant="caption" color={selected ? "onAccent" : "secondary"} numberOfLines={1}>
         {label}
       </AppText>
     </Pressable>
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   base: {
     height: sizes.chipHeight,
     paddingHorizontal: spacing.lg,
@@ -41,4 +43,4 @@ const styles = StyleSheet.create({
   },
   selected: { backgroundColor: colors.accent },
   idle: { backgroundColor: colors.surface },
-})
+}))

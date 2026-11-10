@@ -1,80 +1,130 @@
-import { Image } from "expo-image"
 import { router } from "expo-router"
-import { Mic2, Shuffle } from "lucide-react-native"
-import { useMemo } from "react"
-import { ScrollView, StyleSheet, View } from "react-native"
+import { Shuffle, User } from "lucide-react-native"
+import { ScrollView, View } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { listAlbums } from "@/api/albums"
+import { getArtist, listArtists } from "@/api/artists"
+import { listTracks } from "@/api/tracks"
+import type { ApiAlbum, ApiArtist, ApiTrack } from "@/api/types"
 import { AppText } from "@/components/ui/AppText"
+import { CoverImage } from "@/components/ui/CoverImage"
 import { Button } from "@/components/ui/Button"
-import { EmptyState } from "@/components/ui/EmptyState"
+import { ErrorState } from "@/components/ui/ErrorState"
 import { HorizontalList } from "@/components/ui/HorizontalList"
 import { IconButton } from "@/components/ui/IconButton"
 import { PlayButton } from "@/components/ui/PlayButton"
 import { SectionHeader } from "@/components/ui/SectionHeader"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { TopBar } from "@/components/ui/TopBar"
-import { artists, getAlbum, getArtist, getTracks } from "@/data/mock"
-import { useSimulatedLoading } from "@/hooks/useSimulatedLoading"
-import { useToast } from "@/hooks/useToast"
+import { useResource } from "@/hooks/useResource"
 import { useLibraryStore } from "@/store/libraryStore"
 import { usePlayerStore } from "@/store/playerStore"
-import { colors, radius, shadows, sizes, spacing } from "@/theme"
-import type { Album } from "@/types"
+import { showToast } from "@/store/toastStore"
+import { makeStyles, radius, shadows, sizes, spacing } from "@/theme"
 import { formatCount } from "@/utils/formatCount"
 import { AlbumCard } from "./AlbumCard"
 import { ArtistAbout } from "./ArtistAbout"
 import { ArtistAvatar } from "./ArtistAvatar"
 import { TrackRow } from "./TrackRow"
+import { useTranslation } from "@/i18n"
 
 const POPULAR_COUNT = 5
+const LIST_LIMIT = 10
 
 const openAlbum = (id: string) => router.push({ pathname: "/album/[id]", params: { id } })
 const openArtist = (id: string) => router.push({ pathname: "/artist/[id]", params: { id } })
+
+interface ArtistPage {
+  artist: ApiArtist
+  /** The artist's most played tracks. */
+  popular: ApiTrack[]
+  albums: ApiAlbum[]
+  /** Other artists, for "Fans also like". */
+  fansAlsoLike: ApiArtist[]
+}
+
+async function loadArtistPage(id: string): Promise<ArtistPage> {
+  const [artist, tracks, albums, artists] = await Promise.all([
+    getArtist(id),
+    listTracks({ artistId: id, limit: POPULAR_COUNT }),
+    listAlbums({ artistId: id, limit: LIST_LIMIT }),
+    listArtists({ limit: LIST_LIMIT }),
+  ])
+  return {
+    artist,
+    popular: tracks.items,
+    albums: albums.items,
+    fansAlsoLike: artists.items.filter((other) => other.id !== id),
+  }
+}
 
 type ArtistViewProps = {
   id: string
 }
 
 export function ArtistView({ id }: ArtistViewProps) {
-  const insets = useSafeAreaInsets()
-  const loading = useSimulatedLoading()
-  const artist = getArtist(id)
-  const followed = useLibraryStore((state) => state.followedArtistIds.includes(id))
-  const toggleFollow = useLibraryStore((state) => state.toggleFollow)
-  const shuffle = usePlayerStore((state) => state.shuffle)
-  const toggleShuffle = usePlayerStore((state) => state.toggleShuffle)
-  const playFromList = usePlayerStore((state) => state.playFromList)
-  const { show, toast } = useToast()
+  const { t } = useTranslation()
 
-  const popular = useMemo(
-    () => (artist ? getTracks(artist.trackIds).slice(0, POPULAR_COUNT) : []),
-    [artist],
-  )
-  const artistAlbums = useMemo(
-    () =>
-      (artist?.albumIds ?? []).flatMap((albumId) => {
-        const album = getAlbum(albumId)
-        return album ? [album] : []
-      }),
-    [artist],
-  )
-  const fansAlsoLike = useMemo(() => artists.filter((item) => item.id !== id), [id])
+  const styles = useStyles()
 
-  if (loading) return <ArtistSkeleton />
-  if (!artist) {
+  const { state, reload } = useResource(() => loadArtistPage(id), id)
+  const followed = useLibraryStore((library) => library.followedArtistIds.includes(id))
+  const toggleFollow = useLibraryStore((library) => library.toggleFollow)
+  const shuffle = usePlayerStore((player) => player.shuffle)
+  const toggleShuffle = usePlayerStore((player) => player.toggleShuffle)
+  const playFromList = usePlayerStore((player) => player.playFromList)
+
+  if (state.status === "loading") return <ArtistSkeleton />
+  if (state.status === "error") {
     return (
       <View style={styles.screen}>
         <TopBar />
-        <EmptyState icon={Mic2} title="Not found" description="This artist is not available." />
+        <ErrorState error={state.error} onRetry={() => void reload()} />
       </View>
     )
   }
 
-  const playAll = () => {
-    if (popular.length === 0) return show("No songs yet")
-    playFromList(popular, 0, artist.name)
-    router.push("/player")
-  }
+  return (
+    <ArtistContent
+      page={state.data}
+      followed={followed}
+      shuffle={shuffle}
+      onToggleFollow={() => void toggleFollow(id)}
+      onToggleShuffle={toggleShuffle}
+      onPlay={(tracks, source) => {
+        if (tracks.length === 0) return showToast(t("common.empty.songs"))
+        playFromList(tracks, 0, source)
+        router.push("/player")
+      }}
+    />
+  )
+}
+
+type ArtistContentProps = {
+  page: ArtistPage
+  followed: boolean
+  shuffle: boolean
+  onToggleFollow: () => void
+  onToggleShuffle: () => void
+  onPlay: (tracks: ApiTrack[], source: string) => void
+}
+
+function ArtistContent({
+  page,
+  followed,
+  shuffle,
+  onToggleFollow,
+  onToggleShuffle,
+  onPlay,
+}: ArtistContentProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+
+  const insets = useSafeAreaInsets()
+  const { artist, popular, albums, fansAlsoLike } = page
+  // The count from the server includes the user's follow as it was when the page loaded.
+  const followers = artist.followers - (artist.followed ? 1 : 0) + (followed ? 1 : 0)
 
   return (
     <View style={styles.screen}>
@@ -85,30 +135,40 @@ export function ArtistView({ id }: ArtistViewProps) {
       >
         <View style={styles.padded}>
           <View style={styles.hero}>
-            <Image source={artist.image} contentFit="cover" style={styles.image} />
+            <CoverImage
+              source={artist.image}
+              label={artist.name}
+              icon={User}
+              style={styles.image}
+            />
             <AppText variant="h2" numberOfLines={2} style={styles.center}>
               {artist.name}
             </AppText>
             <AppText variant="caption" color="secondary">
-              {formatCount(artist.followers)} Followers
+              {t("common.count.followers", { count: followers, value: formatCount(followers) })}
             </AppText>
           </View>
           <View style={styles.controls}>
             <Button
-              label={followed ? "Following" : "Follow"}
-              variant={followed ? "secondary" : "primary"}
-              onPress={() => toggleFollow(artist.id)}
+              label={followed ? t("common.following") : t("common.follow")}
+              variant={followed ? "tonal" : "primary"}
+              onPress={onToggleFollow}
             />
             <View style={styles.spacer} />
-            <IconButton icon={Shuffle} label="Shuffle" active={shuffle} onPress={toggleShuffle} />
-            <PlayButton onPress={playAll} />
+            <IconButton
+              icon={Shuffle}
+              label={t("common.shuffle")}
+              active={shuffle}
+              onPress={onToggleShuffle}
+            />
+            <PlayButton onPress={() => onPlay(popular, artist.name)} />
           </View>
 
           <View style={styles.section}>
-            <SectionHeader title="Popular" />
+            <SectionHeader title={t("artist.popular")} />
             {popular.length === 0 ? (
               <AppText variant="caption" color="secondary">
-                No songs yet
+                {t("common.empty.songs")}
               </AppText>
             ) : (
               popular.map((track, index) => (
@@ -119,7 +179,6 @@ export function ArtistView({ id }: ArtistViewProps) {
                   list={popular}
                   source={artist.name}
                   numbered
-                  onNotify={show}
                 />
               ))
             )}
@@ -128,38 +187,40 @@ export function ArtistView({ id }: ArtistViewProps) {
 
         <View style={styles.section}>
           <View style={styles.padded}>
-            <SectionHeader title="Albums" />
+            <SectionHeader title={t("artist.albums")} />
           </View>
-          <HorizontalList<Album>
-            data={artistAlbums}
+          <HorizontalList<ApiAlbum>
+            data={albums}
             keyExtractor={(album) => album.id}
-            emptyMessage="No albums yet"
+            emptyMessage={t("common.empty.albums")}
             renderItem={({ item }) => <AlbumCard album={item} onPress={openAlbum} />}
           />
         </View>
 
         <View style={[styles.section, styles.padded]}>
-          <SectionHeader title="About" />
+          <SectionHeader title={t("artist.about")} />
           <ArtistAbout bio={artist.bio} />
         </View>
 
         <View style={styles.section}>
           <View style={styles.padded}>
-            <SectionHeader title="Fans also like" />
+            <SectionHeader title={t("artist.fansAlsoLike")} />
           </View>
           <HorizontalList
             data={fansAlsoLike}
             keyExtractor={(item) => item.id}
+            emptyMessage={t("common.empty.otherArtists")}
             renderItem={({ item }) => <ArtistAvatar artist={item} onPress={openArtist} />}
           />
         </View>
       </ScrollView>
-      {toast}
     </View>
   )
 }
 
 function ArtistSkeleton() {
+  const styles = useStyles()
+
   return (
     <View style={styles.screen}>
       <TopBar />
@@ -177,7 +238,7 @@ function ArtistSkeleton() {
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   padded: { paddingHorizontal: spacing.screen },
   hero: { alignItems: "center", gap: spacing.xs },
@@ -198,4 +259,4 @@ const styles = StyleSheet.create({
   spacer: { flex: 1 },
   section: { marginTop: spacing.xxl },
   skeleton: { alignItems: "center", gap: spacing.lg, paddingHorizontal: spacing.screen },
-})
+}))

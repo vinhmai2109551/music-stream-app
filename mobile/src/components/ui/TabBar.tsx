@@ -1,68 +1,88 @@
 import type { LucideIcon } from "lucide-react-native"
 import { Home, Library, Rss, Search } from "lucide-react-native"
 import type { Tabs } from "expo-router"
-import type { ComponentProps } from "react"
+import { Fragment, type ComponentProps } from "react"
 import { Pressable, StyleSheet, View } from "react-native"
-import { colors, sizes, spacing } from "@/theme"
+import { useAssistantStore } from "@/store/assistantStore"
+import { makeStyles, sizes, spacing, useColors } from "@/theme"
 import { AppText } from "./AppText"
+import { AssistantTabButton } from "./AssistantTabButton"
 import { pressedStyle } from "./pressed"
+import { useTranslation, type TranslationKey } from "@/i18n"
 
 type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>>[0]
 
-type TabConfig = { label: string; icon: LucideIcon }
+type TabConfig = { labelKey: TranslationKey; icon: LucideIcon }
 
 const TABS: Record<string, TabConfig> = {
-  index: { label: "Home", icon: Home },
-  search: { label: "Search", icon: Search },
-  feed: { label: "Feed", icon: Rss },
-  library: { label: "Library", icon: Library },
+  index: { labelKey: "nav.home", icon: Home },
+  search: { labelKey: "nav.search", icon: Search },
+  feed: { labelKey: "nav.feed", icon: Rss },
+  library: { labelKey: "nav.library", icon: Library },
 }
 
-export function TabBar({ state, navigation, insets }: TabBarProps) {
+/** Screens that are not tabs themselves but sit under one. */
+const PARENT_TAB: Record<string, string> = { playlists: "library" }
+
+/** The assistant button is drawn after this tab, in the middle of the bar. */
+const ASSISTANT_AFTER = "search"
+
+export function TabBar({ state, emitter, navigateToTab, insets }: TabBarProps) {
+  const { t } = useTranslation()
+
+  const styles = useStyles()
+  const colors = useColors()
+  // The server can switch the assistant off; its button then disappears.
+  const assistantOn = useAssistantStore((store) => store.availability !== "unavailable")
+
+  const openName = state.routes[state.index]?.name ?? ""
+  const activeName = PARENT_TAB[openName] ?? openName
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       {state.routes.map((route, index) => {
         const config = TABS[route.name]
         if (!config) return null
-        const focused = state.index === index
-        const tint = focused ? colors.accent : colors.secondary
+        const focused = route.name === activeName
+        const tint = focused ? colors.accentText : colors.secondary
         const Icon = config.icon
 
         const onPress = () => {
-          const event = navigation.emit({
+          const event = emitter.emit({
             type: "tabPress",
             target: route.key,
             canPreventDefault: true,
           })
-          if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params)
+          if (state.index !== index && !event.defaultPrevented) navigateToTab(route.key)
         }
 
         return (
-          <Pressable
-            key={route.key}
-            accessibilityRole="tab"
-            accessibilityLabel={config.label}
-            accessibilityState={{ selected: focused }}
-            onPress={onPress}
-            style={({ pressed }) => [styles.tab, pressedStyle(pressed)]}
-          >
-            <Icon
-              size={sizes.tabIcon}
-              strokeWidth={1.75}
-              color={tint}
-              fill={focused ? tint : "none"}
-            />
-            <AppText variant="micro" numberOfLines={1} style={{ color: tint }}>
-              {config.label}
-            </AppText>
-          </Pressable>
+          <Fragment key={route.key}>
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityLabel={t(config.labelKey)}
+              accessibilityState={{ selected: focused }}
+              onPress={onPress}
+              style={({ pressed }) => [styles.tab, pressedStyle(pressed)]}
+            >
+              <Icon
+                size={sizes.tabIcon}
+                strokeWidth={1.75}
+                color={tint}
+                fill={focused ? tint : "none"}
+              />
+              <AppText variant="micro" numberOfLines={1} style={{ color: tint }}>
+                {t(config.labelKey)}
+              </AppText>
+            </Pressable>
+            {assistantOn && route.name === ASSISTANT_AFTER && <AssistantTabButton />}
+          </Fragment>
         )
       })}
     </View>
   )
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
     flexDirection: "row",
     backgroundColor: colors.tabBar,
@@ -77,4 +97,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: spacing.xs,
   },
-})
+}))
