@@ -1,47 +1,36 @@
-import {
-  AppstoreOutlined,
-  CustomerServiceOutlined,
-  PlayCircleOutlined,
-  ThunderboltOutlined,
-  TeamOutlined,
-  UserOutlined,
-} from "@ant-design/icons"
-import { Alert, Button, Card, Col, Empty, Image, Row, Skeleton, Statistic, Table } from "antd"
-import type { ReactNode } from "react"
-import type { AdminStats } from "@/api/types"
+import { useGetIdentity } from "@refinedev/core"
+import { Alert, Button, Card, Col, Row } from "antd"
+import type { AdminStats, Page, TrackView } from "@/api/types"
 import { useApi } from "@/hooks/useApi"
-import { formatCompact, formatNumber } from "@/lib/time"
+import { activityLine } from "@/lib/greeting"
+import type { Identity } from "@/providers/authProvider"
 import { DailyChart } from "./DashboardCharts"
+import { DashboardHero } from "./DashboardHero"
+import { StatStrip } from "./StatStrip"
+import { TopTracks } from "./TopTracks"
 import { TranslationQuota } from "./TranslationQuota"
 
-function Kpi({ title, value, icon }: { title: string; value: number; icon: ReactNode }) {
-  return (
-    <Card size="small">
-      {/* The exact number is one hover away when the card shows it shortened. */}
-      <div title={formatNumber(value)}>
-        <Statistic title={title} value={formatCompact(value)} prefix={icon} />
-      </div>
-    </Card>
-  )
-}
+/** How many covers the banner is made of. */
+const BANNER_COVERS = 16
 
-function KpiSkeletons() {
-  return (
-    <Row gutter={[16, 16]}>
-      {Array.from({ length: 6 }, (_, index) => (
-        <Col key={index} xs={12} md={8} xl={4}>
-          <Card size="small">
-            <Skeleton active paragraph={false} title={{ width: "70%" }} />
-            <Skeleton.Input active size="small" />
-          </Card>
-        </Col>
-      ))}
-    </Row>
+const lastOf = (series: { count: number }[]): number => series[series.length - 1]?.count ?? 0
+const sumOfLast = (series: { count: number }[], days: number): number =>
+  series.slice(-days).reduce((total, entry) => total + entry.count, 0)
+
+const WEEK = 7
+
+function leadOf(stats: AdminStats): string {
+  return activityLine(
+    { plays: lastOf(stats.playsByDay), newUsers: lastOf(stats.newUsersByDay) },
+    { plays: sumOfLast(stats.playsByDay, WEEK), newUsers: sumOfLast(stats.newUsersByDay, WEEK) },
   )
 }
 
 export function DashboardPage() {
   const stats = useApi<AdminStats>("/admin/stats")
+  // The tracks list is ordered by plays, so its first covers are the ones people hear most.
+  const catalog = useApi<Page<TrackView>>("/tracks", { limit: BANNER_COVERS })
+  const { data: me } = useGetIdentity<Identity>()
   const data = stats.data
 
   if (stats.error && !data) {
@@ -58,34 +47,13 @@ export function DashboardPage() {
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
-      {!data ? (
-        <KpiSkeletons />
-      ) : (
-        <Row gutter={[16, 16]}>
-          <Col xs={12} md={8} xl={4}>
-            <Kpi title="Bài hát" value={data.totals.tracks} icon={<CustomerServiceOutlined />} />
-          </Col>
-          <Col xs={12} md={8} xl={4}>
-            <Kpi title="Nghệ sĩ" value={data.totals.artists} icon={<UserOutlined />} />
-          </Col>
-          <Col xs={12} md={8} xl={4}>
-            <Kpi title="Album" value={data.totals.albums} icon={<AppstoreOutlined />} />
-          </Col>
-          <Col xs={12} md={8} xl={4}>
-            <Kpi title="Người dùng" value={data.totals.users} icon={<TeamOutlined />} />
-          </Col>
-          <Col xs={12} md={8} xl={4}>
-            <Kpi title="Tổng lượt nghe" value={data.totals.plays} icon={<PlayCircleOutlined />} />
-          </Col>
-          <Col xs={12} md={8} xl={4}>
-            <Kpi
-              title="Lượt nghe 7 ngày"
-              value={data.totals.playsLast7Days}
-              icon={<ThunderboltOutlined />}
-            />
-          </Col>
-        </Row>
-      )}
+      <DashboardHero
+        name={me?.name}
+        covers={(catalog.data?.items ?? []).map((track) => track.cover)}
+        lead={data ? leadOf(data) : null}
+      />
+
+      <StatStrip stats={data} />
 
       <Row gutter={[16, 16]}>
         <Col xs={24} xl={12}>
@@ -116,44 +84,8 @@ export function DashboardPage() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} xl={16}>
-          <Card title="Top 5 bài nghe nhiều nhất">
-            {!data ? (
-              <Skeleton active />
-            ) : data.topTracks.length === 0 ? (
-              <Empty description="Chưa có bài hát nào" />
-            ) : (
-              <Table
-                size="small"
-                rowKey="id"
-                pagination={false}
-                dataSource={data.topTracks}
-                scroll={{ x: "max-content" }}
-                columns={[
-                  {
-                    title: "Bìa",
-                    dataIndex: "coverUrl",
-                    width: 72,
-                    render: (url: string) => (
-                      <Image
-                        src={url}
-                        width={40}
-                        height={40}
-                        alt=""
-                        style={{ objectFit: "cover" }}
-                      />
-                    ),
-                  },
-                  { title: "Bài hát", dataIndex: "title", ellipsis: true },
-                  { title: "Nghệ sĩ", dataIndex: "artist", ellipsis: true },
-                  {
-                    title: "Lượt nghe",
-                    dataIndex: "plays",
-                    align: "right",
-                    render: (plays: number) => formatNumber(plays),
-                  },
-                ]}
-              />
-            )}
+          <Card title="Bài nghe nhiều nhất">
+            <TopTracks tracks={data?.topTracks} />
           </Card>
         </Col>
         <Col xs={24} xl={8}>

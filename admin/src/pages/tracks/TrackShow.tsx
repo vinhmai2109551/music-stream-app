@@ -84,16 +84,16 @@ export function TrackShow() {
             <Descriptions.Item label="Ngôn ngữ">
               {track.language ? lyricsLanguageLabel(track.language) : "Không lời / chưa rõ"}
             </Descriptions.Item>
-            <Descriptions.Item label="Thể loại" span={2}>
+            <Descriptions.Item label="Thể loại" span={{ xs: 1, md: 2 }}>
               <TagList items={track.genres} />
             </Descriptions.Item>
-            <Descriptions.Item label="Tâm trạng" span={2}>
+            <Descriptions.Item label="Tâm trạng" span={{ xs: 1, md: 2 }}>
               <TagList items={track.mood} />
             </Descriptions.Item>
-            <Descriptions.Item label="Thẻ" span={2}>
+            <Descriptions.Item label="Thẻ" span={{ xs: 1, md: 2 }}>
               <TagList items={track.tags} />
             </Descriptions.Item>
-            <Descriptions.Item label="Mô tả" span={2}>
+            <Descriptions.Item label="Mô tả" span={{ xs: 1, md: 2 }}>
               {track.description || "—"}
             </Descriptions.Item>
           </Descriptions>

@@ -1,4 +1,4 @@
-import { Input } from "antd"
+import { Input, Space } from "antd"
 import { useState } from "react"
 import { formatDuration, parseClock } from "@/lib/time"
 
@@ -17,18 +17,20 @@ export function DurationInput({ value, onChange, disabled }: Props) {
   const shown = draft ?? (value ? formatDuration(value) : "")
 
   return (
-    <Input
-      value={shown}
-      disabled={disabled}
-      placeholder="3:25"
-      addonAfter={value ? `${value} giây` : "phút:giây"}
-      inputMode="numeric"
-      onChange={(event) => {
-        setDraft(event.target.value)
-        const ms = parseClock(event.target.value)
-        onChange?.(ms === null || ms < 1000 ? undefined : Math.round(ms / 1000))
-      }}
-      onBlur={() => setDraft(null)}
-    />
+    <Space.Compact style={{ width: "100%" }}>
+      <Input
+        value={shown}
+        disabled={disabled}
+        placeholder="3:25"
+        inputMode="numeric"
+        onChange={(event) => {
+          setDraft(event.target.value)
+          const ms = parseClock(event.target.value)
+          onChange?.(ms === null || ms < 1000 ? undefined : Math.round(ms / 1000))
+        }}
+        onBlur={() => setDraft(null)}
+      />
+      <Space.Addon>{value ? `${value} giây` : "phút:giây"}</Space.Addon>
+    </Space.Compact>
   )
 }
