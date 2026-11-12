@@ -1,1 +1,493 @@
-{}
+{
+  "app": {
+    "name": "Music Stream",
+    "defaultSource": "Music Stream"
+  },
+  "common": {
+    "retry": "もう一度試す",
+    "close": "閉じる",
+    "back": "戻る",
+    "play": "再生",
+    "pause": "一時停止",
+    "shuffle": "ランダム再生",
+    "moreOptions": "その他のオプション",
+    "share": "シェア",
+    "search": "検索",
+    "follow": "フォロー",
+    "following": "フォロー中",
+    "like": "「いいね」",
+    "unlike": "「いいね」を解除",
+    "viewMore": "もっと見る",
+    "viewLess": "折りたたむ",
+    "seeAll": "すべて表示",
+    "deletedUser": "ユーザーが削除しました",
+    "empty": {
+      "generic": "ここにはまだ何もありません",
+      "songs": "まだ曲はありません",
+      "albums": "まだアルバムはリリースされていない",
+      "artists": "まだそのようなアーティストはいない",
+      "otherArtists": "他にそのようなアーティストはいない",
+      "charts": "まだランキングはありません"
+    },
+    "count": {
+      "followers": "{{value}}フォロワー",
+      "likes": "{{value}}「いいね！」",
+      "comments": "{{value}} コメント",
+      "songs": "{{value}} 曲"
+    }
+  },
+  "time": {
+    "ago": {
+      "now": "終わったばかり",
+      "minutes": "{{count}}分",
+      "hours": "{{count}}時間",
+      "days": "{{count}}日",
+      "weeks": "{{count}}週間",
+      "months": "{{count}}月",
+      "years": "{{count}}年"
+    }
+  },
+  "errors": {
+    "network": "サーバーに接続できません。ネットワークを確認してから、もう一度お試しください。",
+    "timeout": "サーバーの応答に時間がかかりすぎます。しばらくしてからもう一度お試しください。",
+    "server": "サーバーに問題が発生しています。後ほど再度お試しください。",
+    "tooManyRequests": "試行回数が多すぎます。1分ほど待ってから、もう一度お試しください。",
+    "unknown": "エラーが発生しました。もう一度お試しください。",
+    "notConfigured": "サーバーアドレス（EXPO_PUBLIC_API_URL）がまだ設定されていません。",
+    "loadFailedTitle": "データを読み込めません",
+    "notFoundTitle": "見つかりませんでした",
+    "notFoundDescription": "このコンテンツは存在しません。"
+  },
+  "nav": {
+    "home": "トップページ",
+    "search": "検索",
+    "feed": "ニュース",
+    "library": "図書館"
+  },
+  "launch": {
+    "headline": "あなたの音楽、あなたのアーティスト",
+    "subtitle": "お気に入りのアーティストによる何百万もの楽曲。",
+    "createAccount": "アカウントを作成する",
+    "haveAccount": "すでにアカウントを持っています"
+  },
+  "auth": {
+    "login": {
+      "title": "お帰りなさい",
+      "subtitle": "音楽を聴き続けるにはログインしてください",
+      "submit": "ログイン",
+      "switchPrompt": "まだアカウントをお持ちではありませんか？",
+      "switchAction": "登録"
+    },
+    "register": {
+      "title": "アカウントを作成する",
+      "subtitle": "始めるのにたった1分しかかかりません",
+      "submit": "登録",
+      "switchPrompt": "アカウントをお持ちですか？",
+      "switchAction": "ログイン"
+    },
+    "fields": {
+      "email": {
+        "label": "Eメール",
+        "placeholder": "ten@email.com"
+      },
+      "name": {
+        "label": "表示名",
+        "placeholder": "お名前"
+      },
+      "password": {
+        "label": "パスワード",
+        "placeholder": "パスワードを入力してください"
+      }
+    },
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを非表示にする",
+    "logout": "ログアウト",
+    "validation": {
+      "emailRequired": "メールアドレスを入力してください",
+      "emailInvalid": "メールアドレスが無効です",
+      "emailTooLong": "メールの最大文字数：{{max}}文字",
+      "nameRequired": "名前を入力してください",
+      "nameTooLong": "名前は最大{{max}}文字まで",
+      "passwordRequired": "パスワードを入力してください",
+      "passwordTooShort": "パスワードは少なくとも{{min}}文字以上である必要があります",
+      "passwordTooLong": "パスワードは最大{{max}}文字まで"
+    },
+    "errors": {
+      "invalidCredentials": "メールアドレスまたはパスワードが正しくありません",
+      "emailTaken": "メールアドレスは登録済みです",
+      "turnstileFailed": "セキュリティ認証に失敗しました。再度認証を行ってください。",
+      "turnstileUnavailable": "現在、本人確認サービスはご利用いただけません。後ほど再度お試しください。"
+    },
+    "turnstile": {
+      "label": "Cloudflareのセキュリティ検証",
+      "required": "ログインする前に、セキュリティ認証を完了してください",
+      "failed": "セキュリティの確認が読み込めませんでした。タップして再試行してください。",
+      "errorCode": "エラーコード"
+    }
+  },
+  "home": {
+    "greeting": {
+      "morning": "おはようございます、",
+      "afternoon": "こんにちは、",
+      "evening": "こんばんは、"
+    },
+    "emptyTitle": "まだ聴けるものはありません",
+    "emptyDescription": "新曲はここに掲載されます。",
+    "regionsLabel": "地域",
+    "regions": {
+      "all": "すべて",
+      "vietnam": "ベトナム",
+      "korea": "K-Pop",
+      "japan": "J-Pop",
+      "china": "C-Pop"
+    },
+    "sections": {
+      "suggestions": "おすすめ",
+      "charts": "ランキング",
+      "trendingAlbums": "人気のアルバム",
+      "popularArtists": "有名なアーティスト"
+    }
+  },
+  "player": {
+    "viaYoutube": "YouTubeで配信",
+    "openOnYoutube": "YouTubeで開く",
+    "cannotPlayInApp": "この記事はアプリでは表示されません",
+    "noSource": "この記事には出典が記載されていません",
+    "networkError": "この曲を再生できません。接続を確認してから、もう一度お試しください。",
+    "openPlayerToListen": "この曲を聴くには、プレーヤーを開いてください",
+    "backgroundHint": "アプリを閉じるとYouTubeの再生が一時停止します。画面をオフにしても再生を続けたい場合は、「バックグラウンド再生」プレイリストをお試しください。",
+    "backgroundBadge": "画面をオフにしても再生可能",
+    "autoSkip": "次の記事を{{count}}秒後に自動で切り替える",
+    "nothingPlaying": "まだ投稿はありません",
+    "closePlayer": "プレーヤーを閉じる",
+    "openPlayer": "プレーヤーを開く",
+    "openPlayerNamed": "プレーヤーを開く、{{title}} - {{artist}}",
+    "playingFrom": "現在、以下から配信中",
+    "playing": "再生中",
+    "previous": "前の記事",
+    "next": "次の記事",
+    "shuffleOn": "ランダム再生：オン",
+    "shuffleOff": "ランダム再生：オフ",
+    "repeatOff": "繰り返し：オフ",
+    "repeatAll": "すべてを繰り返す",
+    "repeatOne": "問題をもう一度解く",
+    "likeTrack": "この曲が好き",
+    "unlikeTrack": "曲の「いいね」を解除する",
+    "trackProgress": "曲の進捗状況",
+    "videoPlayer": "動画プレーヤー",
+    "stopPlayback": "再生を停止",
+    "likeCount": "「いいね」、{{count}}件の「いいね」",
+    "commentCount": "コメント、{{count}}"
+  },
+  "recommendations": {
+    "forYou": "あなたへ",
+    "becauseYouListened": "あなたは聞いたから",
+    "forYouSource": "あなたへ",
+    "similarTitle": "関連記事",
+    "similarOpen": "関連記事を見る",
+    "similarSource": "関連記事",
+    "byMood": "その時の気分次第で",
+    "byMoodSource": "その時の気分次第で"
+  },
+  "search": {
+    "placeholder": "何を聞きたいですか？",
+    "recentTitle": "最近の検索",
+    "clearAll": "すべて削除",
+    "removeRecent": "「最近の検索」から削除する",
+    "hintTitle": "Music Streamで検索",
+    "hintDescription": "曲、アルバム、アーティストを検索する。",
+    "noResultsTitle": "結果はありません",
+    "noResultsDescription": "別の単語を試すか、スペルを確認してください。",
+    "results": "検索結果",
+    "clear": "検索内容を削除",
+    "tabs": {
+      "all": "すべて",
+      "tracks": "歌",
+      "albums": "アルバム",
+      "artists": "アーティスト"
+    }
+  },
+  "library": {
+    "screen": {
+      "title": "あなたのライブラリ",
+      "likedSongs": "「いいね」した曲",
+      "chips": {
+        "playlists": "プレイリスト",
+        "songs": "歌",
+        "albums": "アルバム",
+        "artists": "アーティスト"
+      },
+      "emptyTitle": "あなたのライブラリは空です",
+      "emptyDescription": "気に入った曲やアルバムを保存し、アーティストをフォローすると、ここでそれらを確認できます。"
+    },
+    "playlists": {
+      "title": "プレイリスト",
+      "heading": "あなたのプレイリスト",
+      "emptyTitle": "プレイリストはまだありません",
+      "emptyDescription": "「+」をタップして、初めてのプレイリストを作成しましょう。",
+      "create": "プレイリストを作成する",
+      "created": "プレイリストを作成しました"
+    }
+  },
+  "playlist": {
+    "addedTo": "{{name}} が追加されました",
+    "alreadyIn": "{{name}} にすでにあります",
+    "addToPlaylist": "プレイリストに追加",
+    "noPlaylists": "まだプレイリストがありません",
+    "loadFailed": "プレイリストを読み込めません",
+    "newPlaylist": "新しいプレイリスト",
+    "playlistNamePlaceholder": "プレイリスト名",
+    "createPlaylist": "作成",
+    "removeFromPlaylist": "このプレイリストから削除する",
+    "removedFrom": "{{name}} から削除しました",
+    "rename": "プレイリストの名前を変更する",
+    "renamed": "プレイリストの名前を変更しました",
+    "save": "保存",
+    "delete": "プレイリストを削除する",
+    "deleted": "プレイリストを削除しました",
+    "confirmDelete": "削除",
+    "deleteConfirmTitle": "プレイリストを削除しますか？",
+    "deleteConfirmMessage": "プレイリストはライブラリから削除されます。曲はそのまま残ります。",
+    "cancel": "キャンセル",
+    "named": "プレイリスト {{name}}"
+  },
+  "collection": {
+    "addSongsFirst": "まずは数曲追加しましょう",
+    "albumBy": "{{artist}}のアルバム。",
+    "likePlaylist": "プレイリストを「いいね」する",
+    "saveAlbum": "アルバムを保存",
+    "noSongsTitle": "まだ曲はありません",
+    "noSongsDescription": "どの曲でも、「…」メニューから曲を追加できます。"
+  },
+  "artist": {
+    "popular": "普及",
+    "albums": "アルバム",
+    "about": "はじめに",
+    "fansAlsoLike": "ファンも気に入っている",
+    "named": "アーティスト {{name}}"
+  },
+  "track": {
+    "addToLiked": "「お気に入り」に追加",
+    "removeFromLiked": "「お気に入り」から削除",
+    "playNamed": "{{title}}を{{artist}}から再生"
+  },
+  "feed": {
+    "title": "ニュース",
+    "postedTrack": "曲を1曲投稿しました",
+    "emptyTitle": "まだ投稿はありません",
+    "emptyDescription": "このアーティストの新曲がここに掲載されます。",
+    "artist": "アーティスト",
+    "artwork": "投稿の表紙画像",
+    "likePost": "投稿に「いいね！」",
+    "unlikePost": "投稿を「いいね！」から外す",
+    "comments": "コメント"
+  },
+  "comments": {
+    "title": "コメント",
+    "placeholder": "コメントを書く...",
+    "send": "コメントを投稿する",
+    "reply": "回答",
+    "replyingTo": "回答中",
+    "cancelReply": "返信をキャンセル",
+    "loadMoreFailed": "コメントをさらに読み込めません。タップして再試行してください。",
+    "loadingReplies": "フィードバックを読み込んでいます...",
+    "emptyTitle": "まだコメントはありません",
+    "emptyDescription": "ぜひ、最初のコメントを投稿してください。",
+    "likeComment": "コメントしたい",
+    "unlikeComment": "コメントの「いいね」を解除する",
+    "delete": "削除",
+    "deleteComment": "コメントを削除",
+    "confirmDelete": "削除",
+    "cancel": "キャンセル",
+    "deleteConfirmTitle": "このコメントを削除しますか？",
+    "deleteConfirmMessage": "この操作は元に戻せません。",
+    "deleteThreadConfirmMessage": "この操作は元に戻せません。コメントも削除されます。",
+    "viewReplies": "詳細を見る {{count}} コメント"
+  },
+  "premium": {
+    "welcomeTitle": "\nPremiumへようこそ",
+    "welcomeAction": "再生を開始",
+    "plansTitle": "無制限の音楽ライブラリ",
+    "subscribe": "今すぐ登録",
+    "currentPlan": "現在のプラン",
+    "backHome": "トップページへ",
+    "subscribeFailed": "Premiumが開始できません。もう一度お試しください。",
+    "perMonth": "/月",
+    "bannerLabel": "Music Stream Premiumのロックを解除",
+    "bannerNote": "1ヶ月無料・いつでも解約可能",
+    "plans": {
+      "individual": {
+        "name": "Premium",
+        "trial": "1ヶ月無料"
+      },
+      "duo": {
+        "name": "Premium Duo",
+        "trial": "1ヶ月無料"
+      },
+      "family": {
+        "name": "Premium Family",
+        "trial": "1ヶ月無料"
+      }
+    },
+    "features": {
+      "adFree": "広告なしで音楽を聴く",
+      "offline": "音楽をダウンロードしてオフラインで聴く",
+      "fullCatalog": "Premiumの音楽ライブラリすべてにアクセス",
+      "highQuality": "高音質",
+      "cancelAnytime": "いつでもキャンセル可能",
+      "accounts2": "2つのアカウント用",
+      "accounts6": "最大6つのアカウント"
+    }
+  },
+  "settings": {
+    "title": "アカウント",
+    "editProfile": "プロフィールの編集",
+    "edit": {
+      "title": "プロフィールの編集",
+      "nameLabel": "表示名",
+      "changePhoto": "プロフィール写真を変更する",
+      "save": "変更を保存",
+      "saved": "プロフィールを更新しました",
+      "back": "戻る",
+      "pickFailed": "画像を選択できませんでした。もう一度お試しください。",
+      "readFailed": "選択した画像を読み込めません。別の画像を選択してください。",
+      "uploadFailed": "画像をアップロードできませんでした。もう一度お試しください。"
+    },
+    "language": {
+      "title": "言語",
+      "system": "機器別",
+      "systemHint": "携帯電話の言語を使用する"
+    }
+  },
+  "assistant": {
+    "name": "AIアシスタント",
+    "title": "Music Stream アシスタント",
+    "tabLabel": "アシスタント",
+    "open": "AIアシスタントを開く",
+    "close": "アシスタントを閉じる",
+    "playSource": "AIアシスタント",
+    "welcomeTitle": "今日は何を聴きたいですか？",
+    "welcomeBody": "今の気分や、今やっていることを教えてください。私が曲を探して、プレイリストを作って、その曲を再生してあげます。",
+    "starters": [
+      "ベトナムの切ない曲のおすすめ",
+      "K-Popのランニング用プレイリストを作成する",
+      "ソン・トゥンに似たアーティスト",
+      "Premiumには何が含まれていますか？"
+    ],
+    "startersLabel": "質問のヒント",
+    "composerPlaceholder": "アシスタントにメッセージを送る…",
+    "composerLabel": "アシスタントへのメッセージ",
+    "send": "メッセージを送信",
+    "stop": "返信を停止する",
+    "replying": "アシスタントが回答中です",
+    "youSaid": "あなたはこう言いました",
+    "assistantSaid": "アシスタントは言った",
+    "truncated": "回答が途中で切れてしまいました。アシスタントに続きを話してもらうことができます。",
+    "notSent": "まだ送信できていません",
+    "resend": "再送信",
+    "loadingHistory": "チャットを開始中",
+    "loadFailedTitle": "チャットを開くことができません",
+    "remaining": "今日のメッセージは{{count}}です",
+    "sources": "出典",
+    "moreTracks": "{{count}}の記事をもっと見る",
+    "fewerTracks": "折りたたむ",
+    "dismiss": "通知を非表示にする",
+    "time": {
+      "justNow": "終わったばかり",
+      "minutes": "{{count}} 1分前",
+      "hours": "{{count}} 1時間前",
+      "yesterday": "昨日",
+      "days": "{{count}}日前"
+    },
+    "tools": {
+      "search_catalog": "音楽ライブラリを検索中…",
+      "get_track": "曲を再生中…",
+      "get_artist": "現在、アーティストを閲覧中…",
+      "get_album": "アルバムを閲覧中…",
+      "get_playlist": "プレイリストを再生中…",
+      "get_my_library": "あなたのライブラリを表示しています…",
+      "recommend_tracks": "あなたの好みに合った曲を選んでいます…",
+      "similar_tracks": "似たような記事を探しています…",
+      "search_help": "ガイドを検索中…",
+      "play_tracks": "音楽を再生中…",
+      "create_playlist": "プレイリストを作成中です…",
+      "add_tracks_to_playlist": "現在、記事を追加する準備中です…",
+      "like_tracks": "「いいね」しようとしているところ…",
+      "follow_artist": "現在、視聴の準備中です…",
+      "fallback": "処理中…",
+      "failed": "この手順が実行できません"
+    },
+    "action": {
+      "heading": "アシスタントが実行したい",
+      "confirm": "同意する",
+      "reject": "キャンセル",
+      "busy": "処理中…",
+      "confirmed": "完了しました",
+      "rejected": "キャンセルされました",
+      "expired": "有効期限が切れています",
+      "failed": "まだ実行できていない",
+      "waiting": "10分以内にご同意ください"
+    },
+    "history": {
+      "open": "会話",
+      "title": "会話",
+      "newChat": "新しい会話",
+      "untitled": "メッセージはまだありません",
+      "emptyTitle": "まだ会話はありません",
+      "emptyDescription": "まずは、どんな音楽を聴きたいか、という質問から始めましょう。",
+      "delete": "チャットを削除する",
+      "deleteTitle": "このチャットを削除しますか？",
+      "deleteMessage": "メッセージはすべて消去されます。本日送信したメッセージは、日ごとの制限に引き続きカウントされます。",
+      "confirmDelete": "削除",
+      "keep": "保持する",
+      "deleted": "チャットを削除しました",
+      "deleteFailed": "チャットを削除できませんでした。もう一度お試しください。",
+      "createFailed": "新しいチャットを作成できませんでした。もう一度お試しください。"
+    },
+    "unavailable": {
+      "title": "アシスタントはまだ準備ができていません",
+      "description": "この機能は現在無効になっています。アプリのその他の機能は通常通りご利用いただけます。",
+      "close": "閉じる"
+    },
+    "errors": {
+      "generic": "エラーが発生しました。もう一度お試しください。",
+      "offline": "サーバーに接続できません。ネットワークを確認してから、再度送信してください。",
+      "quota": "本日のメッセージ利用枠を使い切りました。明日またお越しください。",
+      "unavailable": "アシスタントは現在一時停止中です。後ほどもう一度お試しください。",
+      "conflict": "アシスタントが前のメッセージに返信中です。少々お待ちください。",
+      "expired": "この提案の有効期限が切れました（10分以上経過しました）。アシスタントに再度依頼してください。",
+      "gone": "この会話はもうありません。"
+    }
+  },
+  "album": {
+    "named": "{{artist}}のアルバム {{title}}"
+  },
+  "suggestion": {
+    "by": "{{title}}の{{subtitle}}"
+  },
+  "lyrics": {
+    "open": "歌詞を見る",
+    "title": "歌詞",
+    "sourceLabel": "出典：{{source}}",
+    "sourceDemo": "自作のデモ歌詞",
+    "translate": "{{language}} に翻訳",
+    "translating": "翻訳中…",
+    "autoTranslated": "自動翻訳",
+    "viewLabel": "歌詞の表示方法",
+    "viewOriginal": "原文",
+    "viewParallel": "並行して",
+    "viewTranslation": "翻訳",
+    "sameLanguage": "歌詞はあなたの言語で書かれています。",
+    "emptyTitle": "この記事にはまだ歌詞がありません",
+    "emptyDescription": "歌詞は、用意ができ次第、ここに表示されます。",
+    "loading": "歌詞を読み込み中",
+    "translationFailed": {
+      "generic": "歌詞はまだ翻訳されていません。元の歌詞は引き続きご覧いただけます。",
+      "quota": "今月の翻訳枠を使い切りました。原文は引き続きご覧いただけます。",
+      "notConfigured": "翻訳機能はまだ利用できません。原文は引き続き表示されます。",
+      "rateLimited": "翻訳が速すぎます。1分ほど待ってから、もう一度お試しください。",
+      "offline": "サーバーに接続できません。ネットワークを確認してから、もう一度お試しください。",
+      "busy": "翻訳サービスは現在混雑しています。数分後に再度お試しください。"
+    }
+  }
+}
