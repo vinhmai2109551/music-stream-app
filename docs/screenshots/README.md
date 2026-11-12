@@ -36,7 +36,7 @@ The main [README](../../README.md) shows these 20 images in its **Screenshots** 
 | File                  | Screen    | What it must show                                                        |
 | --------------------- | --------- | ------------------------------------------------------------------------ |
 | `admin-dashboard.jpg` | Dashboard | The totals, the plays and new users charts and the top tracks            |
-| `admin-artists.jpg`   | Artists   | The artists table with the search box and the buttons to create and edit |
+| `admin-artists.jpg`   | Artists   | The detail page of an artist: followers, bio and the artist's tracks     |
 | `admin-tracks.jpg`    | Tracks    | The tracks table with its filters, paging and the lyrics status column   |
 | `admin-add-track.jpg` | Add track | The form with the audio and cover upload (or the YouTube link) filled in |
 | `swagger.jpg`         | Swagger   | `http://localhost:3000/api/docs` with the groups of endpoints expanded   |

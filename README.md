@@ -114,7 +114,7 @@ _Vite + React + Refine + Ant Design, used by the administrator to manage artists
 <table>
   <tr><th align="center" width="50%">Dashboard</th><th align="center" width="50%">Artists</th></tr>
   <tr><td align="center"><img src="docs/screenshots/admin-dashboard.jpg" width="420" alt="Dashboard"/></td><td align="center"><img src="docs/screenshots/admin-artists.jpg" width="420" alt="Artists"/></td></tr>
-  <tr><td align="center"><em>Users, tracks, plays and charts at a glance</em></td><td align="center"><em>List, search, create and edit artists</em></td></tr>
+  <tr><td align="center"><em>Users, tracks, plays and charts at a glance</em></td><td align="center"><em>Artist details: followers, bio and the artist's tracks</em></td></tr>
   <tr><th align="center" width="50%">Tracks</th><th align="center" width="50%">Add a track</th></tr>
   <tr><td align="center"><img src="docs/screenshots/admin-tracks.jpg" width="420" alt="Tracks"/></td><td align="center"><img src="docs/screenshots/admin-add-track.jpg" width="420" alt="Add a track"/></td></tr>
   <tr><td align="center"><em>Manage the catalog with filters and paging</em></td><td align="center"><em>Upload audio and cover to Cloudflare R2 or link a YouTube video</em></td></tr>
