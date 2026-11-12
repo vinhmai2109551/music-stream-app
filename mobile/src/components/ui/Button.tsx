@@ -89,8 +89,9 @@ const useStyles = makeStyles((colors) => ({
     paddingHorizontal: spacing.md,
   },
   primary: { backgroundColor: colors.accent, ...shadows.card },
+  // The page background, not a fixed white: the label follows the theme, so white would hide it in the dark one.
   secondary: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.background,
     borderWidth: sizes.borderThin,
     borderColor: colors.divider,
   },

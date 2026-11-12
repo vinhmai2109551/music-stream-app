@@ -86,6 +86,8 @@ export function FeedList() {
           render={(_, post) => (
             <DeleteButton
               hideText
+              title="Xoá"
+              aria-label="Xoá"
               size="small"
               recordItemId={post.id}
               confirmTitle="Xoá bài đăng này cùng bình luận của nó?"

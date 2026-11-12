@@ -131,13 +131,27 @@ export function TrackList() {
           fixed="right"
           render={(_, track) => (
             <Space>
-              <ShowButton hideText size="small" recordItemId={track.id} />
-              <EditButton hideText size="small" recordItemId={track.id} />
+              <ShowButton
+                hideText
+                size="small"
+                title="Xem"
+                aria-label="Xem"
+                recordItemId={track.id}
+              />
+              <EditButton
+                hideText
+                size="small"
+                title="Sửa"
+                aria-label="Sửa"
+                recordItemId={track.id}
+              />
               <Link to={`/tracks/${track.id}/lyrics`}>
                 <Button size="small" icon={<FileTextOutlined />} aria-label="Sửa lời bài hát" />
               </Link>
               <DeleteButton
                 hideText
+                title="Xoá"
+                aria-label="Xoá"
                 size="small"
                 recordItemId={track.id}
                 confirmTitle="Xoá bài hát này?"

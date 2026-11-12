@@ -4,3 +4,7 @@
 
 expo-env.d.ts
 # @end expo-cli
+# Local secrets: never commit. Only the .env.example template is kept.
+.env
+.env.*
+!.env.example

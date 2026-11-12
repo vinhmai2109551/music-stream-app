@@ -3,7 +3,7 @@ import { validateEnv } from "./env.validation.js"
 
 const base = {
   DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
-  JWT_SECRET: "a-secret-that-is-long-enough",
+  JWT_SECRET: "a-secret-that-is-long-enough-to-sign-tokens",
 }
 
 const r2 = {
@@ -17,7 +17,8 @@ const r2 = {
 const turnstile = { TURNSTILE_SECRET_KEY: "0x4AAAAAAA-secret" }
 const deepl = { DEEPL_API_KEY: "00000000-0000-0000-0000-000000000000:fx" }
 /** The secrets a production environment has to carry besides R2. */
-const secrets = { ...turnstile, ...deepl }
+const cors = { CORS_ORIGINS: "https://admin.example.com" }
+const secrets = { ...turnstile, ...deepl, ...cors }
 
 describe("validateEnv", () => {
   it("accepts a minimal development environment without any R2 setting", () => {
@@ -179,6 +180,64 @@ describe("validateEnv", () => {
   it("still requires the basics", () => {
     expect(() => validateEnv({ JWT_SECRET: base.JWT_SECRET })).toThrow(/DATABASE_URL/)
     expect(() => validateEnv({ ...base, JWT_SECRET: "short" })).toThrow(/JWT_SECRET/)
+  })
+
+  describe("settings that keep production safe", () => {
+    const production = { ...base, NODE_ENV: "production", ...r2, ...secrets }
+
+    it("wants a JWT secret of at least 32 characters", () => {
+      expect(() => validateEnv({ ...base, JWT_SECRET: "x".repeat(31) })).toThrow(/at least 32/)
+      expect(() => validateEnv({ ...base, JWT_SECRET: "x".repeat(32) })).not.toThrow()
+    })
+
+    it.each(["change-me-to-a-long-random-string", "CHANGE-ME-to-a-long-random-string-please"])(
+      "refuses the placeholder of .env.example as the JWT secret: %s",
+      (secret) => {
+        expect(() => validateEnv({ ...base, JWT_SECRET: secret })).toThrow(/placeholder/)
+      },
+    )
+
+    it("requires CORS_ORIGINS in production, and only there", () => {
+      const { CORS_ORIGINS: _origins, ...withoutCors } = production
+      expect(() => validateEnv(withoutCors)).toThrow(/CORS_ORIGINS is required in production/)
+      expect(() => validateEnv({ ...withoutCors, CORS_ORIGINS: "" })).toThrow(/CORS_ORIGINS/)
+      expect(() => validateEnv(production)).not.toThrow()
+      expect(() => validateEnv(base)).not.toThrow()
+    })
+
+    it("accepts SWAGGER_ENABLED as true or false only", () => {
+      for (const value of ["true", "false", ""]) {
+        expect(() =>
+          validateEnv({ ...base, SWAGGER_ENABLED: value, SEED_ON_START: value }),
+        ).not.toThrow()
+      }
+      expect(() => validateEnv({ ...base, SWAGGER_ENABLED: "yes" })).toThrow(/SWAGGER_ENABLED/)
+    })
+
+    it("wants a real admin password when the seed runs in production", () => {
+      const seeding = { ...production, SEED_ON_START: "true" }
+      expect(() => validateEnv(seeding)).toThrow(/SEED_ADMIN_PASSWORD/)
+      expect(() => validateEnv({ ...seeding, SEED_ADMIN_PASSWORD: "short-one" })).toThrow(
+        /at least 12/,
+      )
+      expect(() =>
+        validateEnv({ ...seeding, SEED_ADMIN_PASSWORD: "change-me-please-now" }),
+      ).toThrow(/placeholder/)
+      expect(() =>
+        validateEnv({ ...seeding, SEED_ADMIN_PASSWORD: "a-real-password-1" }),
+      ).not.toThrow()
+    })
+
+    it("does not look at the admin password when the seed is off, or outside production", () => {
+      expect(() => validateEnv({ ...production, SEED_ON_START: "false" })).not.toThrow()
+      expect(() =>
+        validateEnv({ ...base, SEED_ON_START: "true", SEED_ADMIN_PASSWORD: "x" }),
+      ).not.toThrow()
+    })
+
+    it("accepts SEED_ON_START as true or false only", () => {
+      expect(() => validateEnv({ ...base, SEED_ON_START: "maybe" })).toThrow(/SEED_ON_START/)
+    })
   })
 
   describe("limits, grace period and proxy settings", () => {

@@ -179,6 +179,7 @@ export function LyricsEditorPage() {
                 draft={draft}
                 controller={controller}
                 nowMs={nowMs}
+                durationSec={track.duration}
                 active={tab === "sync"}
                 onTap={(timeMs) => dispatch({ type: "tap", timeMs })}
                 onUndo={() => dispatch({ type: "undoTap" })}
