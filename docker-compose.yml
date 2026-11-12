@@ -54,6 +54,10 @@ services:
         VITE_API_URL: ${ADMIN_API_URL:-http://localhost:3000/api}
         # Cloudflare Turnstile Site Key of the login form; empty = no widget (see backend/.env).
         VITE_TURNSTILE_SITE_KEY: ${ADMIN_TURNSTILE_SITE_KEY:-}
+    environment:
+      # Origin of the API as the browser sees it (no path); the Content-Security-Policy of the admin
+      # web lets the page talk to this address only. Keep it in step with ADMIN_API_URL above.
+      API_ORIGIN: ${ADMIN_API_ORIGIN:-http://localhost:3000}
     restart: unless-stopped
     ports:
       - "5173:80"

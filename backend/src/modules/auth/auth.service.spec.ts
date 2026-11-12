@@ -29,13 +29,11 @@ beforeAll(async () => {
   passwordHash = await hash(PASSWORD, 4)
 })
 
-function setup(opts: { banned?: boolean; unknownToken?: boolean } = {}) {
+function setup(opts: { banned?: boolean; unknownToken?: boolean; unknownEmail?: boolean } = {}) {
   const users = {
-    findCredentials: jest.fn(async (_email: string) => ({
-      ...USER,
-      passwordHash,
-      isBanned: !!opts.banned,
-    })),
+    findCredentials: jest.fn(async (_email: string) =>
+      opts.unknownEmail ? null : { ...USER, passwordHash, isBanned: !!opts.banned },
+    ),
     getAccessState: jest.fn(async (_id: string) => ({ role: Role.USER, isBanned: !!opts.banned })),
     getView: jest.fn(async (_id: string) => USER),
   }
@@ -85,6 +83,30 @@ describe("AuthService.login", () => {
       .catch((e) => e)
 
     expect(status(error)).toBe(401)
+  })
+})
+
+describe("AuthService.login with an email nobody has", () => {
+  it("answers 401 like a wrong password", async () => {
+    const { service, tokens } = setup({ unknownEmail: true })
+
+    const error = await service
+      .login({ email: "nobody@example.com", password: PASSWORD })
+      .catch((e) => e)
+
+    expect(status(error)).toBe(401)
+    expect(error.message).toBe("Invalid email or password")
+    expect(tokens.issue).not.toHaveBeenCalled()
+  })
+
+  it("still spends the time of a password check, so the time does not tell who has an account", async () => {
+    const { service } = setup({ unknownEmail: true })
+
+    const started = performance.now()
+    await service.login({ email: "nobody@example.com", password: PASSWORD }).catch(() => undefined)
+
+    // A bcrypt check of cost 10 takes tens of milliseconds; skipping it would take well under 5.
+    expect(performance.now() - started).toBeGreaterThan(15)
   })
 })
 

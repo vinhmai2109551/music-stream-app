@@ -19,6 +19,9 @@ const NON_NEGATIVE_INTEGER = /^\d+$/
 /** A number, true / false, or names and addresses such as `loopback, 10.0.0.0/8`. */
 const TRUST_PROXY_VALUE = /^(\d+|true|false|[A-Za-z0-9.:/, _-]+)$/
 
+/** The values of `.env.example` that must be replaced start with "change-me". */
+const NOT_A_PLACEHOLDER = /^(?!change-me)/i
+
 /** Cloudflare R2 and Turnstile settings are mandatory in production and optional while developing. */
 const requiredInProduction = (env: EnvironmentVariables) => env.NODE_ENV === "production"
 
@@ -69,8 +72,12 @@ class EnvironmentVariables {
   @IsNotEmpty()
   DATABASE_URL!: string
 
+  /** Signs every access token: long, random and not the placeholder of `.env.example`. */
   @IsString()
-  @MinLength(16, { message: "JWT_SECRET must be at least 16 characters" })
+  @MinLength(32, { message: "JWT_SECRET must be at least 32 characters" })
+  @Matches(NOT_A_PLACEHOLDER, {
+    message: "JWT_SECRET is still the placeholder (change-me...): make a real one",
+  })
   JWT_SECRET!: string
 
   @IsOptional()
@@ -299,6 +306,40 @@ class EnvironmentVariables {
     message: "TRUST_PROXY must be a hop count (1), true, false or a list of addresses",
   })
   TRUST_PROXY?: string
+
+  /**
+   * The sites (browsers) allowed to call the API, comma separated. Mobile apps send no Origin, so
+   * this is only for the admin web and Expo web. Empty means every site is allowed, which is only
+   * acceptable while developing.
+   */
+  @ValidateIf(requiredInProduction)
+  @IsString()
+  @IsNotEmpty({
+    message: "CORS_ORIGINS is required in production: list the sites that may call the API",
+  })
+  CORS_ORIGINS?: string
+
+  /** The API docs (/api/docs) are off in production unless this is `true`. */
+  @ValidateIf((env: EnvironmentVariables) => Boolean(env.SWAGGER_ENABLED?.trim()))
+  @Matches(/^(true|false)$/, { message: "SWAGGER_ENABLED must be true or false" })
+  SWAGGER_ENABLED?: string
+
+  @ValidateIf((env: EnvironmentVariables) => Boolean(env.SEED_ON_START?.trim()))
+  @Matches(/^(true|false)$/, { message: "SEED_ON_START must be true or false" })
+  SEED_ON_START?: string
+
+  /** The password of the administrator the seed creates: a real one when the seed runs in production. */
+  @ValidateIf(
+    (env: EnvironmentVariables) => requiredInProduction(env) && env.SEED_ON_START === "true",
+  )
+  @IsString()
+  @MinLength(12, {
+    message: "SEED_ADMIN_PASSWORD must be at least 12 characters when the seed runs in production",
+  })
+  @Matches(NOT_A_PLACEHOLDER, {
+    message: "SEED_ADMIN_PASSWORD is still the placeholder (change-me): make a real one",
+  })
+  SEED_ADMIN_PASSWORD?: string
 }
 
 /** Fails fast at startup when a required variable is missing or malformed. */

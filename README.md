@@ -23,6 +23,10 @@ Final project for the **Mobile Programming** course — Industrial University of
   - [Overview](#overview)
   - [Screens \& Features](#screens--features)
   - [Screenshots](#screenshots)
+    - [📱 Mobile app](#-mobile-app)
+    - [🖥️ Admin web](#️-admin-web)
+    - [📘 API documentation](#-api-documentation)
+    - [🧩 Architecture and design](#-architecture-and-design)
   - [Tech Stack](#tech-stack)
   - [Project Structure](#project-structure)
   - [Getting Started](#getting-started)
@@ -39,7 +43,7 @@ Final project for the **Mobile Programming** course — Industrial University of
   - [Available Scripts](#available-scripts)
   - [Branching Workflow](#branching-workflow)
   - [Project Management](#project-management)
-  - [Author](#author)
+  - [Team](#team)
   - [License](#license)
 
 ## Overview
@@ -87,23 +91,50 @@ The app consists of the 13 screens of the design:
 
 ## Screenshots
 
-The images are screenshots of the running app. The files to capture, what each one must show and the size to use are listed in [`docs/screenshots/README.md`](docs/screenshots/README.md); put them in `docs/screenshots/` with exactly these names.
+### 📱 Mobile app
 
-|                 Launch                 |                Login                 |                Home                |                     Home (dark)                      |
-| :------------------------------------: | :----------------------------------: | :--------------------------------: | :--------------------------------------------------: |
-| ![Launch](docs/screenshots/launch.png) | ![Login](docs/screenshots/login.png) | ![Home](docs/screenshots/home.png) | ![Home in dark mode](docs/screenshots/home-dark.png) |
+_Built with Expo and React Native for Android and iOS, with a light and dark theme that follows the phone and five languages._
 
-|                  Playlist                  |                 Player                 |                 Artist                 |                 Search                 |
-| :----------------------------------------: | :------------------------------------: | :------------------------------------: | :------------------------------------: |
-| ![Playlist](docs/screenshots/playlist.png) | ![Player](docs/screenshots/player.png) | ![Artist](docs/screenshots/artist.png) | ![Search](docs/screenshots/search.png) |
+<table>
+  <tr><th align="center" width="25%">Login</th><th align="center" width="25%">Register</th><th align="center" width="25%">Home</th><th align="center" width="25%">My playlist</th></tr>
+  <tr><td align="center"><img src="docs/screenshots/login.png" width="220" alt="Login"/></td><td align="center"><img src="docs/screenshots/register.png" width="220" alt="Register"/></td><td align="center"><img src="docs/screenshots/home.png" width="220" alt="Home"/></td><td align="center"><img src="docs/screenshots/my-playlist.png" width="220" alt="My playlist"/></td></tr>
+  <tr><td align="center"><em>Email and password, protected by Cloudflare Turnstile</em></td><td align="center"><em>Create an account in a few seconds</em></td><td align="center"><em>Greeting, region chips, suggestions and charts</em></td><td align="center"><em>Your own playlist: rename, delete, shuffle and play</em></td></tr>
+  <tr><th align="center" width="25%">Search results</th><th align="center" width="25%">Artist profile</th><th align="center" width="25%">Album</th><th align="center" width="25%">Playlist</th></tr>
+  <tr><td align="center"><img src="docs/screenshots/search-results.png" width="220" alt="Search results"/></td><td align="center"><img src="docs/screenshots/artist.png" width="220" alt="Artist profile"/></td><td align="center"><img src="docs/screenshots/album.png" width="220" alt="Album"/></td><td align="center"><img src="docs/screenshots/playlist.png" width="220" alt="Playlist"/></td></tr>
+  <tr><td align="center"><em>Tabs All / Tracks / Albums / Artists plus "by mood" results</em></td><td align="center"><em>Followers, Follow button, top tracks and albums</em></td><td align="center"><em>Track list, shuffle and play</em></td><td align="center"><em>Chart playlist with likes and play</em></td></tr>
+  <tr><th align="center" width="25%">Player</th><th align="center" width="25%">My library</th><th align="center" width="25%">AI assistant</th><th align="center" width="25%">Premium</th></tr>
+  <tr><td align="center"><img src="docs/screenshots/player.png" width="220" alt="Player"/></td><td align="center"><img src="docs/screenshots/library.png" width="220" alt="My library"/></td><td align="center"><img src="docs/screenshots/assistant.png" width="220" alt="AI assistant"/></td><td align="center"><img src="docs/screenshots/premium.png" width="220" alt="Premium"/></td></tr>
+  <tr><td align="center"><em>Official YouTube video, lyrics, seek, shuffle and repeat</em></td><td align="center"><em>Liked songs, albums, followed artists and playlists</em></td><td align="center"><em>Streaming chat that finds tracks and builds playlists</em></td><td align="center"><em>Plans and a simulated subscription</em></td></tr>
+</table>
 
-|                     Search results                     |                Feed                |                  Comments                  |                 Library                  |
-| :----------------------------------------------------: | :--------------------------------: | :----------------------------------------: | :--------------------------------------: |
-| ![Search results](docs/screenshots/search-results.png) | ![Feed](docs/screenshots/feed.png) | ![Comments](docs/screenshots/comments.png) | ![Library](docs/screenshots/library.png) |
+### 🖥️ Admin web
 
-|                    My playlists                    |                 Premium                  |                     Welcome to Premium                      |
-| :------------------------------------------------: | :--------------------------------------: | :---------------------------------------------------------: |
-| ![My playlists](docs/screenshots/my-playlists.png) | ![Premium](docs/screenshots/premium.png) | ![Welcome to Premium](docs/screenshots/premium-welcome.png) |
+_Vite + React + Refine + Ant Design, used by the administrator to manage artists, albums, tracks, feed posts and users._
+
+<table>
+  <tr><th align="center" width="50%">Dashboard</th><th align="center" width="50%">Artists</th></tr>
+  <tr><td align="center"><img src="docs/screenshots/admin-dashboard.jpg" width="420" alt="Dashboard"/></td><td align="center"><img src="docs/screenshots/admin-artists.jpg" width="420" alt="Artists"/></td></tr>
+  <tr><td align="center"><em>Users, tracks, plays and charts at a glance</em></td><td align="center"><em>List, search, create and edit artists</em></td></tr>
+  <tr><th align="center" width="50%">Tracks</th><th align="center" width="50%">Add a track</th></tr>
+  <tr><td align="center"><img src="docs/screenshots/admin-tracks.jpg" width="420" alt="Tracks"/></td><td align="center"><img src="docs/screenshots/admin-add-track.jpg" width="420" alt="Add a track"/></td></tr>
+  <tr><td align="center"><em>Manage the catalog with filters and paging</em></td><td align="center"><em>Upload audio and cover to Cloudflare R2 or link a YouTube video</em></td></tr>
+</table>
+
+### 📘 API documentation
+
+_Every endpoint of the NestJS API is documented with Swagger at `http://localhost:3000/api/docs`._
+
+<p align="center"><img src="docs/screenshots/swagger.jpg" width="85%" alt="Swagger"/></p>
+
+### 🧩 Architecture and design
+
+<table>
+  <tr><th align="center" width="50%">3-tier architecture</th><th align="center" width="50%">Use case diagram</th></tr>
+  <tr><td align="center"><img src="docs/screenshots/architecture.png" width="420" alt="3-tier architecture"/></td><td align="center"><img src="docs/screenshots/use-case.png" width="420" alt="Use case diagram"/></td></tr>
+  <tr><td align="center"><em>Mobile and admin clients, NestJS API, PostgreSQL + pgvector and external services</em></td><td align="center"><em>User and Admin actors with include / extend relations</em></td></tr>
+</table>
+
+<p align="center"><b>Database (ERD)</b><br/><img src="docs/screenshots/erd.png" width="95%" alt="ERD"/><br/><em>Core tables: users, artists, albums, tracks, playlists, likes, follows, plays, comments and feed posts</em></p>
 
 ## Tech Stack
 
@@ -253,7 +284,7 @@ cp backend/.env.example backend/.env   # then edit the secrets
 docker compose up -d --build
 ```
 
-API: `http://localhost:3000/api` · Swagger: `http://localhost:3000/api/docs` · health: `http://localhost:3000/api/health`.
+API: `http://localhost:3000/api` · Swagger: `http://localhost:3000/api/docs` · health: `http://localhost:3000/api/health`. The docs list every route, so in production mode (which the Docker image runs in) they are off unless `SWAGGER_ENABLED=true` is set in `backend/.env`; in production the API also refuses to start without `CORS_ORIGINS`, or with a `JWT_SECRET` shorter than 32 characters or still `change-me…`.
 
 `backend/.env.example` ships `SEED_ON_START=false`, which is what production wants: with `true` every start overwrites the demo artists, tracks and playlists with the versions in the code and recreates the admin account. For a first run (or development) set it to `true`: the demo catalog and the admin account (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from `backend/.env`) are created, then set it back to `false`.
 
@@ -638,13 +669,15 @@ feat(foundation): add theme tokens, types, mock data, stores and base UI [SAM1-2
 
 Tasks, epics and progress are tracked in **Jira** under project key **`SAM1`**. Every commit and pull request references its Jira issue (e.g. `SAM1-13`) for traceability.
 
-## Author
+## Team
 
-| Field      | Details                                         |
-| ---------- | ----------------------------------------------- |
-| **Name**   | Mai Lưu Hữu Vinh                                |
-| **Class**  | DHKTPM19BTT                                     |
-| **School** | Industrial University of Ho Chi Minh City (IUH) |
+| Member               | Student ID | Role                     | Main work                                                                                                                                                           |
+| -------------------- | ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mai Lưu Hữu Vinh** | 21095551   | Team lead, backend       | NestJS API and PostgreSQL / Prisma schema, AI assistant and search by meaning (Gemini, pgvector), Cloudflare R2 and DeepL, Docker, GitHub Actions CI, Jira planning |
+| **Bùi Hoàng Giang**  | 20088591   | Mobile developer         | Expo / React Native screens (Home, Search, Player, Library, Feed), design tokens, light and dark theme, five languages                                              |
+| **Trần Đức Cảnh**    | 23721611   | Admin web, testing, docs | Admin web (Refine + Ant Design), unit and end-to-end tests, use case and ERD diagrams, report, slides and demo video                                                |
+
+**Class:** DHKTPM19BTT · **Instructor:** Nguyễn Minh Hải · **School:** Industrial University of Ho Chi Minh City (IUH)
 
 ## License
 

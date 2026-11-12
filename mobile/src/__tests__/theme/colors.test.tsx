@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals"
 import { render, renderHook, screen } from "@testing-library/react-native"
-import { View } from "react-native"
+import { StyleSheet, View } from "react-native"
 import { AppText } from "@/components/ui/AppText"
+import { Button } from "@/components/ui/Button"
 import { darkColors, lightColors, makeStyles, useColors, type Palette } from "@/theme"
 
 // The device's setting, which the test changes (Jest has no real Appearance module).
@@ -143,4 +144,20 @@ describe("following the device theme", () => {
     await render(<Box />)
     expect(screen.getByTestId("box")).toHaveStyle({ backgroundColor: darkColors.background })
   })
+})
+
+describe("the secondary button (Đăng xuất, Huỷ)", () => {
+  it.each(palettes)(
+    "keeps its label readable on its fill in the %s theme",
+    async (name, palette) => {
+      setScheme(name as "light" | "dark")
+      await render(<Button label="Đăng xuất" variant="secondary" />)
+
+      const style = StyleSheet.flatten(screen.getByRole("button").props.style)
+
+      // The fill follows the theme like the label does; a fixed white once hid the label in dark mode.
+      expect(style.backgroundColor).toBe(palette.background)
+      expect(contrast(palette.text, style.backgroundColor as string)).toBeGreaterThanOrEqual(TEXT)
+    },
+  )
 })
