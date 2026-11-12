@@ -3,7 +3,7 @@ import { validateEnv } from "./env.validation.js"
 
 const base = {
   DATABASE_URL: "postgresql://user:pass@localhost:5432/db",
-  JWT_SECRET: "a-secret-that-is-long-enough",
+  JWT_SECRET: "a-secret-that-is-long-enough-to-sign-tokens",
 }
 const production = {
   ...base,
@@ -14,6 +14,7 @@ const production = {
   R2_BUCKET: "bucket",
   R2_PUBLIC_URL: "https://pub-abc.r2.dev",
   TURNSTILE_SECRET_KEY: "0x4AAAAAAA-secret",
+  CORS_ORIGINS: "https://admin.example.com",
 }
 
 describe("the DeepL settings", () => {

@@ -34,16 +34,22 @@ async function bootstrap(): Promise<void> {
     .filter(Boolean)
   app.enableCors({ origin: origins.length > 0 ? origins : true, credentials: true })
 
-  const document = SwaggerModule.createDocument(
-    app,
-    new DocumentBuilder()
-      .setTitle("Music Stream API")
-      .setDescription("REST API for the Music Stream mobile app and admin web")
-      .setVersion("1.0")
-      .addBearerAuth()
-      .build(),
-  )
-  SwaggerModule.setup("api/docs", app, document)
+  // The docs list every route, the admin ones too: off in production unless SWAGGER_ENABLED=true.
+  const docsOn =
+    config.get<string>("SWAGGER_ENABLED") === "true" ||
+    config.get<string>("NODE_ENV") !== "production"
+  if (docsOn) {
+    const document = SwaggerModule.createDocument(
+      app,
+      new DocumentBuilder()
+        .setTitle("Music Stream API")
+        .setDescription("REST API for the Music Stream mobile app and admin web")
+        .setVersion("1.0")
+        .addBearerAuth()
+        .build(),
+    )
+    SwaggerModule.setup("api/docs", app, document)
+  }
 
   if (config.get<string>("SEED_ON_START") === "true") {
     await runSeed(app.get(PrismaService), {

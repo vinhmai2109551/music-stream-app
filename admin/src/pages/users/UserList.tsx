@@ -177,7 +177,7 @@ export function UserList() {
                     )
                   }
                 >
-                  <Button size="small" danger={!user.isBanned} loading={pendingId === user.id}>
+                  <Button size="small" loading={pendingId === user.id}>
                     {user.isBanned ? "Mở khoá" : "Khoá"}
                   </Button>
                 </Popconfirm>
@@ -208,6 +208,8 @@ export function UserList() {
                 </Popconfirm>
                 <DeleteButton
                   hideText
+                  title="Xoá"
+                  aria-label="Xoá"
                   size="small"
                   recordItemId={user.id}
                   resource="users"

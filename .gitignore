@@ -21,6 +21,7 @@ expo-env.d.ts
 *.pem
 *.mobileprovision
 **/.env
+**/.env.*
 **/.env*.local
 !**/.env.example
 

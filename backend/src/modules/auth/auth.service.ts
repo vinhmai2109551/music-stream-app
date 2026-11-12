@@ -5,12 +5,20 @@ import {
   UnauthorizedException,
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
-import { compare, hash } from "bcryptjs"
+import { compare, hash, hashSync } from "bcryptjs"
+import { randomUUID } from "node:crypto"
 import { UsersService, type UserView } from "../users/index.js"
 import { LoginDto, RegisterDto } from "./dto/auth.dto.js"
 import { RefreshTokenService } from "./refresh-token.service.js"
 
 const BCRYPT_ROUNDS = 10
+
+/**
+ * Compared against when the email has no account, so that answering takes as long as it does for a
+ * real account with a wrong password. Without it the time of the answer tells a stranger which
+ * emails are registered. Made once, with the same cost as the real hashes.
+ */
+const UNKNOWN_USER_HASH = hashSync(randomUUID(), BCRYPT_ROUNDS)
 
 /** Said to a banned user who tries to log in or to refresh a token. */
 export const ACCOUNT_BANNED_MESSAGE = "This account has been banned. Contact the administrator."
@@ -42,7 +50,7 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<AuthResult> {
     const credentials = await this.users.findCredentials(dto.email)
-    const valid = credentials ? await compare(dto.password, credentials.passwordHash) : false
+    const valid = await compare(dto.password, credentials?.passwordHash ?? UNKNOWN_USER_HASH)
     if (!credentials || !valid) throw new UnauthorizedException("Invalid email or password")
     // Only after the password is right, so the answer does not tell a stranger who is banned.
     if (credentials.isBanned) throw new ForbiddenException(ACCOUNT_BANNED_MESSAGE)

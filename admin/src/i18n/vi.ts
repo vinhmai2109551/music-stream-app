@@ -1,5 +1,9 @@
 /** Vietnamese texts for the labels that Refine and its Ant Design components draw themselves. */
 export const vi: Record<string, string> = {
+  "actions.list": "Danh sách",
+  "actions.create": "Tạo mới",
+  "actions.edit": "Sửa",
+  "actions.show": "Chi tiết",
   "buttons.create": "Tạo mới",
   "buttons.save": "Lưu",
   "buttons.logout": "Đăng xuất",

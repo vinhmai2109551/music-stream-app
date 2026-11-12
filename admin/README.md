@@ -37,18 +37,20 @@ From the repository root, the `admin` service builds the site and serves it with
 docker compose up -d --build            # db + api + admin
 ```
 
-Admin: <http://localhost:5173> · API: <http://localhost:3000/api> · Swagger: <http://localhost:3000/api/docs>.
+Admin: <http://localhost:5173> · API: <http://localhost:3000/api> · Swagger: <http://localhost:3000/api/docs> (the API is built in production mode, where the docs are off unless `SWAGGER_ENABLED=true` is in `backend/.env`).
 
 `VITE_API_URL` and `VITE_TURNSTILE_SITE_KEY` are baked into the bundle **at build time** (a static
 site cannot read the environment of its container). The browser, not Docker, calls the API, so the
 value is the address of the API as the browser sees it. To build for another address:
 
 ```bash
-ADMIN_API_URL=https://api.example.com/api ADMIN_TURNSTILE_SITE_KEY=0x4AAA... \
-  docker compose up -d --build admin
+ADMIN_API_URL=https://api.example.com/api ADMIN_API_ORIGIN=https://api.example.com \
+  ADMIN_TURNSTILE_SITE_KEY=0x4AAA... docker compose up -d --build admin
 ```
 
-(or put those two variables in a `.env` file next to `docker-compose.yml`). The address of the admin
+(or put those variables in a `.env` file next to `docker-compose.yml`). `ADMIN_API_ORIGIN` is the same
+address without `/api`: nginx puts it in the Content-Security-Policy, which lets the page talk to that API
+only (it is read when the container starts, so changing it needs no rebuild). The address of the admin
 web must be listed in `CORS_ORIGINS` of `backend/.env` (`http://localhost:5173` is there by default).
 
 ## Logging in
@@ -161,8 +163,11 @@ admin/src/
 
 ## Known limits
 
-- The tokens are kept in `localStorage`; an XSS bug would expose them. There is no Content Security
-  Policy in `nginx.conf` because its allowed origins (API, R2, YouTube, Cloudflare) depend on where you deploy.
+- The tokens are kept in `localStorage`; an XSS bug would expose them. `nginx.conf` sends a
+  Content-Security-Policy that makes such a bug much harder to use: no inline script except the theme
+  script (allowed by its hash, checked by `src/csp.test.ts`), connections only to the API and to the upload
+  storage, no framing. `style-src` keeps `'unsafe-inline'` because Ant Design writes `<style>` tags. If you
+  deploy somewhere else, check the browser console for blocked requests and adjust `nginx.conf`.
 - The tracks table asks the API for the lyrics status of the page it shows (one extra call per page).
 - The first load is about 1 MB (320 KB gzipped); the dashboard (charts) and the lyrics editor are
   loaded when they are opened.

@@ -19,8 +19,10 @@ import { App as AntdApp, Spin } from "antd"
 import { lazy, Suspense } from "react"
 import { BrowserRouter, Outlet, Route, Routes } from "react-router"
 import { AppHeader } from "@/layout/AppHeader"
+import { AppSider } from "@/layout/AppSider"
 import { AppTitle } from "@/layout/AppTitle"
 import { SessionWatcher } from "@/layout/SessionWatcher"
+import { SkipLink } from "@/layout/SkipLink"
 import { LoginPage } from "@/pages/login/LoginPage"
 import { TrackCreate } from "@/pages/tracks/TrackCreate"
 import { TrackEdit } from "@/pages/tracks/TrackEdit"
@@ -131,11 +133,14 @@ export function App() {
               <Route
                 element={
                   <Authenticated key="admin" fallback={<CatchAllNavigate to="/login" />}>
-                    <ThemedLayout Header={AppHeader} Title={AppTitle}>
-                      <Suspense fallback={<PageLoading />}>
-                        <Outlet />
-                      </Suspense>
-                    </ThemedLayout>
+                    <>
+                      <SkipLink />
+                      <ThemedLayout Header={AppHeader} Title={AppTitle} Sider={AppSider}>
+                        <Suspense fallback={<PageLoading />}>
+                          <Outlet />
+                        </Suspense>
+                      </ThemedLayout>
+                    </>
                   </Authenticated>
                 }
               >

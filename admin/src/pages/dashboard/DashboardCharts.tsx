@@ -1,18 +1,21 @@
 import { Card, Empty, theme } from "antd"
+import { useId } from "react"
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts"
 import type { DailyCount } from "@/api/types"
+import { CHART_COLORS } from "@/theme/brand"
+import { useColorMode } from "@/theme/color-mode"
 
-const CHART_HEIGHT = 260
+const CHART_HEIGHT = 240
 
 /** `2026-11-10` -> `10/11` */
 const shortDay = (day: string): string => `${day.slice(8, 10)}/${day.slice(5, 7)}`
@@ -25,18 +28,36 @@ interface Props {
   kind: "line" | "bar"
 }
 
-/** One 14-day chart in a card; coloured from the Ant Design theme so it follows dark / light. */
+/**
+ * One 14-day chart. One series, so no legend (the title names it); thin marks, a quiet grid, and a
+ * tooltip that follows the pointer. The colours are the validated pair of `CHART_COLORS`.
+ */
 export function DailyChart({ title, series, unit, kind }: Props) {
   const { token } = theme.useToken()
+  const { mode } = useColorMode()
+  const fillId = useId()
+  const colors = CHART_COLORS[mode]
+  const color = kind === "line" ? colors.line : colors.bars
   const empty = series.every((entry) => entry.count === 0)
 
   const axis = { stroke: token.colorTextTertiary, fontSize: 12 }
-  const common = (
+  const shared = (
     <>
-      <CartesianGrid stroke={token.colorBorderSecondary} strokeDasharray="3 3" vertical={false} />
-      <XAxis dataKey="day" tickFormatter={shortDay} tickLine={false} {...axis} />
+      <CartesianGrid stroke={token.colorBorderSecondary} vertical={false} />
+      <XAxis
+        dataKey="day"
+        tickFormatter={shortDay}
+        tickLine={false}
+        axisLine={false}
+        interval="preserveStartEnd"
+        minTickGap={18}
+        {...axis}
+      />
       <YAxis allowDecimals={false} width={32} tickLine={false} axisLine={false} {...axis} />
       <Tooltip
+        cursor={
+          kind === "line" ? { stroke: token.colorBorder } : { fill: token.colorFillQuaternary }
+        }
         labelFormatter={(day) => `Ngày ${shortDay(String(day))}`}
         formatter={(value) => [String(value), unit]}
         contentStyle={{
@@ -44,13 +65,14 @@ export function DailyChart({ title, series, unit, kind }: Props) {
           border: `1px solid ${token.colorBorderSecondary}`,
           borderRadius: token.borderRadius,
           color: token.colorText,
+          boxShadow: token.boxShadowSecondary,
         }}
       />
     </>
   )
 
   return (
-    <Card title={title} styles={{ body: { padding: 16 } }}>
+    <Card title={title} styles={{ body: { padding: "8px 16px 16px" } }}>
       {empty ? (
         <Empty
           style={{ height: CHART_HEIGHT, display: "grid", placeContent: "center" }}
@@ -60,23 +82,32 @@ export function DailyChart({ title, series, unit, kind }: Props) {
         <div role="img" aria-label={`${title}: biểu đồ 14 ngày gần nhất`}>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
             {kind === "line" ? (
-              <LineChart data={series}>
-                {common}
-                <Line
+              <AreaChart data={series}>
+                <defs>
+                  <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor={color} stopOpacity={0.24} />
+                    <stop offset="1" stopColor={color} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                {shared}
+                <Area
                   type="monotone"
                   dataKey="count"
-                  stroke={token.colorPrimary}
+                  stroke={color}
                   strokeWidth={2}
-                  dot={{ r: 3 }}
+                  fill={`url(#${fillId})`}
+                  dot={false}
+                  activeDot={{ r: 5, stroke: token.colorBgContainer, strokeWidth: 2, fill: color }}
                   isAnimationActive={false}
                 />
-              </LineChart>
+              </AreaChart>
             ) : (
               <BarChart data={series}>
-                {common}
+                {shared}
                 <Bar
                   dataKey="count"
-                  fill={token.colorPrimary}
+                  fill={color}
+                  maxBarSize={18}
                   radius={[4, 4, 0, 0]}
                   isAnimationActive={false}
                 />

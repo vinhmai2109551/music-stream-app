@@ -45,7 +45,7 @@ function toUrl(text: string): URL | null {
 }
 
 export const youtubeEmbedUrl = (videoId: string): string =>
-  `https://www.youtube-nocookie.com/embed/${videoId}`
+  `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`
 
 export const youtubeWatchUrl = (videoId: string): string =>
-  `https://www.youtube.com/watch?v=${videoId}`
+  `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`
