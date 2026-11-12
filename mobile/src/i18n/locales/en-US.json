@@ -1,1 +1,509 @@
-{}
+{
+  "app": {
+    "name": "Music Stream",
+    "defaultSource": "Music Stream"
+  },
+  "common": {
+    "retry": "Try again",
+    "close": "Close",
+    "back": "Back",
+    "play": "Play",
+    "pause": "Pause",
+    "shuffle": "Random Play",
+    "moreOptions": "Other options",
+    "share": "Share",
+    "search": "Search",
+    "follow": "Follow",
+    "following": "Following",
+    "like": "Like",
+    "unlike": "Unfollow",
+    "viewMore": "See more",
+    "viewLess": "Collapse",
+    "seeAll": "View all",
+    "deletedUser": "The user has been deleted",
+    "empty": {
+      "generic": "There's nothing here yet",
+      "songs": "No songs yet",
+      "albums": "No albums yet",
+      "artists": "No artist has yet",
+      "otherArtists": "No other artist has yet",
+      "charts": "There are no rankings yet"
+    },
+    "count": {
+      "followers": "{{value}} followers",
+      "likes": "{{value}} likes",
+      "comments": "{{value}} Comments",
+      "songs": "{{value}} song",
+      "followers_one": "{{value}} follower",
+      "likes_one": "{{value}} like",
+      "comments_one": "{{value}} comment",
+      "songs_one": "{{value}} song"
+    }
+  },
+  "time": {
+    "ago": {
+      "now": "Just finished",
+      "minutes": "{{count}} minutes",
+      "hours": "{{count}} hours",
+      "days": "{{count}} days",
+      "weeks": "{{count}} week",
+      "months": "{{count}} months",
+      "years": "{{count}} years",
+      "minutes_one": "{{count}} minute",
+      "hours_one": "{{count}} hour",
+      "days_one": "{{count}} day",
+      "weeks_one": "{{count}} week",
+      "months_one": "{{count}} month",
+      "years_one": "{{count}} year"
+    }
+  },
+  "errors": {
+    "network": "Unable to connect to the server. Check your network connection and try again.",
+    "timeout": "The server is taking too long to respond. Please try again.",
+    "server": "The server is experiencing an issue. Please try again later.",
+    "tooManyRequests": "You've tried too many times. Please wait a minute and try again.",
+    "unknown": "An error has occurred. Please try again.",
+    "notConfigured": "The server address (EXPO_PUBLIC_API_URL) has not been configured.",
+    "loadFailedTitle": "Unable to load data",
+    "notFoundTitle": "Not found",
+    "notFoundDescription": "This content no longer exists."
+  },
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "feed": "News Bulletin",
+    "library": "Library"
+  },
+  "launch": {
+    "headline": "Your music, your artists",
+    "subtitle": "Millions of songs from your favorite artists.",
+    "createAccount": "Create an account",
+    "haveAccount": "I already have an account"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to continue listening to music",
+      "submit": "Log In",
+      "switchPrompt": "Don't have an account yet?",
+      "switchAction": "Sign Up"
+    },
+    "register": {
+      "title": "Create an account",
+      "subtitle": "It only takes a minute to get started",
+      "submit": "Sign Up",
+      "switchPrompt": "Already have an account?",
+      "switchAction": "Log In"
+    },
+    "fields": {
+      "email": {
+        "label": "Email",
+        "placeholder": "ten@email.com"
+      },
+      "name": {
+        "label": "Display Name",
+        "placeholder": "Your name"
+      },
+      "password": {
+        "label": "Password",
+        "placeholder": "Enter your password"
+      }
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "logout": "Log Out",
+    "validation": {
+      "emailRequired": "Please enter your email address",
+      "emailInvalid": "Invalid email address",
+      "emailTooLong": "Maximum email length: {{max}} characters",
+      "nameRequired": "Please enter your name",
+      "nameTooLong": "Maximum name length: {{max}} characters",
+      "passwordRequired": "Please enter your password",
+      "passwordTooShort": "The password must be at least {{min}} characters long",
+      "passwordTooLong": "Maximum password length: {{max}} characters"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailTaken": "Email address has been registered",
+      "turnstileFailed": "Security verification failed. Please try again.",
+      "turnstileUnavailable": "The verification service is temporarily unavailable. Please try again."
+    },
+    "turnstile": {
+      "label": "Cloudflare Security Verification",
+      "required": "Please complete the security verification before logging in",
+      "failed": "Unable to load the security verification. Tap to try again.",
+      "errorCode": "Error Code"
+    }
+  },
+  "home": {
+    "greeting": {
+      "morning": "Good morning,",
+      "afternoon": "Good afternoon,",
+      "evening": "Good evening,"
+    },
+    "emptyTitle": "Nothing to listen to yet",
+    "emptyDescription": "New music will appear here.",
+    "regionsLabel": "Region",
+    "regions": {
+      "all": "All",
+      "vietnam": "Vietnam",
+      "korea": "K-Pop",
+      "japan": "J-Pop",
+      "china": "C-Pop"
+    },
+    "sections": {
+      "suggestions": "Suggestions for You",
+      "charts": "Rankings",
+      "trendingAlbums": "Trending Albums",
+      "popularArtists": "Famous Artist"
+    }
+  },
+  "player": {
+    "viaYoutube": "Stream on YouTube",
+    "openOnYoutube": "Open on YouTube",
+    "cannotPlayInApp": "This article cannot be played in the app",
+    "noSource": "This article does not yet have a source.",
+    "networkError": "This track cannot be played. Check your connection and try again.",
+    "openPlayerToListen": "Open the player to listen to this song",
+    "backgroundHint": "YouTube pauses when you leave the app. Try the “Background Play” playlist to keep listening even when the screen is off.",
+    "backgroundBadge": "Playback is possible when the screen is off",
+    "autoSkip": "Automatically advance to the next article in {{count}} seconds",
+    "nothingPlaying": "No posts have been published yet",
+    "closePlayer": "Close the player",
+    "openPlayer": "Open the player",
+    "openPlayerNamed": "Open the player, {{title}} - {{artist}}",
+    "playingFrom": "Now playing from",
+    "playing": "Now Playing",
+    "previous": "Previous Article",
+    "next": "Next Article",
+    "shuffleOn": "Shuffle: On",
+    "shuffleOff": "Random playback: off",
+    "repeatOff": "Repeat: Off",
+    "repeatAll": "Repeat all",
+    "repeatOne": "Repeat a lesson",
+    "likeTrack": "Like this song",
+    "unlikeTrack": "Unfollow a song",
+    "trackProgress": "Song Progress",
+    "videoPlayer": "Video Player",
+    "stopPlayback": "Stop playing",
+    "likeCount": "Like, {{count}} likes",
+    "commentCount": "Comments, {{count}}"
+  },
+  "recommendations": {
+    "forYou": "For You",
+    "becauseYouListened": "Because you've heard",
+    "forYouSource": "For You",
+    "similarTitle": "Similar Articles",
+    "similarOpen": "See similar posts",
+    "similarSource": "Similar Articles",
+    "byMood": "Depending on my mood",
+    "byMoodSource": "Depending on my mood"
+  },
+  "search": {
+    "placeholder": "What would you like to hear?",
+    "recentTitle": "Recent Searches",
+    "clearAll": "Delete All",
+    "removeRecent": "Clear Recent Searches",
+    "hintTitle": "Search on Music Stream",
+    "hintDescription": "Search for songs, albums, and artists.",
+    "noResultsTitle": "No results",
+    "noResultsDescription": "Try a different word or check the spelling.",
+    "results": "Search Results",
+    "clear": "Clear search results",
+    "tabs": {
+      "all": "All",
+      "tracks": "Song",
+      "albums": "Album",
+      "artists": "Artist"
+    }
+  },
+  "library": {
+    "screen": {
+      "title": "Your Library",
+      "likedSongs": "Songs I've Liked",
+      "chips": {
+        "playlists": "Playlist",
+        "songs": "Song",
+        "albums": "Album",
+        "artists": "Artist"
+      },
+      "emptyTitle": "Your library is empty",
+      "emptyDescription": "Like a song, save an album, and follow an artist to see them here."
+    },
+    "playlists": {
+      "title": "Playlist",
+      "heading": "Your Playlist",
+      "emptyTitle": "No playlists yet",
+      "emptyDescription": "Tap + to create your first playlist.",
+      "create": "Create a playlist",
+      "created": "Playlist created"
+    }
+  },
+  "playlist": {
+    "addedTo": "Added {{name}}",
+    "alreadyIn": "Already available in {{name}}",
+    "addToPlaylist": "Add to playlist",
+    "noPlaylists": "You don't have any playlists yet",
+    "loadFailed": "Unable to load your playlist",
+    "newPlaylist": "New Playlist",
+    "playlistNamePlaceholder": "Playlist Name",
+    "createPlaylist": "Create",
+    "removeFromPlaylist": "Remove from this playlist",
+    "removedFrom": "Removed from {{name}}",
+    "rename": "Rename playlist",
+    "renamed": "The playlist has been renamed",
+    "save": "Save",
+    "delete": "Delete playlist",
+    "deleted": "Playlist deleted",
+    "confirmDelete": "Delete",
+    "deleteConfirmTitle": "Delete playlist?",
+    "deleteConfirmMessage": "The playlist will be deleted from your library. The songs will remain.",
+    "cancel": "Cancel",
+    "named": "Playlist {{name}}"
+  },
+  "collection": {
+    "addSongsFirst": "Add a few songs first",
+    "albumBy": "{{artist}}'s album.",
+    "likePlaylist": "Like this playlist",
+    "saveAlbum": "Save album",
+    "noSongsTitle": "No songs yet",
+    "noSongsDescription": "Add a song from the “…” menu on any track."
+  },
+  "artist": {
+    "popular": "Popular",
+    "albums": "Album",
+    "about": "Introduction",
+    "fansAlsoLike": "Fans like it, too",
+    "named": "Artist {{name}}"
+  },
+  "track": {
+    "addToLiked": "Add to Favorites",
+    "removeFromLiked": "Remove from Favorites",
+    "playNamed": "Play {{title}} from {{artist}}"
+  },
+  "feed": {
+    "title": "News Bulletin",
+    "postedTrack": "Posted a song",
+    "emptyTitle": "No posts yet",
+    "emptyDescription": "The artist's new song will appear here.",
+    "artist": "Artist",
+    "artwork": "Post cover photo",
+    "likePost": "Like this post",
+    "unlikePost": "Unfollow this post",
+    "comments": "Comments"
+  },
+  "comments": {
+    "title": "Comments",
+    "placeholder": "Write a comment...",
+    "send": "Post a comment",
+    "reply": "Answer",
+    "replyingTo": "Currently answering",
+    "cancelReply": "Cancel Reply",
+    "loadMoreFailed": "Unable to load more comments. Tap to try again.",
+    "loadingReplies": "Loading comments...",
+    "emptyTitle": "No comments yet",
+    "emptyDescription": "Be the first to comment.",
+    "likeComment": "Like this comment",
+    "unlikeComment": "Unfollow a comment",
+    "delete": "Delete",
+    "deleteComment": "Delete comment",
+    "confirmDelete": "Delete",
+    "cancel": "Cancel",
+    "deleteConfirmTitle": "Delete this comment?",
+    "deleteConfirmMessage": "This action cannot be undone.",
+    "deleteThreadConfirmMessage": "This action cannot be undone. Comments will also be deleted.",
+    "viewReplies": "See more {{count}} comments",
+    "viewReplies_one": "View {{count}} more reply"
+  },
+  "premium": {
+    "welcomeTitle": "Welcome to\nPremium",
+    "welcomeAction": "Start listening",
+    "plansTitle": "Unlimited music library",
+    "subscribe": "Sign up now",
+    "currentPlan": "Your current plan",
+    "backHome": "Back to the Home Page",
+    "subscribeFailed": "Premium won't start. Please try again.",
+    "perMonth": "/month",
+    "bannerLabel": "Unlock Music Stream Premium",
+    "bannerNote": "One month free · Cancel anytime",
+    "plans": {
+      "individual": {
+        "name": "Premium",
+        "trial": "1-Month Free Trial"
+      },
+      "duo": {
+        "name": "Premium Duo",
+        "trial": "1-Month Free Trial"
+      },
+      "family": {
+        "name": "Premium Family",
+        "trial": "1-Month Free Trial"
+      }
+    },
+    "features": {
+      "adFree": "Listen to music without ads",
+      "offline": "Download music to listen to offline",
+      "fullCatalog": "Access the entire Premium music library",
+      "highQuality": "High-quality sound",
+      "cancelAnytime": "Cancel at any time",
+      "accounts2": "For 2 accounts",
+      "accounts6": "Up to 6 accounts"
+    }
+  },
+  "settings": {
+    "title": "Account",
+    "editProfile": "Edit Profile",
+    "edit": {
+      "title": "Edit Profile",
+      "nameLabel": "Display Name",
+      "changePhoto": "Change Profile Picture",
+      "save": "Save changes",
+      "saved": "Profile updated",
+      "back": "Back",
+      "pickFailed": "Unable to select an image. Please try again.",
+      "readFailed": "The selected photo cannot be read. Please select a different photo.",
+      "uploadFailed": "Unable to upload the photo. Please try again."
+    },
+    "language": {
+      "title": "Language",
+      "system": "By device",
+      "systemHint": "Use the phone's language"
+    }
+  },
+  "assistant": {
+    "name": "AI Assistant",
+    "title": "Music Stream Assistant",
+    "tabLabel": "Assistant",
+    "open": "Open the AI Assistant",
+    "close": "Cast as an assistant",
+    "playSource": "AI Assistant",
+    "welcomeTitle": "What would you like to listen to today?",
+    "welcomeBody": "Tell me how you're feeling or what you're doing. I'll find some music, create a playlist, and play a song for you.",
+    "starters": [
+      "Suggestions for Sad Vietnamese Music",
+      "Create a K-Pop Running Playlist",
+      "Artists like Sơn Tùng",
+      "What does Premium include?"
+    ],
+    "startersLabel": "Suggested Questions",
+    "composerPlaceholder": "Text the assistant…",
+    "composerLabel": "Message to the assistant",
+    "send": "Send a message",
+    "stop": "Stop replying",
+    "replying": "The assistant is responding",
+    "youSaid": "You said",
+    "assistantSaid": "The assistant said",
+    "truncated": "The answer was cut short. You can ask your assistant to continue.",
+    "notSent": "Couldn't send it",
+    "resend": "Resend",
+    "loadingHistory": "Starting a conversation",
+    "loadFailedTitle": "Unable to open a chat",
+    "remaining": "{{count}} messages left today",
+    "sources": "Source",
+    "moreTracks": "See more {{count}} articles",
+    "fewerTracks": "Collapse",
+    "dismiss": "Hide notifications",
+    "time": {
+      "justNow": "Just finished",
+      "minutes": "{{count}} a minute ago",
+      "hours": "{{count}} an hour ago",
+      "yesterday": "Yesterday",
+      "days": "{{count}} days ago",
+      "minutes_one": "{{count}} minute ago",
+      "hours_one": "{{count}} hour ago",
+      "days_one": "{{count}} day ago"
+    },
+    "tools": {
+      "search_catalog": "Searching the music library…",
+      "get_track": "Viewing the song…",
+      "get_artist": "Viewing artist…",
+      "get_album": "Viewing album…",
+      "get_playlist": "Currently viewing a playlist…",
+      "get_my_library": "Viewing your library…",
+      "recommend_tracks": "Selecting songs that match your taste…",
+      "similar_tracks": "Searching for similar articles…",
+      "search_help": "Searching for instructions…",
+      "play_tracks": "Playing music…",
+      "create_playlist": "Preparing the playlist…",
+      "add_tracks_to_playlist": "Preparing more posts…",
+      "like_tracks": "Getting ready to like this post…",
+      "follow_artist": "Preparing to watch…",
+      "fallback": "Processing…",
+      "failed": "I can't do this step"
+    },
+    "action": {
+      "heading": "The assistant wants to do",
+      "confirm": "Agree",
+      "reject": "Cancel",
+      "busy": "In progress…",
+      "confirmed": "Completed",
+      "rejected": "Canceled",
+      "expired": "Expired",
+      "failed": "Not yet implemented",
+      "waiting": "We need your approval within 10 minutes"
+    },
+    "history": {
+      "open": "Conversations",
+      "title": "The Conversation",
+      "newChat": "A New Conversation",
+      "untitled": "No messages yet",
+      "emptyTitle": "No conversations yet",
+      "emptyDescription": "Let's start with a question about the music you want to listen to.",
+      "delete": "Delete the conversation",
+      "deleteTitle": "Delete this conversation?",
+      "deleteMessage": "All messages will be lost. Messages sent today still count toward the daily limit.",
+      "confirmDelete": "Delete",
+      "keep": "Keep",
+      "deleted": "The conversation has been deleted",
+      "deleteFailed": "Unable to delete the conversation. Please try again.",
+      "createFailed": "Unable to create a new conversation. Please try again."
+    },
+    "unavailable": {
+      "title": "The assistant isn't ready yet",
+      "description": "This feature is currently disabled. The rest of the app continues to work as usual.",
+      "close": "Close"
+    },
+    "errors": {
+      "generic": "An error occurred. Please try again.",
+      "offline": "Unable to connect to the server. Please check your network connection and try again.",
+      "quota": "You've used up all your messages for today. Please come back tomorrow.",
+      "unavailable": "The assistant is currently offline. Please try again later.",
+      "conflict": "The assistant is replying to a previous message. Please wait a moment.",
+      "expired": "This suggestion has expired (it has been more than 10 minutes). Please ask your assistant again.",
+      "gone": "This conversation is no longer available."
+    },
+    "remaining_one": "{{count}} message left today",
+    "moreTracks_one": "See {{count}} more song"
+  },
+  "album": {
+    "named": "{{title}}'s album by {{artist}}"
+  },
+  "suggestion": {
+    "by": "{{title}} of {{subtitle}}"
+  },
+  "lyrics": {
+    "open": "View the lyrics",
+    "title": "Lyrics",
+    "sourceLabel": "Source: {{source}}",
+    "sourceDemo": "self-written demo lyrics",
+    "translate": "Translate to {{language}}",
+    "translating": "Translating...",
+    "autoTranslated": "Automatic translation",
+    "viewLabel": "How to Display Lyrics",
+    "viewOriginal": "Original",
+    "viewParallel": "In parallel",
+    "viewTranslation": "Translation",
+    "sameLanguage": "The lyrics are in your language.",
+    "emptyTitle": "This song doesn't have lyrics yet",
+    "emptyDescription": "The lyrics will appear here when they are available.",
+    "loading": "Loading song lyrics",
+    "translationFailed": {
+      "generic": "The lyrics haven't been translated yet. You can still view the original lyrics.",
+      "quota": "This month's translation quota has been used up. You can still view the original text.",
+      "notConfigured": "The translation feature is not yet available. You can still view the original text.",
+      "rateLimited": "You're translating too fast. Please wait a minute and try again.",
+      "offline": "Unable to connect to the server. Check your network connection and try again.",
+      "busy": "The translation service is currently busy. Please try again in a few minutes."
+    }
+  }
+}
